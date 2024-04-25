@@ -1,0 +1,94 @@
+/* TwitchDarkMode.css */
+/* Basic Color Scheme Definitions */
+:root {
+	--twitch-dark: #0e0e10;
+	--twitch-dark-alt: #1f1f23;
+	--twitch-text: #e0e0e0;
+	--twitch-primary: #9147ff;
+	--twitch-accent: #772ce8;
+	--twitch-gray: #b3b3b3;
+	--twitch-light-gray: #4f4f52;
+	--twitch-danger: #f04747;
+}
+
+/* General Body and Background Styles */
+body {
+	background-color: var(--twitch-dark);
+	color: var(--twitch-text);
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	transition: background-color 0.3s ease;
+}
+
+/* Link Styles */
+a {
+	color: var(--twitch-primary);
+	text-decoration: none;
+}
+
+a:hover, a:focus {
+	text-decoration: underline;
+	color: var(--twitch-accent);
+}
+
+/* Navigation Styles */
+nav {
+	background-color: var(--twitch-dark-alt);
+	border-bottom: 1px solid var(--twitch-light-gray);
+	padding: 10px 20px;
+}
+
+nav a {
+	margin-right: 15px;
+	font-weight: bold;
+}
+
+/* Header Styles */
+header {
+	background: var(--twitch-dark-alt);
+	color: var(--twitch-text);
+	padding: 20px;
+	text-align: center;
+}
+
+/* Button Styles */
+button {
+	background-color: var(--twitch-primary);
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+button:hover {
+	background-color: var(--twitch-accent);
+}
+
+button:disabled {
+	background-color: var(--twitch-light-gray);
+}
+
+/* Form Input Styles */
+input[type="text"], input[type="password"], textarea {
+	width: 100%;
+	padding: 10px;
+	margin-top: 8px;
+	margin-bottom: 20px;
+	border: 1px solid var(--twitch-light-gray);
+	background-color: var(--twitch-dark);
+	color: var(--twitch-text);
+}
+
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+	border-color: var(--twitch-primary);
+}
+
+/* Error Text */
+.error-text {
+	color: var(--twitch-danger);
+	font-weight: bold;
+}
+

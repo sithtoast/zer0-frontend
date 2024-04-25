@@ -1,0 +1,44 @@
+.container {
+	display: flex;
+	justify-content: space-between;
+	min-height: 80vh; /* Ensures that the container takes up at least 80% of the viewport height */
+}
+
+.categories, .streams {
+	flex-grow: 1;  /* Each section takes equal width */
+	margin: 0 10px; /* Adds margin between categories and streams */
+	display: flex;
+	flex-direction: column; /* Aligns items vertically */
+}
+
+.categories {
+	flex-basis: 33.3333%; /* Roughly 1/3 of the space */
+}
+
+.streams {
+	flex-basis: 66.6666%;
+	border-left: 2px solid #ccc; /* Adds a subtle line between the categories and streams, visible even if no streams are displayed */
+}
+
+.streams > h2 {
+	margin-top: 0; /* Removes top margin from the header for alignment */
+}
+
+@media (max-width: 768px) {
+	.categories, .streams {
+		flex-direction: column;
+		width: 100%;
+	}
+	.categories {
+		margin-bottom: 20px;
+	}
+}
+
+.streams .card {
+	width: 100%; /* Full width of the column */
+}
+
+.col-md-4 {
+	flex: 0 0 33.333333%; /* for 3 cards per row */
+	max-width: 33.333333%; /* for 3 cards per row */
+}
