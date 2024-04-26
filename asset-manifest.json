@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/static/css/main.d8619db7.css",
-    "main.js": "/static/js/main.aecad79e.js",
+    "main.js": "/static/js/main.facde913.js",
     "static/js/453.8ab44547.chunk.js": "/static/js/453.8ab44547.chunk.js",
     "index.html": "/index.html",
     "main.d8619db7.css.map": "/static/css/main.d8619db7.css.map",
-    "main.aecad79e.js.map": "/static/js/main.aecad79e.js.map",
+    "main.facde913.js.map": "/static/js/main.facde913.js.map",
     "453.8ab44547.chunk.js.map": "/static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.d8619db7.css",
-    "static/js/main.aecad79e.js"
+    "static/js/main.facde913.js"
   ]
 }
