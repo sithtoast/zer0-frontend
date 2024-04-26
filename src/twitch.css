@@ -1,14 +1,12 @@
 /* TwitchDarkMode.css */
 /* Basic Color Scheme Definitions */
 :root {
-	--twitch-dark: #0e0e10;
-	--twitch-dark-alt: #1f1f23;
-	--twitch-text: #e0e0e0;
-	--twitch-primary: #9147ff;
-	--twitch-accent: #772ce8;
-	--twitch-gray: #b3b3b3;
-	--twitch-light-gray: #4f4f52;
-	--twitch-danger: #f04747;
+	--twitch-dark: #241623;
+	--twitch-dark-alt: #302130; 
+	--twitch-text: #ddd; 
+	--twitch-primary: #9c88ff; 
+	--twitch-accent: #7e57c2; 
+	--twitch-gray: #888; 
 }
 
 /* General Body and Background Styles */
