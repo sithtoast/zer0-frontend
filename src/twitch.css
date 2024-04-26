@@ -1,13 +1,14 @@
 /* TwitchDarkMode.css */
 /* Basic Color Scheme Definitions */
 :root {
-	--twitch-dark: #241623;
-	--twitch-dark-alt: #F0F0F0; /* Changed to a light color for the background */
-	--twitch-nav-text: #333;
-	--twitch-text: #ddd; 
-	--twitch-primary: #9c88ff; 
-	--twitch-accent: #7e57c2; 
-	--twitch-gray: #888; 
+	--twitch-dark: #0e0e10;
+	--twitch-dark-alt: #1f1f23;
+	--twitch-text: #e0e0e0;
+	--twitch-primary: #9147ff;
+	--twitch-accent: #772ce8;
+	--twitch-gray: #b3b3b3;
+	--twitch-light-gray: #4f4f52;
+	--twitch-danger: #f04747;
 }
 
 /* General Body and Background Styles */
@@ -34,12 +35,11 @@ a:hover, a:focus {
 /* Navigation Styles */
 nav {
 	background-color: var(--twitch-dark-alt);
-	border-bottom: 1px solid var(--twitch-gray);
+	border-bottom: 1px solid var(--twitch-light-gray);
 	padding: 10px 20px;
 }
 
 nav a {
-	color: var(--twitch-nav-text); /* Updated for better readability */
 	margin-right: 15px;
 	font-weight: bold;
 }
@@ -90,25 +90,6 @@ input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
 .error-text {
 	color: var(--twitch-danger);
 	font-weight: bold;
-}
-
-.selected-stream .card {
-	border: 2px solid #007bff;  /* Blue border for selected stream */
-	box-shadow: 0 0 15px rgba(0,123,255,.5);  /* Soft glow for emphasis */
-}
-
-.toggle-indicator {
-	cursor: pointer;
-	display: inline-block;
-	transition: transform 0.3s ease-in-out;
-}
-
-.toggle-indicator.closed {
-	transform: rotate(0);
-}
-
-.toggle-indicator.open {
-	transform: rotate(-180deg); /* Adjust rotation direction if necessary */
 }
 
 nav a:hover, nav a:focus {

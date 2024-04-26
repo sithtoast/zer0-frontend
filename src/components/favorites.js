@@ -57,15 +57,21 @@ useEffect(() => {
 		setSelectedStream(stream);
 	};
 	
-	function shuffleAndPick(array, numItems) {
-		// Shuffle array using the Durstenfeld shuffle algorithm
-		for (let i = array.length - 1; i > 0; i--) {
+	
+function shuffleAndPick(array, numItems) {
+		// Filter the array for streams with 3 or fewer viewers
+		const filteredArray = array.filter(stream => stream.viewer_count <= 3);
+	
+		// Shuffle the filtered array using the Durstenfeld shuffle algorithm
+		for (let i = filteredArray.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
-			[array[i], array[j]] = [array[j], array[i]]; // Swap elements
+			[filteredArray[i], filteredArray[j]] = [filteredArray[j], filteredArray[i]]; // Swap elements
 		}
-		return array.slice(0, numItems); // Return the first numItems elements
+	
+		// Return the first numItems elements from the shuffled filtered array
+		return filteredArray.slice(0, numItems);
 	}
-
+	
 	const fetchStreamsForCategory = async (categoryId) => {
 		const token = localStorage.getItem('token');
 		if (!token) {
@@ -88,6 +94,7 @@ useEffect(() => {
 			
 			// Use shuffleAndPick to select a random subset of streams
 			const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
+			console.log(shuffledPickedStreams);
 	
 			// Update the state with the fetched and shuffled streams
 			setFavorites(prevFavorites => prevFavorites.map(category => 

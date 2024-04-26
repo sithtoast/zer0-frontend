@@ -3,7 +3,6 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
 import './categorySearch.css';
-import '../twitch.css';
 import { useNavigate } from 'react-router-dom';
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -157,8 +156,9 @@ const handleCategorySelect = async (categoryId) => {
 	if (error) return <p>Error: {error}</p>;
 
 	return (
+		<div>
+		<Navbar />
 		<div className="category-search-container">
-			<Navbar />
 			<div className="category-search-layout">
 				<div className="search-results">
 					<h1>Search Game Categories</h1>
@@ -207,6 +207,7 @@ const handleCategorySelect = async (categoryId) => {
 					</div>
 				)}
 			</div>
+		</div>
 		</div>
 	);
 
