@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Register from './components/Register';
 import Login from './components/Login';
 import Profile from './components/Profile';
@@ -15,7 +15,7 @@ function App() {
                 <Routes>
                     <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
-                    <Route path="/profile" element={<ProfileWrapper />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="/top-games" element={<TopGames />} />
                     <Route path="/" element={<CategorySearch />} />
                     <Route path="/favorites" element={<TopEight />} />
