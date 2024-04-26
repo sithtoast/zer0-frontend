@@ -92,3 +92,21 @@ input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
 	font-weight: bold;
 }
 
+.selected-stream .card {
+	border: 2px solid #007bff;  /* Blue border for selected stream */
+	box-shadow: 0 0 15px rgba(0,123,255,.5);  /* Soft glow for emphasis */
+}
+
+.toggle-indicator {
+	cursor: pointer;
+	display: inline-block;
+	transition: transform 0.3s ease-in-out;
+}
+
+.toggle-indicator.closed {
+	transform: rotate(0);
+}
+
+.toggle-indicator.open {
+	transform: rotate(-180deg); /* Adjust rotation direction if necessary */
+}

@@ -88,7 +88,7 @@ const Profile = () => {
 		// Function to handle Twitch account linking (e.g., redirect to Twitch login)
 		// Implement the logic to link Twitch account here
 		console.log("Redirecting to Twitch linking flow...");
-		window.location.href = "${apiUrl}/auth/twitch";
+		window.location.href = `${apiUrl}/auth/twitch`;
 	};
 
 	return (
