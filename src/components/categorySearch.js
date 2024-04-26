@@ -36,7 +36,12 @@ useEffect(() => {
 			const response = await axios.get(`${apiUrl}/api/favorites/${userId}`, {
 				headers: { 'Authorization': `Bearer ${token}` }
 			});
-			setFavorites(new Set(response.data.map(fav => fav.categoryId)));
+			const favoriteCategories = response.data.map(fav => fav.categoryId);
+			if (favoriteCategories.length > 0) {
+				setFavorites(new Set(favoriteCategories));
+			} else {
+				setFavorites(new Set());  // Ensure it's always a Set, even if empty
+			}
 		} catch (err) {
 			setError('Failed to load favorites');
 			console.error('Error loading favorites:', err);
@@ -46,6 +51,7 @@ useEffect(() => {
 
 	fetchInitialFavorites();
 }, [navigate]);
+
 
 	const fetchCategories = async (query) => {
 		setLoading(true);

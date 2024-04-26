@@ -68,10 +68,21 @@ const TopCategories = () => {
 const toggleFavorite = async (category, event) => {
         event.stopPropagation();
         const token = localStorage.getItem('token');
-        const userId = jwtDecode(token).user.userId;  // Ensure you have the userId for both operations
-        const action = favorites.has(category.id) ? 'remove' : 'add';
+        const decoded = jwtDecode(token);
+        const userId = decoded?.user?.userId;
     
+        if (!userId || !category?.id) {
+            console.error("Missing required parameters", {userId, categoryId: category?.id});
+            setError("Missing required parameters");
+            return;
+        }
+    
+        const action = favorites.has(category.id) ? 'remove' : 'add';
+        console.log("User ID:", userId);
+        console.log("Category passed to toggleFavorite:", category);
+        
         try {
+            console.log("Sending data:", { userId, categoryId: category.id, name: category.name });
             await axios.post(`${apiUrl}/api/favorites/${action}`, {
                 userId,  // Include userId in the request
                 categoryId: category.id,
@@ -90,15 +101,16 @@ const toggleFavorite = async (category, event) => {
                 return updated;
             });
         } catch (err) {
-            console.error(`Failed to ${action} favorite:`, err);
-            setError(`Failed to ${action} favorite`);
+            console.error(`Failed to ${action} favorite:`, err.response ? err.response.data : err);
+            setError(`Failed to ${action} favorite: ${err.response ? err.response.data.message : "Unknown error"}`);
         }
     };
     
-const handleClickCategory = async (categoryId) => {
+const handleClickCategory = (categoryId) => {
         setCurrentPage(1);  // Reset to first page on category change
         setStreams([]);  // Clear existing streams
         setCurrentCursor(null);  // Reset the cursor
+        setSelectedCategoryId(categoryId);  // Set the selected category ID
         fetchStreams(categoryId, null);  // Fetch without a cursor
         setCurrentGameName(categories.find(category => category.id === categoryId)?.name);  // Update the game name
     };
@@ -167,7 +179,7 @@ const fetchStreams = async (categoryId, cursor) => {
                                         <span onClick={() => handleClickCategory(category.id)}>
                                             {category.name}
                                         </span>
-                                        <button onClick={(e) => toggleFavorite(category.id, e)}>
+                                        <button onClick={(e) => toggleFavorite(category, e)}>
                                             {favorites.has(category.id) ? '★' : '☆'}
                                         </button>
                                     </li>
