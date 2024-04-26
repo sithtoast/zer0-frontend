@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
+import '../twitch.css';
 import './categorySearch.css';
 import { useNavigate } from 'react-router-dom';
 
