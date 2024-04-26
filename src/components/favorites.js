@@ -20,26 +20,33 @@ useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
 				const token = localStorage.getItem('token');
+				if (!token) {
+					setError('Authentication required.');
+					setLoading(false);
+					return;
+				}
+	
 				const decoded = jwtDecode(token);
 				const userId = decoded.user.userId;
 	
 				const response = await axios.get(`${apiUrl}/api/favorites/${userId}`, {
 					headers: { 'Authorization': `Bearer ${token}` }
 				});
+	
 				if (response.data && Array.isArray(response.data)) {
 					setFavorites(response.data.map(category => ({
 						id: category.categoryId,
 						name: category.categoryName,
-						streams: shuffleAndPick(category.streams || [], 8)  // Pick 8 random streams
+						streams: []  // Initialize streams as an empty array
 					})));
 				} else {
 					setError('No categories found or invalid data structure');
 				}
-				setLoading(false);
 			} catch (err) {
 				setError('Failed to fetch favorite categories');
-				setLoading(false);
 				console.error('Error:', err);
+			} finally {
+				setLoading(false);
 			}
 		};
 	
@@ -59,6 +66,53 @@ useEffect(() => {
 		return array.slice(0, numItems); // Return the first numItems elements
 	}
 
+	const fetchStreamsForCategory = async (categoryId) => {
+		const token = localStorage.getItem('token');
+		if (!token) {
+			setError('Authentication required.');
+			return;
+		}
+
+		const decoded = jwtDecode(token);
+		const userId = decoded.user.userId;
+		
+		const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
+			headers: { 'Authorization': `Bearer ${token}` }
+		});
+		const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+		
+		try {
+			const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
+				headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+			});
+			
+			// Use shuffleAndPick to select a random subset of streams
+			const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
+	
+			// Update the state with the fetched and shuffled streams
+			setFavorites(prevFavorites => prevFavorites.map(category => 
+				category.id === categoryId ? {...category, streams: shuffledPickedStreams} : category
+			));
+		} catch (err) {
+			console.error(`Failed to fetch streams for category ${categoryId}:`, err);
+			setError(`Failed to fetch streams for category: ${err.message}`);
+		}
+	};
+	
+	const handleToggleCategory = (categoryId) => {
+		setOpenCategories(prev => {
+			const isOpen = !prev[categoryId];
+			// Check if category is being expanded and streams have not been fetched yet
+			const category = favorites.find(cat => cat.id === categoryId);
+			if (isOpen && category && category.streams.length === 0) {
+				fetchStreamsForCategory(categoryId);
+			}
+			return { ...prev, [categoryId]: isOpen };
+		});
+	};
+
+
+
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
 
@@ -72,7 +126,7 @@ return (
 				{favorites.length > 0 ? (
 					favorites.map(cat => (
 						<div key={cat.id} className="w-100 mb-4">
-							<h2 onClick={() => setOpenCategories(prev => ({ ...prev, [cat.id]: !prev[cat.id] }))}>
+							<h2 className="category-header" onClick={() => handleToggleCategory(cat.id)}>
 								{cat.name}
 								<span className={`toggle-indicator ${openCategories[cat.id] ? 'open' : 'closed'}`}>
 									{openCategories[cat.id] ? '▼' : '▲'}
@@ -80,17 +134,19 @@ return (
 							</h2>
 							<Collapse in={openCategories[cat.id]}>
 								<div className="row">
-									{cat.streams.map(stream => (
+									{cat.streams.length > 0 ? cat.streams.map(stream => (
 										<div className="col-md-4" key={stream.id} onClick={() => handleStreamSelect(stream)}>
 											<div className="card">
-												<img src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} className="card-img-top" alt="Stream thumbnail" />
+												<img src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} className="card-img-top" alt={`${stream.user_name}'s stream thumbnail`} />
 												<div className="card-body">
 													<h5 className="card-title">{stream.user_name}</h5>
 													<p className="card-text">Viewers: {stream.viewer_count}</p>
 												</div>
 											</div>
 										</div>
-									))}
+									)) : (
+										<p className="text-center w-100">Loading streams or no streams available.</p>
+									)}
 								</div>
 							</Collapse>
 						</div>

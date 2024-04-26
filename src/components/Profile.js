@@ -109,7 +109,7 @@ const Profile = () => {
 					<h2>Twitch Information</h2>
 					<p><strong>Display Name:</strong> {profileData.twitch.displayName}</p>
 					<p><strong>Twitch ID:</strong> {profileData.twitch.twitchId}</p>
-					<p><strong>Twitch Access Token:</strong> {profileData.twitch.accessToken}</p>
+					</p>
 					<img src={profileData.twitch.profileImageUrl} alt="Twitch Avatar" />
 					<button onClick={handleUnlink} className="btn btn-warning">Unlink Twitch Account</button>
 				</div>

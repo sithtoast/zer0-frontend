@@ -37,6 +37,7 @@ useEffect(() => {
 			const response = await axios.get(`${apiUrl}/api/favorites/${userId}`, {
 				headers: { 'Authorization': `Bearer ${token}` }
 			});
+			console.log(response.data);
 			const favoriteCategories = response.data.map(fav => fav.categoryId);
 			if (favoriteCategories.length > 0) {
 				setFavorites(new Set(favoriteCategories));

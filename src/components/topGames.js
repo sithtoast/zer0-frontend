@@ -118,7 +118,7 @@ const handleClickCategory = (categoryId) => {
 const fetchStreams = async (categoryId, cursor) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
         const decoded = jwtDecode(token);
         const userId = decoded.user.userId;
         
