@@ -14,6 +14,7 @@
 	border-radius: 5px;
 	margin-top: 20px;
 	background-color: #18181b;  /* Slightly lighter dark background for the search box */
+	font-size: 24px;
 }
 
 .category-search h1 {
@@ -57,7 +58,8 @@
 	align-items: center;
 	padding: 10px 0;
 	border-bottom: 1px solid #333;  /* Darker border color for list items */
-	color: #ccc;  /* Lighter text color for list items */
+	color: #ffffff; /* Lighter text color for list items */
+	font-size: 1rem;
 }
 
 .category-item:last-child {
@@ -106,6 +108,7 @@
 	background-color: #f0f0f0; /* Light background for the card */
 	border-radius: 8px; /* Rounded corners */
 	padding: 10px;
+	color: #000000;
 }
 
 .stream-thumbnail {

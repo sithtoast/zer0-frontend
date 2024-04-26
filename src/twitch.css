@@ -2,7 +2,8 @@
 /* Basic Color Scheme Definitions */
 :root {
 	--twitch-dark: #241623;
-	--twitch-dark-alt: #302130; 
+	--twitch-dark-alt: #F0F0F0; /* Changed to a light color for the background */
+	--twitch-nav-text: #333;
 	--twitch-text: #ddd; 
 	--twitch-primary: #9c88ff; 
 	--twitch-accent: #7e57c2; 
@@ -33,11 +34,12 @@ a:hover, a:focus {
 /* Navigation Styles */
 nav {
 	background-color: var(--twitch-dark-alt);
-	border-bottom: 1px solid var(--twitch-light-gray);
+	border-bottom: 1px solid var(--twitch-gray);
 	padding: 10px 20px;
 }
 
 nav a {
+	color: var(--twitch-nav-text); /* Updated for better readability */
 	margin-right: 15px;
 	font-weight: bold;
 }
@@ -107,4 +109,9 @@ input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
 
 .toggle-indicator.open {
 	transform: rotate(-180deg); /* Adjust rotation direction if necessary */
+}
+
+nav a:hover, nav a:focus {
+	text-decoration: underline;
+	color: var(--twitch-accent);
 }
