@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Footer from './Footer';
+import Navbar from './Navbar'; 
+import '../twitch.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -13,9 +16,18 @@ const FollowedStreams = () => {
             setLoading(true);
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get(`${apiUrl}/api/twitch/followed-streams`, {
+                const decoded = jwtDecode(token);
+                const userId = decoded.user.userId;
+                
+                const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+
+                const response = await axios.get(`${apiUrl}/api/twitch/followed-streams`, {
+                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                });
+                console.log(response.data);
                 setStreams(response.data);
                 setLoading(false);
             } catch (err) {
@@ -38,6 +50,8 @@ const FollowedStreams = () => {
 
     return (
         <div>
+        <Navbar />
+        <div>
             <h1>Followed Streams</h1>
             {streams.map(stream => (
                 <div key={stream.id}>
@@ -46,6 +60,8 @@ const FollowedStreams = () => {
                     <p>{stream.viewer_count} viewers</p>
                 </div>
             ))}
+        </div>
+        <Footer />
         </div>
     );
 };
