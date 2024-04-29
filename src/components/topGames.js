@@ -21,14 +21,24 @@ const TopCategories = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [pages, setPages] = useState(0);  // Initialize total pages
     const [nextCursor, setNextCursor] = useState(null);
+    const [selectedStream, setSelectedStream] = useState(null);
     
 
     const lastStreamElementRef = useRef(null);
 
-    useEffect(() => {
-        fetchCategories();
-        fetchFavorites();
-    }, []);
+useEffect(() => {
+    fetchCategories();
+    fetchFavorites();
+
+    if (selectedStream) {
+        new Twitch.Embed("twitch-embed", {
+            width: "100%",
+            height: "100%",
+            channel: selectedStream,
+            layout: "video-with-chat",
+        });
+    }
+}, [selectedStream]);
 
     const fetchCategories = async () => {
         setLoading(true);
@@ -182,9 +192,14 @@ const handleClickCategory = (categoryId) => {
                         </div>
                         <div className="col-md-8 streams">
                             <h2>Streams {currentGameName && `for ${currentGameName}`}</h2>
+                            <div id="twitch-embed"></div>
                             <div className="row">
                                 {streams.length ? streams.map(stream => (
-                                    <div key={stream.id} className="col-md-4 mb-4">
+                                      <div 
+                                      key={stream.id} 
+                                      className={`col-md-4 mb-4 ${selectedStream === stream.id ? 'selected-stream' : ''}`}
+                                      onClick={() => setSelectedStream(stream.id)}
+                                  >
                                         <div className="card">
                                             <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
                                             <div className="card-body">
