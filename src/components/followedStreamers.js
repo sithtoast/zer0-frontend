@@ -27,7 +27,7 @@ const FollowedStreams = () => {
                 const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
                 console.log(twitchAccessToken);
 
-                const response = await axios.get(`${apiUrl}/api/twitch/followed-streams`, {
+                const response = await axios.get(`${apiUrl}/api/twitch/followed-streams/${userId}`, {
                     headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
                 });
                 console.log(response.data);
