@@ -51,28 +51,33 @@ const FollowedStreams = () => {
         return <div>Error: {error}</div>;
     }
 
-    return (
-        <div>
-            <Navbar />
-            <div className="container">
-                <h1>Followed Streams</h1>
-                <div className="row">
-                    {streams.map(stream => (
-                        <div key={stream.id} className="col-md-4 mb-4">
-                            <div className="card">
-                                <div className="card-body">
-                                    <h2 className="card-title">{stream.user_name}</h2>
-                                    <p className="card-text">{stream.title}</p>
-                                    <p className="card-text">{stream.viewer_count} viewers</p>
-                                </div>
+return (
+    <div>
+        <Navbar />
+        <div className="container">
+            <h1>Followed Streams</h1>
+            <div className="row">
+                {streams.map(stream => (
+                    <div key={stream.id} className="col-md-4 mb-4">
+                        <div className="card">
+                            <img 
+                                src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} 
+                                className="card-img-top" 
+                                alt={stream.title} 
+                            />
+                            <div className="card-body">
+                                <h2 className="card-title">{stream.user_name}</h2>
+                                <p className="card-text">{stream.title}</p>
+                                <p className="card-text">{stream.viewer_count} viewers</p>
                             </div>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
             </div>
-            <Footer />
         </div>
-    );
+        <Footer />
+    </div>
+);
 };
 
 export default FollowedStreams;
