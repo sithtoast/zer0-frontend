@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';  // Import default CSS for react-toastify
 import Navbar from './Navbar';  // Import Navbar component
 import '../twitch.css';
 
@@ -29,15 +31,18 @@ function Login() {
 	  const res = await axios.post(`${apiUrl}/api/users/login`, body, config);
 	  localStorage.setItem('token', res.data.token);
 	  localStorage.setItem('user', JSON.stringify(res.data.user));
+	  toast.success('Login Successful!');  // Display success toast
 	  navigate('/profile');
 	} catch (err) {
 	  console.error(err.response.data);
+	  toast.error('Login Failed!');  // Display error toast if login fails
 	}
   };
 
   return (
 	<div>
 	  <Navbar />  {/* Add Navbar to the top */}
+	  <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
 	  <h1>Sign In</h1>
 	  <form onSubmit={e => onSubmit(e)}>
 		<div>
@@ -53,3 +58,4 @@ function Login() {
 }
 
 export default Login;
+
