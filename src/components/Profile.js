@@ -126,19 +126,6 @@ const Profile = () => {
 						Link Twitch Account
 					</button>
 				)}
-				{/* Steam link/unlink logic */}
-				{profileData.steam ? (
-					<div>
-						<h2>Steam Information</h2>
-						<p><strong>Steam Display Name:</strong> {profileData.steam.displayName}</p>
-						<p><strong>Steam ID:</strong> {profileData.steam.steamId}</p>
-						<img src={profileData.steam.avatar} alt="Steam Avatar" />
-					</div>
-				) : (
-				<button onClick={linkSteamAccount} style={{ marginTop: '20px', cursor: 'pointer' }}>
-					<img src={steamButtonImage} alt="Sign in through Steam" />
-				</button>
-				)}
 			<Footer />
 			</div>
 		);

@@ -33,7 +33,7 @@ function Login() {
 	  localStorage.setItem('token', res.data.token);
 	  localStorage.setItem('user', JSON.stringify(res.data.user));
 	  toast.success('Login Successful!');  // Display success toast
-	  navigate('/profile');
+	  //navigate('/profile');
 	} catch (err) {
 	  console.error(err.response.data);
 	  toast.error('Login Failed!');  // Display error toast if login fails

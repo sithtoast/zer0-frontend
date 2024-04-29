@@ -6,6 +6,7 @@ import Profile from './components/Profile';
 import TopGames from './components/topGames';
 import CategorySearch from './components/categorySearch';
 import TopEight from './components/favorites';
+import FollowedStreamers from './components/followedStreamers';
 import './twitch.css';
 
 function App() {
@@ -19,6 +20,8 @@ function App() {
                     <Route path="/top-games" element={<TopGames />} />
                     <Route path="/" element={<CategorySearch />} />
                     <Route path="/favorites" element={<TopEight />} />
+                    <Route path="/followed-streamers" element={<FollowedStreamers />} />
+                    
                 </Routes>
             </div>
         </Router>
