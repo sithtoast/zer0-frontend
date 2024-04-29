@@ -4,6 +4,7 @@ import Footer from './Footer';
 import Navbar from './Navbar'; 
 import '../twitch.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { jwtDecode } from 'jwt-decode';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
