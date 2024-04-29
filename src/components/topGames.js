@@ -1,3 +1,5 @@
+/* global Twitch */
+
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
