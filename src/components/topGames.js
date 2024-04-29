@@ -149,11 +149,12 @@ const handleClickCategory = (categoryId) => {
         }
     };
 
-    const handleNextPage = () => {
-        if (currentCursor) {
-            fetchStreams(selectedCategoryId, currentCursor);
-        }
-    };
+const handleNextPage = () => {
+    if (currentPage < pages) {
+        setCurrentPage(prevPage => prevPage + 1);
+        fetchStreams(selectedCategoryId, null);
+    }
+};
     
     const handlePrevPage = () => {
         // Handling the previous page is more complex with cursor-based APIs since you don't typically get a 'previous' cursor.
