@@ -130,7 +130,6 @@ const Profile = () => {
 						<p><strong>Steam Display Name:</strong> {profileData.steam.displayName}</p>
 						<p><strong>Steam ID:</strong> {profileData.steam.steamId}</p>
 						<img src={profileData.steam.avatar} alt="Steam Avatar" />
-						<button onClick={handleUnlinkSteam} className="btn btn-warning">Unlink Steam Account</button>
 					</div>
 				) : (
 				<button onClick={linkSteamAccount} style={{ marginTop: '20px', cursor: 'pointer' }}>
