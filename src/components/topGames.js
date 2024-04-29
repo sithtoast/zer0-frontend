@@ -153,11 +153,6 @@ const handleClickCategory = (categoryId) => {
             fetchStreams(selectedCategoryId, currentCursor);
         }
     };
-
-    const handlePageChange = (newPage) => {
-        setPage(newPage);
-        fetchStreams(selectedCategoryId, (newPage - 1) * 30);
-    };
     
     const handlePrevPage = () => {
         // Handling the previous page is more complex with cursor-based APIs since you don't typically get a 'previous' cursor.
@@ -213,9 +208,9 @@ const handleClickCategory = (categoryId) => {
                                 )) : <p>No streams available.</p>}
                             </div>
                             <div className="pagination">
-                            {[...Array(pages).keys()].map(i =>
-                            <button key={i} onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
-                            ß)}
+                                {[...Array(pages).keys()].map(i =>
+                                    <button key={i} onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
+                                )}
                             </div>
                         </div>
                     </div>
