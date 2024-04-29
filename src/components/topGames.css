@@ -24,14 +24,32 @@
 	margin-top: 0; /* Removes top margin from the header for alignment */
 }
 
-@media (max-width: 768px) {
-	.categories, .streams {
-		flex-direction: column;
-		width: 100%;
-	}
-	.categories {
-		margin-bottom: 20px;
-	}
+/* Styles for screens larger than 1200px */
+@media (min-width: 1200px) {
+    .categories {
+        width: 30%;
+    }
+    .streams {
+        width: 70%;
+    }
+}
+
+/* Styles for screens between 992px and 1199px */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .categories {
+        width: 40%;
+    }
+    .streams {
+        width: 60%;
+    }
+}
+
+/* Styles for screens smaller than 992px */
+@media (max-width: 991px) {
+    .categories,
+    .streams {
+        width: 100%;
+    }
 }
 
 .streams .card {
