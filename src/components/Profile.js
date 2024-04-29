@@ -3,7 +3,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar'; 
 import '../twitch.css';
-const steamButtonImage = '../assets/steam_login.png';
+
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -96,6 +96,8 @@ const Profile = () => {
 		console.log("Redirecting to Steam linking flow...");
 		window.location.href = `${apiUrl}/auth/steam`;
 	};
+
+	const steamButtonImage = '../assets/steam_login.png';
 
 	return (
 			<div>

@@ -21,6 +21,8 @@ const TopCategories = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [streamsPerPage, setStreamsPerPage] = useState(30);
     const [totalStreams, setTotalStreams] = useState(0);
+    const [page, setPage] = useState(1);  // Initialize the current page
+    const [pages, setPages] = useState(0);  // Initialize total pages
     
     useEffect(() => {
         fetchCategories();
@@ -115,18 +117,18 @@ const handleClickCategory = (categoryId) => {
         setCurrentGameName(categories.find(category => category.id === categoryId)?.name);  // Update the game name
     };
 
-const fetchStreams = async (categoryId, cursor) => {
+    const fetchStreams = async (categoryId, cursor) => {
         setLoading(true);
         try {
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        const userId = decoded.user.userId;
-        
-        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-        
+            const token = localStorage.getItem('token');
+            const decoded = jwtDecode(token);
+            const userId = decoded.user.userId;
+            
+            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+            
             const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
                 headers: {
                     'Authorization': `Bearer ${twitchAccessToken}`
@@ -136,9 +138,8 @@ const fetchStreams = async (categoryId, cursor) => {
                     after: cursor  // Use cursor for pagination
                 }
             });
-            console.log(response.data.streams);
-            setStreams(response.data.streams.filter(stream => stream.viewer_count <= 3));
-            setTotalStreams(response.data.total);  // Assuming the API returns the total number of streams available
+            setStreams(response.data.streams.slice((page - 1) * 30, page * 30));
+            setPages(Math.ceil(response.data.streams.length / 30));
             setLoading(false);
         } catch (err) {
             setError(`Failed to fetch streams for category ${categoryId}`);
@@ -151,6 +152,11 @@ const fetchStreams = async (categoryId, cursor) => {
         if (currentCursor) {
             fetchStreams(selectedCategoryId, currentCursor);
         }
+    };
+
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+        fetchStreams(selectedCategoryId, (newPage - 1) * 30);
     };
     
     const handlePrevPage = () => {
@@ -205,6 +211,11 @@ const fetchStreams = async (categoryId, cursor) => {
                                         </div>
                                     </div>
                                 )) : <p>No streams available.</p>}
+                            </div>
+                            <div className="pagination">
+                            {[...Array(pages).keys()].map(i =>
+                            <button key={i} onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
+                            ß)}
                             </div>
                         </div>
                     </div>
