@@ -57,6 +57,7 @@ const Navbar = () => {
 		<a className="navbar-brand" href="/">zer0.tv</a>
 		<NavLink className="nav-item nav-link" to="/top-games">Top Games</NavLink> {/* Regular nav link for Top Games */}
 		<NavLink className="nav-item nav-link" to="/favorites">Your Top 8</NavLink>
+		<NavLink className="nav-item nav-link" to="/followed-streamers">Followed Streamers</NavLink>
 		<div className="collapse navbar-collapse" id="navbarNav">
 		  <ul className="navbar-nav ms-auto">
 			{!isAuthenticated() && (
