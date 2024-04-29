@@ -138,10 +138,9 @@ const handleClickCategory = (categoryId) => {
                     after: cursor  // Use cursor for pagination
                 }
             });
-            setStreams(response.data.streams
-                .filter(stream => stream.viewer_count <= 3)
-                .slice((page - 1) * 30, page * 30));
-            setPages(Math.ceil(response.data.streams.length / 30));
+            const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
+            setStreams(filteredStreams.slice((page - 1) * 30, page * 30));
+            setPages(Math.ceil(filteredStreams.length / 30));
             setLoading(false);
         } catch (err) {
             setError(`Failed to fetch streams for category ${categoryId}`);
