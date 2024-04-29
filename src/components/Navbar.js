@@ -73,7 +73,7 @@ const Navbar = () => {
 			{isAuthenticated() && (
 			  <React.Fragment>
 				<li className="nav-item">
-				  <a className="nav-link" href="/profile">Welcome, {profileData.user?.username}</a>
+				  <NavLink className="nav-link" to="/profile">Welcome, {profileData.user?.username}</NavLink>
 				</li>
 				<li><button onClick={handleLogout}>Logout</button></li>
 			  </React.Fragment>
