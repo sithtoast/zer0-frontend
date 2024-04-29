@@ -134,7 +134,7 @@ const handleClickCategory = (categoryId) => {
                     'Authorization': `Bearer ${twitchAccessToken}`
                 },
                 params: {
-                    first: streamsPerPage,  // Limit the number of streams fetched
+                    first: 1500,  // Fetch all streams
                     after: cursor  // Use cursor for pagination
                 }
             });
