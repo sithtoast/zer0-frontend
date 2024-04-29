@@ -16,13 +16,9 @@ const TopCategories = () => {
     const [error, setError] = useState('');
     const [currentGameName, setCurrentGameName] = useState('');  // Initialize the current game name
     const [currentPage, setCurrentPage] = useState(1);  // Initialize the current page
-    const [totalPages, setTotalPages] = useState(0);  // Initialize total pages
     const [favorites, setFavorites] = useState(new Set());
     const [currentCursor, setCurrentCursor] = useState(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-    const [streamsPerPage, setStreamsPerPage] = useState(30);
-    const [totalStreams, setTotalStreams] = useState(0);
-    const [page, setPage] = useState(1);  // Initialize the current page
     const [pages, setPages] = useState(0);  // Initialize total pages
     const [nextCursor, setNextCursor] = useState(null);
     
