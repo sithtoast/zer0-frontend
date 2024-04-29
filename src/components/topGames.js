@@ -206,9 +206,15 @@ const handleClickCategory = (categoryId) => {
                             </div>
                             <div className="pagination">
                                 {[...Array(pages).keys()].map(i =>
-                                    <button key={i} onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
-                                )}
-                            </div>
+                                <button 
+                                    key={i} 
+                                    onClick={() => handlePageChange(i + 1)}
+                                    className={currentPage === (i + 1) ? 'current-page' : ''}
+                                >
+                                    {i + 1}
+                                </button>
+                            )}
+                        </div>
                         </div>
                     </div>
                 </div>

@@ -42,3 +42,9 @@
 	flex: 0 0 33.333333%; /* for 3 cards per row */
 	max-width: 33.333333%; /* for 3 cards per row */
 }
+
+.current-page {
+    /* Styles for the current page button */
+    background-color: #007bff;
+    color: white;
+}
