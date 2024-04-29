@@ -25,14 +25,4 @@ function App() {
     );
 }
 
-function Home() {
-    return <h1>Welcome to the React Authentication Example</h1>;
-}
-
-const ProfileWrapper = () => {
-    const userId = localStorage.getItem('userId'); // Grab userId from local storage
-
-    return <Profile userId={userId} />;
-};
-
 export default App;
