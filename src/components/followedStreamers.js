@@ -12,6 +12,7 @@ const FollowedStreams = () => {
     const [streams, setStreams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [selectedStream, setSelectedStream] = useState(null);
 
     useEffect(() => {
         const fetchStreams = async () => {
@@ -43,6 +44,21 @@ const FollowedStreams = () => {
         fetchStreams();
     }, []);
 
+    useEffect(() => {
+        if (selectedStream) {
+            // Make sure the Twitch object is defined before trying to use it
+            if (window.Twitch && window.Twitch.Embed) {
+                new window.Twitch.Embed("twitch-embed", {
+                    width: 854,
+                    height: 480,
+                    channel: selectedStream.user_name,
+                    layout: "video-with-chat",
+                    autoplay: false,
+                });
+            }
+        }
+    }, [selectedStream]);
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -51,14 +67,26 @@ const FollowedStreams = () => {
         return <div>Error: {error}</div>;
     }
 
-return (
-    <div>
-        <Navbar />
-        <div className="container">
+    return (
+        <div>
+            <Navbar />
+        <div>
             <h1>Followed Streams</h1>
+            <div id="twitch-embed"></div>
             <div className="row">
-                {streams.map(stream => (
-                    <div key={stream.id} className="col-md-4 mb-4">
+            {streams.map(stream => (
+    <div 
+        key={stream.id} 
+        className={`col-md-4 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
+        onClick={() => {
+            // If the clicked stream is already the selected stream, return early
+            if (stream === selectedStream) {
+                return;
+            }
+
+            setSelectedStream(stream);
+        }}
+    >
                         <div className="card">
                             <img 
                                 src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} 
@@ -76,8 +104,8 @@ return (
             </div>
         </div>
         <Footer />
-    </div>
-);
+        </div>
+    );
 };
 
 export default FollowedStreams;
