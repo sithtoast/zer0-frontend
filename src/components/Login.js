@@ -5,6 +5,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import default CSS for react-toastify
 import Navbar from './Navbar';  // Import Navbar component
 import '../twitch.css';
+import Footer from './Footer';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -53,6 +54,7 @@ function Login() {
 		</div>
 		<button type="submit">Login</button>
 	  </form>
+	  <Footer />
 	</div>
   );
 }

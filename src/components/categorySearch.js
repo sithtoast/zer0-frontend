@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
 import './categorySearch.css';
 import { useNavigate } from 'react-router-dom';
+import Footer from './Footer';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -208,6 +209,7 @@ const handleCategorySelect = async (categoryId) => {
 				)}
 			</div>
 		</div>
+		<Footer />
 		</div>
 	);
 

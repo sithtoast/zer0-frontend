@@ -5,6 +5,7 @@ import Navbar from './Navbar';
 import '../twitch.css';
 import MatureIcon from '../assets/ratedm.png';  // Assuming you've imported images
 import EveryoneIcon from '../assets/ratede.png';
+import Footer from './Footer';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -220,6 +221,7 @@ const handleNextPage = () => {
                         </div>
                     </div>
                 </div>
+                <Footer />
             </div>
         );
     };

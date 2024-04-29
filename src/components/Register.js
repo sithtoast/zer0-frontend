@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar'; 
 import '../twitch.css';
+import Footer from './Footer';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -71,6 +72,7 @@ function Register() {
 				</div>
 				<button type="submit">Register</button>
 			</form>
+			<Footer />
 		</div>
 	);
 }

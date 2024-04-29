@@ -3,6 +3,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar'; 
 import '../twitch.css';
+import Footer from './Footer';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -138,6 +139,7 @@ const Profile = () => {
 					<img src={steamButtonImage} alt="Sign in through Steam" />
 				</button>
 				)}
+			<Footer />
 			</div>
 		);
 	};

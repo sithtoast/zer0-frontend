@@ -5,7 +5,7 @@ import Navbar from './Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../twitch.css';
 import { Collapse } from 'react-bootstrap';
-
+import Footer from './Footer';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -179,6 +179,7 @@ return (
 					</div>
 				)}
 			</div>
+			<Footer />
 		</div>
 	);
 };
