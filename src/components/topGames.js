@@ -146,9 +146,6 @@ const handleClickCategory = (categoryId) => {
             const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
             setStreams(prevStreams => [...prevStreams, ...filteredStreams.slice((currentPage - 1) * 30, currentPage * 30)]);
             setPages(Math.ceil(filteredStreams.length / 30));
-            if (response.data.pagination) {
-                setNextCursor(response.data.pagination.cursor);  // Store the cursor for the next page
-            }
             setLoading(false);
         } catch (err) {
             setError(`Failed to fetch streams for category ${categoryId}`);
