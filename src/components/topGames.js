@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
@@ -24,6 +24,9 @@ const TopCategories = () => {
     const [page, setPage] = useState(1);  // Initialize the current page
     const [pages, setPages] = useState(0);  // Initialize total pages
     
+
+    const lastStreamElementRef = useRef(null);
+
     useEffect(() => {
         fetchCategories();
         fetchFavorites();
@@ -139,7 +142,7 @@ const handleClickCategory = (categoryId) => {
                 }
             });
             const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
-            setStreams(filteredStreams.slice((page - 1) * 30, page * 30));
+            setStreams(prevStreams => [...prevStreams, ...filteredStreams.slice((currentPage - 1) * 30, currentPage * 30)]);
             setPages(Math.ceil(filteredStreams.length / 30));
             setLoading(false);
         } catch (err) {
