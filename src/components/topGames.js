@@ -24,6 +24,7 @@ const TopCategories = () => {
     const [totalStreams, setTotalStreams] = useState(0);
     const [page, setPage] = useState(1);  // Initialize the current page
     const [pages, setPages] = useState(0);  // Initialize total pages
+    const [nextCursor, setNextCursor] = useState(null);
     
 
     const lastStreamElementRef = useRef(null);
@@ -145,6 +146,7 @@ const handleClickCategory = (categoryId) => {
             const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
             setStreams(prevStreams => [...prevStreams, ...filteredStreams.slice((currentPage - 1) * 30, currentPage * 30)]);
             setPages(Math.ceil(filteredStreams.length / 30));
+            setNextCursor(response.data.pagination.cursor);  // Store the cursor for the next page
             setLoading(false);
         } catch (err) {
             setError(`Failed to fetch streams for category ${categoryId}`);
@@ -152,22 +154,12 @@ const handleClickCategory = (categoryId) => {
             console.error('Error fetching streams:', err);
         }
     };
-
-const handleNextPage = () => {
-    if (currentPage < pages) {
-        setCurrentPage(prevPage => prevPage + 1);
-        fetchStreams(selectedCategoryId, null);
-    }
-};
     
-    const handlePrevPage = () => {
-        // Handling the previous page is more complex with cursor-based APIs since you don't typically get a 'previous' cursor.
-        // You might need to track all cursors manually if you need to navigate back or adjust API usage.
-    };
-    
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-        fetchStreams(currentGameName, page);
+    const handlePageChange = () => {
+        if (currentPage < pages) {
+            setCurrentPage(prevPage => prevPage + 1);
+            fetchStreams(selectedCategoryId, nextCursor);  // Use the cursor for the next page
+        }
     };
 
     if (loading) return <p>Loading...</p>;
