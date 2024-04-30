@@ -131,6 +131,29 @@ function shuffleAndPick(array, numItems) {
 		});
 	};
 
+	const removeFavoriteCategory = async (categoryId) => {
+		const token = localStorage.getItem('token');
+		if (!token) {
+			setError('Authentication required.');
+			return;
+		}
+	
+		const decoded = jwtDecode(token);
+		const userId = decoded.user.userId;
+	
+		try {
+			await axios.post(`${apiUrl}/api/favorites/remove`, { userId, categoryId }, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+	
+			// Update the favorites state to remove the category
+			setFavorites(prevFavorites => prevFavorites.filter(category => category.id !== categoryId));
+		} catch (err) {
+			console.error(`Failed to remove favorite category ${categoryId}:`, err);
+			setError(`Failed to remove favorite category: ${err.message}`);
+		}
+	};
+
 
 
 	if (loading) return <p>Loading...</p>;
@@ -157,14 +180,23 @@ return (
                         </div>
                     ))
                 ) : (
-                    favorites.map(cat => (
-                        <div key={cat.id} className="w-100 mb-4">
-                            <h2 className="category-header" onClick={() => handleToggleCategory(cat.id)}>
-                                {cat.name}
-                                <span className={`toggle-indicator ${openCategories[cat.id] ? 'open' : 'closed'}`}>
-                                    {openCategories[cat.id] ? '▼' : '▲'}
-                                </span>
-                            </h2>
+					favorites.map(cat => (
+						<div key={cat.id} className="w-100 mb-4">
+							<h2 className="category-header" onClick={() => handleToggleCategory(cat.id)}>
+								<span 
+									style={{cursor: 'pointer', color: favorites.some(fav => fav.id === cat.id) ? 'gold' : 'gray', marginRight: '10px'}}
+									onClick={(e) => {
+										e.stopPropagation(); // Prevent the category from toggling when the star is clicked
+										removeFavoriteCategory(cat.id);
+									}}
+								>
+									{favorites.some(fav => fav.id === cat.id) ? '★' : '☆'}
+								</span>
+								{cat.name}
+								<span className={`toggle-indicator ${openCategories[cat.id] ? 'open' : 'closed'}`} style={{marginLeft: '10px'}}>
+									{openCategories[cat.id] ? '▼' : '▲'}
+								</span>
+							</h2>
                             <Collapse in={openCategories[cat.id]}>
                                 <div className="row">
                                     {cat.streams.length > 0 ? (
