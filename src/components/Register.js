@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar'; 
 import Footer from './Footer';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';  // Import default CSS for react-toastify
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -14,7 +16,6 @@ function Register() {
 		password: '',
 	});
 	const { username, email, password } = formData;
-	const navigate = useNavigate();
 
 	const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -28,16 +29,18 @@ function Register() {
 			};
 			const body = JSON.stringify({ username, email, password });
 			await axios.post(`${apiUrl}/api/users/register`, body, config);
-			navigate('/login'); // Redirect to login after registration
+			toast.success('Great success! Registration Successful!');  // Display success toast
 		} catch (err) {
 			console.error('Registration error:', err.response.data); // Log error message from server
 			alert('Error: ' + err.response.data.message); // Display error message to user
+			toast.error('Registration Failed!');  // Display error toast if registration fails
 		}
 	};
 
 	return (
 		<div className="container">
 			<Navbar />  {/* Add Navbar to the top */}
+			<ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
 			<div className="row justify-content-center">
 				<div className="col-md-6">
 					<h1 className="text-center mb-4">Sign Up</h1>
