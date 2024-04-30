@@ -167,6 +167,30 @@ const fetchStreams = async (categoryId, cursor) => {
             }
         });
         const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
+        // Fetch user info in batches of 100
+        const batchSize = 100;
+        for (let i = 0; i < filteredStreams.length; i += batchSize) {
+            const batch = filteredStreams.slice(i, i + batchSize);
+            const userIds = batch.map(stream => stream.user_id);
+            try {
+                const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+                    headers: {
+                        'Authorization': `Bearer ${twitchAccessToken}`
+                    }
+                });
+                // Add user info to streams
+                const userInfoData = userInfoResponse.data.data;
+                for (let j = 0; j < batch.length; j++) {
+                    const stream = batch[j];
+                    const userInfo = userInfoData.find(user => user.id === stream.user_id);
+                    if (userInfo) {
+                        stream.user_info = userInfo;
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+            }
+        }
 
         // Fetch follower counts one at a time for streams on the current page
         const startIndex = (currentPage - 1) * 30;
@@ -186,6 +210,7 @@ const fetchStreams = async (categoryId, cursor) => {
                 currentPageStreamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
             }
         }
+        console.log("Current page streams with follower counts:", currentPageStreamsWithFollowerCounts);
         setStreams(currentPageStreamsWithFollowerCounts);
         setPages(Math.ceil(filteredStreams.length / 30));
     } catch (err) {
@@ -260,26 +285,35 @@ return (
                             <div className="card">
                                 <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
                                 <div className="card-body">
-                                    <OverlayTrigger
-                                        placement="left"
-                                        overlay={
-                                            <Tooltip id={`tooltip-${stream.user_name}`}>
-                                                <strong>{stream.user_name}</strong><br />
-                                                Viewers: {stream.viewer_count}<br />
-                                                Followers: {stream.followerCount}<br />
-                                                Started at: {new Date(stream.started_at).toLocaleString()}
-                                            </Tooltip>
-                                        }
-                                    >
-                                        <h5 className="card-title">{stream.user_name}</h5>
-                                    </OverlayTrigger>
-                                    <p className="card-text">Viewers: {stream.viewer_count}</p>
-                                    <p className="card-text">Language: {stream.language}</p>
-                                    <p className="card-text">Followers: {stream.followerCount}</p>
-                                    {stream.is_mature ? 
-                                        <img src={MatureIcon} alt="Mature Content" style={{ width: 30, height: 35 }} /> :
-                                        <img src={EveryoneIcon} alt="Family Friendly" style={{ width: 30, height: 35 }} />
+                                <OverlayTrigger
+                                    placement="left"
+                                    overlay={
+                                        <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
+                                            <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
+                                            <strong>{stream.user_name}</strong><br />
+                                            Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
+                                            Followers: {stream.followerCount}<br />
+                                            Created at: {new Date(stream.user_info.created_at).toLocaleString()}
+                                        </Tooltip>
                                     }
+                                >
+                                    <h5 className="card-title">{stream.user_name}</h5>
+                                </OverlayTrigger>
+                                <p className="card-text">Viewers: {stream.viewer_count}</p>
+                                <p className="card-text">Language: {stream.language}</p>
+                                <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                                    <div className="card-content">
+                                        {stream.is_mature ? 
+                                            <img src={MatureIcon} alt="Mature Content" style={{ width: 30, height: 35 }} /> :
+                                            <img src={EveryoneIcon} alt="Family Friendly" style={{ width: 30, height: 35 }} />
+                                        }
+                                        {stream.followerCount >= 45 && stream.followerCount < 50 &&
+                                            <p className="card-text affiliate-message">Near Affiliate</p>
+                                        }
+                                        {(new Date() - new Date(stream.user_info.created_at)) / (1000 * 60 * 60 * 24 * 30) < 6 &&
+                                            <p className="card-text newbie-message">Twitch Newbie</p>
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
