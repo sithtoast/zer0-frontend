@@ -72,9 +72,12 @@ return (
                     )}
                     {isAuthenticated() && (
                         <React.Fragment>
-                            <li className="nav-item">
-                                <NavLink className="nav-link" to="/profile">Welcome, {profileData.user?.username}</NavLink>
-                            </li>
+						<li className="nav-item">
+						<NavLink className="nav-link" to="/profile">
+							<img src={profileData.twitch?.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginRight: '10px'}} />
+							Welcome, {profileData.user?.username}
+						</NavLink>
+					</li>
                             {!profileData.twitch?.twitchId && (
                                 <li className="nav-item">
                                     <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>Link Twitch Account</button>

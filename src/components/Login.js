@@ -14,7 +14,6 @@ function Login() {
 	password: '',
   });
   const { email, password } = formData;
-  const navigate = useNavigate();
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -32,7 +31,6 @@ function Login() {
 	  localStorage.setItem('token', res.data.token);
 	  localStorage.setItem('user', JSON.stringify(res.data.user));
 	  toast.success('Login Successful!');  // Display success toast
-	  //navigate('/profile');
 	} catch (err) {
 	  console.error(err.response.data);
 	  toast.error('Login Failed!');  // Display error toast if login fails

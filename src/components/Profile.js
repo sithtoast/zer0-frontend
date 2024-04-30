@@ -11,7 +11,6 @@ const Profile = () => {
 	const [profileData, setProfileData] = useState({});
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
-	const [profileImage, setProfileImage] = useState(null);
 	
 	const handleUnlink = async () => {
 		try {
@@ -54,33 +53,6 @@ const Profile = () => {
 
 		fetchProfileData();
 	}, []);
-	
-	const handleImageChange = (event) => {
-		setProfileImage(event.target.files[0]);
-	};
-	
-	const handleImageUpload = async () => {
-		const formData = new FormData();
-		formData.append('profileImage', profileImage);
-	
-		try {
-			const token = localStorage.getItem('token');
-			const decoded = jwtDecode(token);
-			const userId = decoded.user.userId;
-			
-			const response = await axios.post(`${apiUrl}/api/users/upload-profile-image/${userId}`, formData, {
-				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'multipart/form-data'
-				}
-			});
-			alert('Profile image uploaded successfully!');
-			setProfileData({...profileData, profileImageUrl: response.data.profileImageUrl});
-		} catch (error) {
-			console.error('Failed to upload profile image:', error);
-			alert('Failed to upload profile image');
-		}
-	};
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
@@ -106,12 +78,6 @@ const Profile = () => {
 					<h2>General Information</h2>
 					<p><strong>Email:</strong> {profileData.user?.email}</p>
 					<p><strong>UserID:</strong> {profileData.user?.userId}</p>
-					<div className="container">
-						<h2>Profile Picture</h2>
-						<img src={profileData.user?.profileImageUrl || 'default-profile.png'} alt="Profile" />
-						<input type="file" onChange={handleImageChange} />
-						<button onClick={handleImageUpload}>Upload Image</button>
-					</div>
 					{profileData.twitch ? (
 						<div className="container">
 							<h2>Twitch Information</h2>
