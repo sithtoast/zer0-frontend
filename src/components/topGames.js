@@ -4,10 +4,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
-import MatureIcon from '../assets/ratedm.png';  // Assuming you've imported images
-import EveryoneIcon from '../assets/ratede.png';
 import Footer from './Footer';
 import { Tooltip, OverlayTrigger, Popover } from 'react-bootstrap';
+import StreamerBadge from './streamerBadge';
+import AffiliateIcon from '../assets/affiliate.png';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -297,23 +297,17 @@ return (
                                         </Tooltip>
                                     }
                                 >
-                                    <h5 className="card-title">{stream.user_name}</h5>
+                                <h5 className="card-title">
+                                    {stream.user_name}
+                                    {stream.user_info.broadcaster_type === "affiliate" && 
+                                        <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
+                                    }
+                                </h5>
                                 </OverlayTrigger>
                                 <p className="card-text">Viewers: {stream.viewer_count}</p>
                                 <p className="card-text">Language: {stream.language}</p>
                                 <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                    <div className="card-content">
-                                        {stream.is_mature ? 
-                                            <img src={MatureIcon} alt="Mature Content" style={{ width: 30, height: 35 }} /> :
-                                            <img src={EveryoneIcon} alt="Family Friendly" style={{ width: 30, height: 35 }} />
-                                        }
-                                        {stream.followerCount >= 45 && stream.followerCount < 50 &&
-                                            <p className="card-text affiliate-message">Near Affiliate</p>
-                                        }
-                                        {(new Date() - new Date(stream.user_info.created_at)) / (1000 * 60 * 60 * 24 * 30) < 6 &&
-                                            <p className="card-text newbie-message">Twitch Newbie</p>
-                                        }
-                                    </div>
+                                <StreamerBadge stream={stream} />
                                 </div>
                             </div>
                         </div>
