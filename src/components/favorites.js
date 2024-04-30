@@ -201,23 +201,23 @@ return (
                                 <div className="row">
                                     {cat.streams.length > 0 ? (
                                         cat.streams.map(stream => (
-                                            <div className="col-md-4" key={stream.id} onClick={() => handleStreamSelect(stream)}>
-                                                <div className="card">
-                                                    <img src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} className="card-img-top" alt={`${stream.user_name}'s stream thumbnail`} />
-                                                    <div className="card-body">
-                                                        <h5 className="card-title">{stream.user_name}</h5>
-                                                        <p className="card-text">Viewers: {stream.viewer_count}</p>
-														<p className="card-text">Followers: {stream.followerCount}</p>
-														<p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-														<div className="tag-cloud">
-															{stream.tags.map((tag, index) => (
-																<span key={index} className="tag">{tag}</span>
-															))}
-														</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
+										<div className="col-md-4" key={stream.id} onClick={() => handleStreamSelect(stream)}>
+											<div className="card">
+												<img src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} className="card-img-top" alt={`${stream.user_name}'s stream thumbnail`} />
+												<div className="card-body">
+													<h5 className="card-title">{stream.user_name}</h5>
+													<p className="card-text">Viewers: {stream.viewer_count}</p>
+													<p className="card-text">Followers: {stream.followerCount}</p>
+													<p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+													<div className="tag-cloud">
+														{stream.tags.map((tag, index) => (
+															<span key={index} className="tag">{tag}</span>
+														))}
+													</div>
+												</div>
+											</div>
+										</div>
+))
                                     ) : (
                                         Array.from({ length: 8 }).map((_, index) => (
                                             <div className="col-md-4" key={index}>
