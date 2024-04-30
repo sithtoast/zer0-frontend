@@ -1,11 +1,11 @@
 /* global Twitch */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { Tooltip, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Tooltip, OverlayTrigger } from 'react-bootstrap';
 import StreamerBadge from './streamerBadge';
 import AffiliateIcon from '../assets/affiliate.png';
 
@@ -23,12 +23,10 @@ const TopCategories = () => {
     const [currentCursor, setCurrentCursor] = useState(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [pages, setPages] = useState(0);  // Initialize total pages
-    const [nextCursor, setNextCursor] = useState(null);
+    const [nextCursor] = useState(null);
     const [selectedStream, setSelectedStream] = useState(null);
     const [userProfileResponse, setUserProfileResponse] = useState(null);
     
-
-    const lastStreamElementRef = useRef(null);
 
 useEffect(() => {
     fetchCategories();
@@ -227,32 +225,33 @@ const handlePageChange = (pageNumber) => {
     fetchStreams(selectedCategoryId, nextCursor);  // Use the cursor for the next page
 };
 
-    if (error) return <p>Error: {error}</p>;
-
     console.log(userProfileResponse);
 
 return (
-    !userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
-        <div>Please link your Twitch account to continue</div>
-    ) : (
 <div>
     <Navbar />
     <div className="container mt-3">
         <div className="row">
             <div className="col-md-4 categories">
-                <h1 className="category-search-container">Top Categories</h1>
-                <ul className="list-group">
-                    {categories.map(category => (
-                        <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <span onClick={() => handleClickCategory(category.id)}>
-                                {category.name}
-                            </span>
-                            <button onClick={(e) => toggleFavorite(category, e)}>
-                                {favorites.has(category.id) ? '★' : '☆'}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                {!userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
+                    <div>Please link your Twitch account to continue</div>
+                ) : (
+                    <>
+                        <h1 className="category-search-container">Top Categories</h1>
+                        <ul className="list-group">
+                            {categories.map(category => (
+                                <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                    <span onClick={() => handleClickCategory(category.id)}>
+                                        {category.name}
+                                    </span>
+                                    <button onClick={(e) => toggleFavorite(category, e)}>
+                                        {favorites.has(category.id) ? '★' : '☆'}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
             </div>
             <div className="col-md-8 streams">
                 <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
@@ -330,7 +329,6 @@ return (
     <Footer />
 </div>
     )
-);
 };
     
 export default TopCategories;

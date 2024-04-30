@@ -9,33 +9,37 @@ import Footer from './Footer';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 function Login() {
-  const [formData, setFormData] = useState({
-	email: '',
-	password: '',
-  });
-  const { email, password } = formData;
-
-  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const onSubmit = async e => {
-	e.preventDefault();
-	try {
-	  const user = { email, password };
-	  const config = {
-		headers: {
-		  'Content-Type': 'application/json'
-		}
-	  };
-	  const body = JSON.stringify(user);
-	  const res = await axios.post(`${apiUrl}/api/users/login`, body, config);
-	  localStorage.setItem('token', res.data.token);
-	  localStorage.setItem('user', JSON.stringify(res.data.user));
-	  toast.success('Login Successful!');  // Display success toast
-	} catch (err) {
-	  console.error(err.response.data);
-	  toast.error('Login Failed!');  // Display error toast if login fails
-	}
-  };
+	const navigate = useNavigate();
+	const [formData, setFormData] = useState({
+	  email: '',
+	  password: '',
+	});
+	const { email, password } = formData;
+  
+	const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  
+	const onSubmit = async e => {
+	  e.preventDefault();
+	  try {
+		const user = { email, password };
+		const config = {
+		  headers: {
+			'Content-Type': 'application/json'
+		  }
+		};
+		const body = JSON.stringify(user);
+		const res = await axios.post(`${apiUrl}/api/users/login`, body, config);
+		localStorage.setItem('token', res.data.token);
+		localStorage.setItem('user', JSON.stringify(res.data.user));
+		toast.success('Login Successful!');  // Display success toast
+		setTimeout(() => { 
+		  navigate('/');  // Navigate to home page
+		}, 2000);
+	  } catch (err) {
+		console.error(err.response.data);
+		toast.error('Login Failed!');  // Display error toast if login fails
+	  }
+	};
 
 return (
 <div>

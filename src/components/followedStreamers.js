@@ -147,9 +147,6 @@ const FollowedStreams = () => {
         }
     }, [selectedStream]);
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
 
 return (
 <div>

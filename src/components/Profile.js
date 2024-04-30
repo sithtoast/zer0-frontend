@@ -72,8 +72,9 @@ const handleUnlink = async () => {
 	const steamButtonImage = '../assets/steam_login.png';
 
 return (
-    <div className="container">
-        <Navbar />
+	<div>
+	<Navbar />
+	<div className="profile-container">
         <h1>Profile Page</h1>
         <h2>General Information</h2>
         {profileData.user && (
@@ -82,21 +83,23 @@ return (
                 <p><strong>UserID:</strong> {profileData.user.userId}</p>
             </>
         )}
-        {profileData.twitch.twitchId ? (
-            <div className="container">
-                <h2>Twitch Information</h2>
-                <p><strong>Display Name:</strong> {profileData.twitch.displayName}</p>
-                <p><strong>Twitch ID:</strong> {profileData.twitch.twitchId}</p>
-                <img src={profileData.twitch.profileImageUrl} alt="Twitch Avatar" />
-                <button onClick={handleUnlink} className="btn btn-warning">Unlink Twitch Account</button>
-            </div>
-        ) : (
-            <button onClick={linkTwitchAccount} style={{ marginTop: '20px', fontSize: '16px', padding: '10px 20px', cursor: 'pointer' }}>
-                Link Twitch Account
-            </button>
-        )}
-        <Footer />
+        {profileData.twitch ? (
+    <div className="twitch-profile-container">
+        <h2>Twitch Information</h2>
+        <p><strong>Display Name:</strong> {profileData.twitch.displayName}</p>
+        <p><strong>Twitch ID:</strong> {profileData.twitch.twitchId}</p>
+        <img src={profileData.twitch.profileImageUrl} alt="Twitch Avatar" />
+        <button onClick={handleUnlink} className="btn btn-warning">Unlink Twitch Account</button>
     </div>
+) : (
+    <button onClick={linkTwitchAccount} style={{ marginTop: '20px', fontSize: '16px', padding: '10px 20px', cursor: 'pointer' }}>
+        Link Twitch Account
+    </button>
+)}
+        
+    </div>
+	<Footer />
+	</div>
 );
 	};
 
