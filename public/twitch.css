@@ -13,7 +13,7 @@
 
 /* General Body and Background Styles */
 body {
-	background-color: var(--twitch-dark);
+	background-color: var(--twitch-dark) !important;
 	color: var(--twitch-text);
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 0;
@@ -72,7 +72,7 @@ button:disabled {
 }
 
 /* Form Input Styles */
-input[type="text"], input[type="password"], textarea {
+input[type="text"], input[type="password"], input[type="email"], textarea {
 	width: 100%;
 	padding: 10px;
 	margin-top: 8px;
@@ -99,4 +99,26 @@ nav a:hover, nav a:focus {
 
 .selected {
     border: 2px solid #f00;
+}
+
+/* Container Styles */
+.container {
+    background-color: var(--twitch-dark-alt);
+    color: var(--twitch-text);
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.container h1, .container h2, .container h3, .container h4, .container h5, .container h6 {
+    color: var(--twitch-primary);
+}
+
+.container a {
+    color: var(--twitch-primary);
+}
+
+.container a:hover, .container a:focus {
+    color: var(--twitch-accent);
+    text-decoration: underline;
 }

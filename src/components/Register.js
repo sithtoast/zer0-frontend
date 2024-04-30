@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar'; 
-import '../twitch.css';
 import Footer from './Footer';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -36,42 +36,52 @@ function Register() {
 	};
 
 	return (
-		<div>
-		<Navbar />  {/* Add Navbar to the top */}
-			<h1>Sign Up</h1>
-			<form onSubmit={onSubmit}>
-				<div>
-					<input
-						type="text"
-						placeholder="Username"
-						name="username"
-						value={username}
-						onChange={onChange}
-						required
-					/>
+		<div className="container">
+			<Navbar />  {/* Add Navbar to the top */}
+			<div className="row justify-content-center">
+				<div className="col-md-6">
+					<h1 className="text-center mb-4">Sign Up</h1>
+					<form onSubmit={onSubmit}>
+						<div className="form-group">
+							<label>Username</label>
+							<input
+								type="text"
+								className="form-control"
+								placeholder="Username"
+								name="username"
+								value={username}
+								onChange={onChange}
+								required
+							/>
+						</div>
+						<div className="form-group">
+							<label>Email Address</label>
+							<input
+								type="email"
+								className="form-control"
+								placeholder="Email Address"
+								name="email"
+								value={email}
+								onChange={onChange}
+								required
+							/>
+						</div>
+						<div className="form-group">
+							<label>Password</label>
+							<input
+								type="password"
+								className="form-control"
+								placeholder="Password"
+								name="password"
+								value={password}
+								onChange={onChange}
+								required
+							/>
+						</div>
+						<button type="submit" className="btn btn-primary btn-block">Register</button>
+					</form>
 				</div>
-				<div>
-					<input
-						type="email"
-						placeholder="Email Address"
-						name="email"
-						value={email}
-						onChange={onChange}
-						required
-					/>
-				</div>
-				<div>
-					<input
-						type="password"
-						placeholder="Password"
-						name="password"
-						value={password}
-						onChange={onChange}
-						required
-					/>
-				</div>
-				<button type="submit">Register</button>
-			</form>
+			</div>
 			<Footer />
 		</div>
 	);

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar'; 
-import '../twitch.css';
 import Footer from './Footer';
 
 
@@ -101,33 +100,33 @@ const Profile = () => {
 	const steamButtonImage = '../assets/steam_login.png';
 
 	return (
-			<div>
-			<Navbar />
-				<h1>Profile Page</h1>
-				<h2>General Information</h2>
-				<p><strong>Email:</strong> {profileData.user?.email}</p>
-				<p><strong>UserID:</strong> {profileData.user?.userId}</p>
-				<div>
-					<h2>Profile Picture</h2>
-					<img src={profileData.user?.profileImageUrl || 'default-profile.png'} alt="Profile" />
-					<input type="file" onChange={handleImageChange} />
-					<button onClick={handleImageUpload}>Upload Image</button>
-				</div>
-				{profileData.twitch ? (
-					<div>
-						<h2>Twitch Information</h2>
-						<p><strong>Display Name:</strong> {profileData.twitch.displayName}</p>
-						<p><strong>Twitch ID:</strong> {profileData.twitch.twitchId}</p>
-						<img src={profileData.twitch.profileImageUrl} alt="Twitch Avatar" />
-						<button onClick={handleUnlink} className="btn btn-warning">Unlink Twitch Account</button>
+							<div className="container">
+					<Navbar />
+					<h1>Profile Page</h1>
+					<h2>General Information</h2>
+					<p><strong>Email:</strong> {profileData.user?.email}</p>
+					<p><strong>UserID:</strong> {profileData.user?.userId}</p>
+					<div className="container">
+						<h2>Profile Picture</h2>
+						<img src={profileData.user?.profileImageUrl || 'default-profile.png'} alt="Profile" />
+						<input type="file" onChange={handleImageChange} />
+						<button onClick={handleImageUpload}>Upload Image</button>
 					</div>
-				) : (
-					<button onClick={linkTwitchAccount} style={{ marginTop: '20px', fontSize: '16px', padding: '10px 20px', cursor: 'pointer' }}>
-						Link Twitch Account
-					</button>
-				)}
-			<Footer />
-			</div>
+					{profileData.twitch ? (
+						<div className="container">
+							<h2>Twitch Information</h2>
+							<p><strong>Display Name:</strong> {profileData.twitch.displayName}</p>
+							<p><strong>Twitch ID:</strong> {profileData.twitch.twitchId}</p>
+							<img src={profileData.twitch.profileImageUrl} alt="Twitch Avatar" />
+							<button onClick={handleUnlink} className="btn btn-warning">Unlink Twitch Account</button>
+						</div>
+					) : (
+						<button onClick={linkTwitchAccount} style={{ marginTop: '20px', fontSize: '16px', padding: '10px 20px', cursor: 'pointer' }}>
+							Link Twitch Account
+						</button>
+					)}
+					<Footer />
+				</div>
 		);
 	};
 

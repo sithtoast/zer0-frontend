@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';  // Import default CSS for react-toastify
 import Navbar from './Navbar';  // Import Navbar component
-import '../twitch.css';
 import Footer from './Footer';
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -40,23 +39,29 @@ function Login() {
 	}
   };
 
-  return (
-	<div>
-	  <Navbar />  {/* Add Navbar to the top */}
-	  <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-	  <h1>Sign In</h1>
-	  <form onSubmit={e => onSubmit(e)}>
-		<div>
-		  <input type="email" placeholder="Email Address" name="email" value={email} onChange={e => onChange(e)} required />
-		</div>
-		<div>
-		  <input type="password" placeholder="Password" name="password" value={password} onChange={e => onChange(e)} required />
-		</div>
-		<button type="submit">Login</button>
-	  </form>
-	  <Footer />
-	</div>
-  );
+return (
+    <div className="container">
+        <Navbar />  {/* Add Navbar to the top */}
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+        <div className="row justify-content-center">
+            <div className="col-md-6">
+                <h1 className="text-center mb-4">Sign In</h1>
+                <form onSubmit={e => onSubmit(e)}>
+                    <div className="form-group">
+                        <label>Email Address</label>
+                        <input type="email" className="form-control" placeholder="Enter email" name="email" value={email} onChange={e => onChange(e)} required />
+                    </div>
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input type="password" className="form-control" placeholder="Enter password" name="password" value={password} onChange={e => onChange(e)} required />
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-block">Login</button>
+                </form>
+            </div>
+        </div>
+        <Footer />
+    </div>
+);
 }
 
 export default Login;

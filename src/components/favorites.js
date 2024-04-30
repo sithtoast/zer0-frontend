@@ -3,7 +3,6 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../twitch.css';
 import { Collapse } from 'react-bootstrap';
 import Footer from './Footer';
 

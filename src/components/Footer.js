@@ -1,10 +1,9 @@
 import React from 'react';
-import '../twitch.css';
+
 
 const Footer = () => {
-
     return (
-        <div className="footer" style={{ padding: '10px', backgroundColor: '#f8f9fa' }}>
+        <div className="footer" style={{ padding: '10px', backgroundColor: 'var(--twitch-dark-alt)', color: 'var(--twitch-text)' }}>
             Created with love by sithtoast.
         </div>
     );

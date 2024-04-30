@@ -7,7 +7,6 @@ import TopGames from './components/topGames';
 import CategorySearch from './components/categorySearch';
 import TopEight from './components/favorites';
 import FollowedStreamers from './components/followedStreamers';
-import './twitch.css';
 
 function App() {
     return (
