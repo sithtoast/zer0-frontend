@@ -123,8 +123,9 @@ function shuffleAndPick(array, numItems) {
 	if (error) return <p>Error: {error}</p>;
 
 return (
+		<div>
+					<Navbar />
 		<div className="container">
-			<Navbar />
 			<div className="d-flex flex-wrap align-items-start">
 				<div className="w-100">
 					<h1>Your Favorite Categories</h1>
@@ -179,6 +180,7 @@ return (
 				)}
 			</div>
 			<Footer />
+		</div>
 		</div>
 	);
 };

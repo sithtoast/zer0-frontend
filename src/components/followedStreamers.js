@@ -80,48 +80,50 @@ const FollowedStreams = () => {
     }
 
 return (
-    <div>
-        <Navbar />
-        <div>
-            <h1>Followed Streams</h1>
-            <div id="twitch-embed"></div>
-            {error && <div>Error: {error}</div>}
-            {!userProfileResponse.twitch ? (
+<div className="container">
+    <Navbar />
+    <div className="content">
+        <h1>Followed Streams</h1>
+        <div id="twitch-embed"></div>
+        {error && <div>Error: {error}</div>}
+        {!userProfileResponse.twitch ? (
+            <div className="message">
                 <p>Please link your Twitch account to continue</p>
-            ) : (
-                <div className="row">
-                    {streams.map(stream => (
-                        <div 
-                            key={stream.id} 
-                            className={`col-md-4 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
-                            onClick={() => {
-                                // If the clicked stream is already the selected stream, return early
-                                if (stream === selectedStream) {
-                                    return;
-                                }
+            </div>
+        ) : (
+            <div className="row">
+                {streams.map(stream => (
+                    <div 
+                        key={stream.id} 
+                        className={`col-md-4 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
+                        onClick={() => {
+                            // If the clicked stream is already the selected stream, return early
+                            if (stream === selectedStream) {
+                                return;
+                            }
 
-                                setSelectedStream(stream);
-                            }}
-                        >
-                            <div className="card">
-                                <img 
-                                    src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} 
-                                    className="card-img-top" 
-                                    alt={stream.title} 
-                                />
-                                <div className="card-body">
-                                    <h2 className="card-title">{stream.user_name}</h2>
-                                    <p className="card-text">{stream.title}</p>
-                                    <p className="card-text">{stream.viewer_count} viewers</p>
-                                </div>
+                            setSelectedStream(stream);
+                        }}
+                    >
+                        <div className="card">
+                            <img 
+                                src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} 
+                                className="card-img-top" 
+                                alt={stream.title} 
+                            />
+                            <div className="card-body">
+                                <h2 className="card-title">{stream.user_name}</h2>
+                                <p className="card-text">{stream.title}</p>
+                                <p className="card-text">{stream.viewer_count} viewers</p>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
-        </div>
-        <Footer />
+                    </div>
+                ))}
+            </div>
+        )}
     </div>
+    <Footer />
+</div>
 );
 };
 
