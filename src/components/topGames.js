@@ -8,6 +8,7 @@ import MatureIcon from '../assets/ratedm.png';  // Assuming you've imported imag
 import EveryoneIcon from '../assets/ratede.png';
 import Footer from './Footer';
 
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const TopCategories = () => {
@@ -143,46 +144,63 @@ const handleClickCategory = (categoryId) => {
         setCurrentGameName(categories.find(category => category.id === categoryId)?.name);  // Update the game name
     };
 
-    const fetchStreams = async (categoryId, cursor) => {
-        setLoading(true);
-        try {
-            const token = localStorage.getItem('token');
-            const decoded = jwtDecode(token);
-            const userId = decoded.user.userId;
-            
-            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-            
-            const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
-                headers: {
-                    'Authorization': `Bearer ${twitchAccessToken}`
-                },
-                params: {
-                    first: 1500,  // Fetch all streams
-                    after: cursor  // Use cursor for pagination
-                }
-            });
-            const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
-            setStreams(filteredStreams.slice((currentPage - 1) * 30, currentPage * 30));
-            setPages(Math.ceil(filteredStreams.length / 30));
-        } catch (err) {
-            setError(`Failed to fetch streams for category ${categoryId}`);
-            console.error('Error fetching streams:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    const handlePageChange = () => {
-        if (currentPage < pages) {
-            setCurrentPage(prevPage => prevPage + 1);
-            fetchStreams(selectedCategoryId, nextCursor);  // Use the cursor for the next page
-        }
-    };
+const fetchStreams = async (categoryId, cursor) => {
+    setLoading(true);
+    try {
+        const token = localStorage.getItem('token');
+        const decoded = jwtDecode(token);
+        const userId = decoded.user.userId;
+        
+        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+        
+        const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
+            headers: {
+                'Authorization': `Bearer ${twitchAccessToken}`
+            },
+            params: {
+                first: 1500,  // Fetch all streams
+                after: cursor  // Use cursor for pagination
+            }
+        });
+        const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
 
-    if (loading) return <p>Loading...</p>;
+        // Fetch follower counts one at a time for streams on the current page
+        const startIndex = (currentPage - 1) * 30;
+        const endIndex = currentPage * 30;
+        const currentPageStreams = filteredStreams.slice(startIndex, endIndex);
+        const currentPageStreamsWithFollowerCounts = [];
+        for (const stream of currentPageStreams) {
+            try {
+                const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                });
+                console.log(followerCountResponse.data);
+                const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
+                currentPageStreamsWithFollowerCounts.push({ ...stream, followerCount });
+            } catch (err) {
+                console.error('Error fetching follower count for stream:', stream.user_id, err);
+                currentPageStreamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
+            }
+        }
+        setStreams(currentPageStreamsWithFollowerCounts);
+        setPages(Math.ceil(filteredStreams.length / 30));
+    } catch (err) {
+        setError(`Failed to fetch streams for category ${categoryId}`);
+        console.error('Error fetching streams:', err);
+    } finally {
+        setLoading(false);
+        console.log("Streams fetched:", streams);
+    }
+};
+    
+const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    fetchStreams(selectedCategoryId, nextCursor);  // Use the cursor for the next page
+};
+
     if (error) return <p>Error: {error}</p>;
 
     console.log(userProfileResponse);
@@ -214,12 +232,24 @@ return (
                         <h2>Streams {currentGameName && `for ${currentGameName}`}</h2>
                         <div id="twitch-embed"></div>
                         <div className="row">
-                            {loading ? (
-                                [...Array(30)].map((_, i) => (
-                                    <div key={i} className="col-md-4 mb-4 loading-card">
-                                        Loading...
+                        {loading ? (
+                            [...Array(30)].map((_, i) => (
+                                <div key={i} className="col-md-4 mb-4">
+                                    <div className="card loading-card" aria-hidden="true">
+                                        <div className="card-body">
+                                            <h5 className="card-title">
+                                                <span className="placeholder col-7"></span>
+                                            </h5>
+                                            <div className="placeholder-glow">
+                                                <span className="placeholder col-7"></span>
+                                                <span className="placeholder col-4"></span>
+                                                <span className="placeholder col-6"></span>
+                                                <span className="placeholder col-8"></span>
+                                            </div>
+                                        </div>
                                     </div>
-                                ))
+                                </div>
+                            ))
                             ) : streams.length ? streams.map(stream => (
                                 <div 
                                 key={stream.id} 
@@ -232,6 +262,7 @@ return (
                                             <h5 className="card-title">{stream.user_name}</h5>
                                             <p className="card-text">Viewers: {stream.viewer_count}</p>
                                             <p className="card-text">Language: {stream.language}</p>
+                                            <p className="card-text">Followers: {stream.followerCount}</p>
                                             {stream.is_mature ? 
                                                 <img src={MatureIcon} alt="Mature Content" style={{ width: 30, height: 35 }} /> :
                                                 <img src={EveryoneIcon} alt="Family Friendly" style={{ width: 30, height: 35 }} />
@@ -243,15 +274,15 @@ return (
                         </div>
                         <div className="pagination">
                             {[...Array(pages).keys()].map(i =>
-                            <button 
-                                key={i} 
-                                onClick={() => handlePageChange(i + 1)}
-                                className={currentPage === (i + 1) ? 'current-page' : ''}
-                            >
-                                {i + 1}
-                            </button>
-                        )}
-                    </div>
+                                <button 
+                                    key={i} 
+                                    onClick={() => handlePageChange(i + 1)}
+                                    className={`page-item ${currentPage === (i + 1) ? 'current-page' : ''}`}
+                                >
+                                    {i + 1}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

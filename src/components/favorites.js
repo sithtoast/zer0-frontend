@@ -94,10 +94,24 @@ function shuffleAndPick(array, numItems) {
 			// Use shuffleAndPick to select a random subset of streams
 			const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
 			console.log(shuffledPickedStreams);
+
+			const shuffledPickedStreamsWithFollowerCounts = [];
+			for (const stream of shuffledPickedStreams) {
+				try {
+					const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+						headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+					});
+					const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
+					shuffledPickedStreamsWithFollowerCounts.push({ ...stream, followerCount });
+				} catch (err) {
+					console.error('Error fetching follower count for stream:', stream.user_id, err);
+					shuffledPickedStreamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
+				}
+			}
 	
 			// Update the state with the fetched and shuffled streams
 			setFavorites(prevFavorites => prevFavorites.map(category => 
-				category.id === categoryId ? {...category, streams: shuffledPickedStreams} : category
+				category.id === categoryId ? {...category, streams: shuffledPickedStreamsWithFollowerCounts} : category
 			));
 		} catch (err) {
 			console.error(`Failed to fetch streams for category ${categoryId}:`, err);
@@ -123,66 +137,93 @@ function shuffleAndPick(array, numItems) {
 	if (error) return <p>Error: {error}</p>;
 
 return (
-		<div>
-					<Navbar />
-		<div className="container">
-			<div className="d-flex flex-wrap align-items-start">
-				<div className="w-100">
-					<h1>Your Favorite Categories</h1>
-				</div>
-				{favorites.length > 0 ? (
-					favorites.map(cat => (
-						<div key={cat.id} className="w-100 mb-4">
-							<h2 className="category-header" onClick={() => handleToggleCategory(cat.id)}>
-								{cat.name}
-								<span className={`toggle-indicator ${openCategories[cat.id] ? 'open' : 'closed'}`}>
-									{openCategories[cat.id] ? '▼' : '▲'}
-								</span>
-							</h2>
-							<Collapse in={openCategories[cat.id]}>
-								<div className="row">
-									{cat.streams.length > 0 ? cat.streams.map(stream => (
-										<div className="col-md-4" key={stream.id} onClick={() => handleStreamSelect(stream)}>
-											<div className="card">
-												<img src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} className="card-img-top" alt={`${stream.user_name}'s stream thumbnail`} />
-												<div className="card-body">
-													<h5 className="card-title">{stream.user_name}</h5>
-													<p className="card-text">Viewers: {stream.viewer_count}</p>
-												</div>
-											</div>
-										</div>
-									)) : (
-										<p className="text-center w-100">Loading streams or no streams available.</p>
-									)}
-								</div>
-							</Collapse>
-						</div>
-					))
-				) : (
-					<p className="w-100 text-center">You have no favorite categories. Start adding some!</p>
-				)}
-				{selectedStream && (
-					<div className="embed-container w-100" style={{ minHeight: "480px" }}>
-						<iframe
-							src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
-							height="480"
-							width="800"
-							allowFullScreen={true}
-							style={{ width: "100%" }}>
-						</iframe>
-						<iframe
-							src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
-							height="480"
-							width="350"
-							style={{ width: "100%" }}>
-						</iframe>
-					</div>
-				)}
-			</div>
-			<Footer />
-		</div>
-		</div>
-	);
+    <div>
+        <Navbar />
+        <div className="container">
+            <div className="d-flex flex-wrap align-items-start">
+                <div className="w-100">
+                    <h1>Your Favorite Categories</h1>
+                </div>
+                {favorites.length === 0 && loading ? (
+                    Array.from({ length: 8 }).map((_, index) => (
+                        <div className="col-md-4" key={index}>
+                            <div className="card">
+                                <div className="card-img-top placeholder"></div>
+                                <div className="card-body">
+                                    <h5 className="card-title">Loading...</h5>
+                                    <p className="card-text">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    favorites.map(cat => (
+                        <div key={cat.id} className="w-100 mb-4">
+                            <h2 className="category-header" onClick={() => handleToggleCategory(cat.id)}>
+                                {cat.name}
+                                <span className={`toggle-indicator ${openCategories[cat.id] ? 'open' : 'closed'}`}>
+                                    {openCategories[cat.id] ? '▼' : '▲'}
+                                </span>
+                            </h2>
+                            <Collapse in={openCategories[cat.id]}>
+                                <div className="row">
+                                    {cat.streams.length > 0 ? (
+                                        cat.streams.map(stream => (
+                                            <div className="col-md-4" key={stream.id} onClick={() => handleStreamSelect(stream)}>
+                                                <div className="card">
+                                                    <img src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} className="card-img-top" alt={`${stream.user_name}'s stream thumbnail`} />
+                                                    <div className="card-body">
+                                                        <h5 className="card-title">{stream.user_name}</h5>
+                                                        <p className="card-text">Viewers: {stream.viewer_count}</p>
+														<p className="card-text">Followers: {stream.followerCount}</p>
+														<p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        Array.from({ length: 8 }).map((_, index) => (
+                                            <div className="col-md-4" key={index}>
+                                                <div className="card">
+                                                    <div className="card-img-top placeholder"></div>
+                                                    <div className="card-body">
+                                                        <h5 className="card-title">Loading...</h5>
+                                                        <p className="card-text">Loading...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </Collapse>
+                        </div>
+                    ))
+                )}
+                {favorites.length === 0 && !loading && (
+                    <p className="w-100 text-center">You have no favorite categories. Start adding some!</p>
+                )}
+            </div>
+            {selectedStream && (
+                <div className="embed-container w-100" style={{ minHeight: "480px" }}>
+                    <iframe
+                        src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
+                        height="480"
+                        width="800"
+                        allowFullScreen={true}
+                        style={{ width: "100%" }}>
+                    </iframe>
+                    <iframe
+                        src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
+                        height="480"
+                        width="350"
+                        style={{ width: "100%" }}>
+                    </iframe>
+                </div>
+            )}
+        </div>
+        <Footer />
+    </div>
+);
 };
 
 export default FavoritesPage;

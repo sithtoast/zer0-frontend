@@ -12,21 +12,21 @@ const Profile = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	
-	const handleUnlink = async () => {
-		try {
-			const token = localStorage.getItem('token');
-			const userId = profileData.user?.userId;  // Ensure you're getting the right userId
-			const response = await axios.post(`${apiUrl}/api/users/unlink/twitch/${userId}`, {}, {
-				headers: { 'Authorization': `Bearer ${token}` }
-			});
-			alert(response.data.message);
-			// Force refresh the profile to reflect the changes
-			window.location.reload();
-		} catch (error) {
-			console.error('Failed to unlink Twitch account:', error);
-			alert('Failed to unlink Twitch account');
-		}
-	};
+const handleUnlink = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        const userId = profileData.user?.userId;  // Ensure you're getting the right userId
+        const response = await axios.post(`${apiUrl}/api/users/unlink/twitch/${userId}`, {}, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        alert(`${response.data.message} Please visit https://www.twitch.tv/settings/connections to fully unlink your account.`);
+        // Force refresh the profile to reflect the changes
+        window.location.href = 'https://www.twitch.tv/settings/connections';
+    } catch (error) {
+        console.error('Failed to unlink Twitch account:', error);
+        alert('Failed to unlink Twitch account');
+    }
+};
 
 	useEffect(() => {
 		const fetchProfileData = async () => {
