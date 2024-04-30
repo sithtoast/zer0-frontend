@@ -209,85 +209,85 @@ return (
     !userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
         <div>Please link your Twitch account to continue</div>
     ) : (
-        <div>
-            <Navbar />
-            <div className="container mt-3">
+<div>
+    <Navbar />
+    <div className="container mt-3">
+        <div className="row">
+            <div className="col-md-4 categories">
+                <h1 className="category-search-container">Top Categories</h1>
+                <ul className="list-group">
+                    {categories.map(category => (
+                        <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
+                            <span onClick={() => handleClickCategory(category.id)}>
+                                {category.name}
+                            </span>
+                            <button onClick={(e) => toggleFavorite(category, e)}>
+                                {favorites.has(category.id) ? '★' : '☆'}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="col-md-8 streams">
+                <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
+                <div id="twitch-embed"></div>
                 <div className="row">
-                    <div className="col-md-4 categories">
-                        <h1>Top Categories</h1>
-                        <ul className="list-group">
-                            {categories.map(category => (
-                                <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <span onClick={() => handleClickCategory(category.id)}>
-                                        {category.name}
-                                    </span>
-                                    <button onClick={(e) => toggleFavorite(category, e)}>
-                                        {favorites.has(category.id) ? '★' : '☆'}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="col-md-8 streams">
-                        <h2>Streams {currentGameName && `for ${currentGameName}`}</h2>
-                        <div id="twitch-embed"></div>
-                        <div className="row">
-                        {loading ? (
-                            [...Array(30)].map((_, i) => (
-                                <div key={i} className="col-md-4 mb-4">
-                                    <div className="card loading-card" aria-hidden="true">
-                                        <div className="card-body">
-                                            <h5 className="card-title">
-                                                <span className="placeholder col-7"></span>
-                                            </h5>
-                                            <div className="placeholder-glow">
-                                                <span className="placeholder col-7"></span>
-                                                <span className="placeholder col-4"></span>
-                                                <span className="placeholder col-6"></span>
-                                                <span className="placeholder col-8"></span>
-                                            </div>
-                                        </div>
+                {loading ? (
+                    [...Array(30)].map((_, i) => (
+                        <div key={i} className="col-md-4 mb-4">
+                            <div className="card loading-card" aria-hidden="true">
+                                <div className="card-body">
+                                    <h5 className="card-title">
+                                        <span className="placeholder col-7"></span>
+                                    </h5>
+                                    <div className="placeholder-glow">
+                                        <span className="placeholder col-7"></span>
+                                        <span className="placeholder col-4"></span>
+                                        <span className="placeholder col-6"></span>
+                                        <span className="placeholder col-8"></span>
                                     </div>
                                 </div>
-                            ))
-                            ) : streams.length ? streams.map(stream => (
-                                <div 
-                                key={stream.id} 
-                                className={`col-md-4 mb-4 ${selectedStream === stream.id ? 'selected-stream' : ''}`}
-                                onClick={() => setSelectedStream(stream.id)}
-                                >
-                                    <div className="card">
-                                        <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
-                                        <div className="card-body">
-                                            <h5 className="card-title">{stream.user_name}</h5>
-                                            <p className="card-text">Viewers: {stream.viewer_count}</p>
-                                            <p className="card-text">Language: {stream.language}</p>
-                                            <p className="card-text">Followers: {stream.followerCount}</p>
-                                            {stream.is_mature ? 
-                                                <img src={MatureIcon} alt="Mature Content" style={{ width: 30, height: 35 }} /> :
-                                                <img src={EveryoneIcon} alt="Family Friendly" style={{ width: 30, height: 35 }} />
-                                            }
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                    ))
+                    ) : streams.length ? streams.map(stream => (
+                        <div 
+                        key={stream.id} 
+                        className={`col-md-4 mb-4 stream-card ${selectedStream === stream.id ? 'selected-stream' : ''}`}
+                        onClick={() => setSelectedStream(stream.id)}
+                        >
+                            <div className="card">
+                                <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
+                                <div className="card-body">
+                                    <h5 className="card-title">{stream.user_name}</h5>
+                                    <p className="card-text">Viewers: {stream.viewer_count}</p>
+                                    <p className="card-text">Language: {stream.language}</p>
+                                    <p className="card-text">Followers: {stream.followerCount}</p>
+                                    {stream.is_mature ? 
+                                        <img src={MatureIcon} alt="Mature Content" style={{ width: 30, height: 35 }} /> :
+                                        <img src={EveryoneIcon} alt="Family Friendly" style={{ width: 30, height: 35 }} />
+                                    }
                                 </div>
-                            )) : <p>No streams available.</p>}
+                            </div>
                         </div>
-                        <div className="pagination">
-                            {[...Array(pages).keys()].map(i =>
-                                <button 
-                                    key={i} 
-                                    onClick={() => handlePageChange(i + 1)}
-                                    className={`page-item ${currentPage === (i + 1) ? 'current-page' : ''}`}
-                                >
-                                    {i + 1}
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    )) : <p className="stream-details">No streams available.</p>}
+                </div>
+                <div className="pagination">
+                    {[...Array(pages).keys()].map(i =>
+                        <button 
+                            key={i} 
+                            onClick={() => handlePageChange(i + 1)}
+                            className={`page-item ${currentPage === (i + 1) ? 'current-page' : ''}`}
+                        >
+                            {i + 1}
+                        </button>
+                    )}
                 </div>
             </div>
-            <Footer />
         </div>
+    </div>
+    <Footer />
+</div>
     )
 );
 };

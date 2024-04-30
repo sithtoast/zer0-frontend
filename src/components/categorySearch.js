@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
-import './categorySearch.css';
 import { useNavigate } from 'react-router-dom';
 import Footer from './Footer';
 
@@ -156,62 +155,74 @@ const handleCategorySelect = async (categoryId) => {
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
 
-	return (
-		<div>
-		<Navbar />
-		<div className="category-search-container">
-			<div className="category-search-layout">
-				<div className="search-results">
-					<h1>Search Game Categories</h1>
-					<form onSubmit={handleSearch}>
-						<input
-							type="text"
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							placeholder="Search categories"
-							autoComplete="off"
-						/>
-						<button type="submit">Search</button>
-					</form>
-					<ul className="category-list">
-						{categories.map(category => (
-							<li key={category.id} className="category-item" onClick={() => handleCategorySelect(category.id)}>
-								<img src={category.boxArtUrl} alt={`Box art for ${category.name}`} className="category-box-art" />
-								<span className="category-name">{category.name}</span>
-								<button onClick={(e) => toggleFavorite(category, e)} className="favorite-button">
-									{favorites.has(category.id) ? '★' : '☆'}
-								</button>
-							</li>
-						))}
-					</ul>
-				</div>
-				{selectedCategory && (
-					<div className="stream-details">
-						<h2>Streams for {categories.find(cat => cat.id === selectedCategory)?.name || 'selected category'}</h2>
-						{streams.length > 0 ? (
-							<ul className="streams-list">
-								{streams.map(stream => (
-									<li key={stream.id} className="stream-card">
-										<img src={stream.thumbnail_url} alt={`Stream by ${stream.user_name}`} className="stream-thumbnail" />
-										<div className="stream-info">
-											<p>{stream.title} by {stream.user_name}</p>
-											<p>{stream.viewer_count} viewers</p>
-											<p>Started at: {new Date(stream.started_at).toLocaleString()}</p>
-											<p>Language: {stream.language}</p>
-										</div>
-									</li>
-								))}
-							</ul>
-						) : (
-							<p>No streams available for this category.</p>
-						)}
-					</div>
-				)}
-			</div>
-		</div>
-		<Footer />
-		</div>
-	);
+return (
+    <div>
+        <Navbar />
+        <div className="container">
+            <div className="search-results">
+                <h1>Search Categories</h1>
+                <form onSubmit={handleSearch}>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search categories"
+                        autoComplete="off"
+                    />
+                </form>
+                <table className="category-table">
+                    <tbody>
+                        {categories.map(category => (
+                            <tr key={category.id} onClick={() => handleCategorySelect(category.id)}>
+                                <td><img src={category.boxArtUrl} alt={`Box art for ${category.name}`} className="category-box-art" /></td>
+                                <td className="category-name">{category.name}</td>
+                                <td>
+                                    <button onClick={(e) => toggleFavorite(category, e)} className="favorite-button">
+                                        {favorites.has(category.id) ? '★' : '☆'}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {selectedCategory && (
+                <div className="stream-details">
+                    <h2>Streams for {categories.find(cat => cat.id === selectedCategory)?.name || 'selected category'}</h2>
+                    {streams.length > 0 ? (
+                        <ul className="streams-list">
+                            {streams.map((stream, index) => (
+                                <li key={stream.id} className="stream-card">
+                                    <img src={stream.thumbnail_url} alt={`Stream by ${stream.user_name}`} className="stream-thumbnail" />
+                                    <div className="stream-info">
+                                        <p>{stream.title} by {stream.user_name}</p>
+                                        <p>{stream.viewer_count} viewers</p>
+                                        <p>Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                                        <p>Language: {stream.language}</p>
+                                    </div>
+                                </li>
+                            ))}
+                            {streams.length < 5 && [...Array(5 - streams.length)].map((_, index) => (
+                                <li key={`placeholder-${index}`} className="stream-card">
+                                    <img src="placeholder.jpg" alt="Placeholder" className="stream-thumbnail" />
+                                    <div className="stream-info">
+                                        <p>Placeholder Stream</p>
+                                        <p>0 viewers</p>
+                                        <p>Started at: N/A</p>
+                                        <p>Language: N/A</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No streams available for this category.</p>
+                    )}
+                </div>
+            )}
+        </div>
+        <Footer />
+    </div>
+);
 
 	};
 

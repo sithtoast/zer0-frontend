@@ -108,6 +108,8 @@ nav a:hover, nav a:focus {
     padding: 20px;
     border-radius: 4px;
     margin-bottom: 20px;
+	display: flex;
+    justify-content: space-between;
 }
 
 .container h1, .container h2, .container h3, .container h4, .container h5, .container h6 {
@@ -135,4 +137,88 @@ nav a:hover, nav a:focus {
     font-size: 0.8em;  /* New line */
     background-color: var(--twitch-gray);
     border-radius: 3px;
+}
+
+/* Category Search Container Styles */
+.category-search-container {
+    background-color: var(--twitch-dark-alt);
+    color: var(--twitch-text);
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.category-search-container h1 {
+    color: var(--twitch-primary);
+}
+
+.category-search-container a {
+    color: var(--twitch-primary);
+}
+
+.category-search-container a:hover, .category-search-container a:focus {
+    color: var(--twitch-accent);
+    text-decoration: underline;
+}
+
+/* Stream Details Styles */
+.stream-details {
+    background-color: var(--twitch-dark-alt);
+    color: var(--twitch-text);
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+	flex: 1;
+}
+
+.stream-details h2 {
+    color: var(--twitch-primary);
+}
+
+.stream-details a {
+    color: var(--twitch-primary);
+}
+
+.stream-details a:hover, .stream-details a:focus {
+    color: var(--twitch-accent);
+    text-decoration: underline;
+}
+
+.streams-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+.stream-card {
+    background-color: var(--twitch-dark-alt);
+    color: var(--twitch-text);
+    border-radius: 4px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.stream-card img {
+    width: 100%;
+    height: auto;
+}
+
+.stream-card .stream-info {
+    margin-top: 10px;
+}
+
+.category-table {
+	flex: 1;
+    margin-right: 20px;
+}
+
+.categories {
+    min-width: 350px; /* Adjust as needed */
+}
+
+.streams {
+    min-height: 500px; /* Adjust as needed */
 }
