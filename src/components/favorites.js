@@ -177,6 +177,11 @@ return (
                                                         <p className="card-text">Viewers: {stream.viewer_count}</p>
 														<p className="card-text">Followers: {stream.followerCount}</p>
 														<p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+														<div className="tag-cloud">
+															{stream.tags.map((tag, index) => (
+																<span key={index} className="tag">{tag}</span>
+															))}
+														</div>
                                                     </div>
                                                 </div>
                                             </div>
