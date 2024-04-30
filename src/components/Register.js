@@ -38,8 +38,9 @@ function Register() {
 	};
 
 	return (
-		<div className="container">
-			<Navbar />  {/* Add Navbar to the top */}
+		<div>
+		<Navbar />
+		<div className="signup-container">
 			<ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
 			<div className="row justify-content-center">
 				<div className="col-md-6">
@@ -85,8 +86,11 @@ function Register() {
 					</form>
 				</div>
 			</div>
-			<Footer />
+			
 		</div>
+		<Footer />
+		</div>
+
 	);
 }
 

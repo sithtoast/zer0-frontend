@@ -7,6 +7,7 @@ import Navbar from './Navbar';
 import MatureIcon from '../assets/ratedm.png';  // Assuming you've imported images
 import EveryoneIcon from '../assets/ratede.png';
 import Footer from './Footer';
+import { Tooltip, OverlayTrigger, Popover } from 'react-bootstrap';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -259,7 +260,19 @@ return (
                             <div className="card">
                                 <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
                                 <div className="card-body">
-                                    <h5 className="card-title">{stream.user_name}</h5>
+                                    <OverlayTrigger
+                                        placement="left"
+                                        overlay={
+                                            <Tooltip id={`tooltip-${stream.user_name}`}>
+                                                <strong>{stream.user_name}</strong><br />
+                                                Viewers: {stream.viewer_count}<br />
+                                                Followers: {stream.followerCount}<br />
+                                                Started at: {new Date(stream.started_at).toLocaleString()}
+                                            </Tooltip>
+                                        }
+                                    >
+                                        <h5 className="card-title">{stream.user_name}</h5>
+                                    </OverlayTrigger>
                                     <p className="card-text">Viewers: {stream.viewer_count}</p>
                                     <p className="card-text">Language: {stream.language}</p>
                                     <p className="card-text">Followers: {stream.followerCount}</p>

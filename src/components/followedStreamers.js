@@ -152,8 +152,9 @@ const FollowedStreams = () => {
     }
 
 return (
+<div>
+<Navbar />
 <div className="container">
-    <Navbar />
     <div className="content">
         <h1>Followed Streams</h1>
         <div id="twitch-embed"></div>
@@ -203,6 +204,7 @@ return (
                 </div>
             ))}
         </div>
+    </div>
     </div>
     <Footer />
 </div>
