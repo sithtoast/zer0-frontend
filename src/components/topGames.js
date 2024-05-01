@@ -35,9 +35,10 @@ useEffect(() => {
     if (selectedStream) {
         new Twitch.Embed("twitch-embed", {
             width: "100%",
-            height: "100%",
+            height: '500px',
             channel: selectedStream,
             layout: "video-with-chat",
+            parent: ["zer0.tv"]
         });
     }
 }, [selectedStream]);
@@ -278,8 +279,8 @@ return (
                     ) : streams.length ? streams.map(stream => (
                         <div 
                         key={stream.id} 
-                        className={`col-md-4 mb-4 stream-card ${selectedStream === stream.id ? 'selected-stream' : ''}`}
-                        onClick={() => setSelectedStream(stream.id)}
+                        className={`col-md-4 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
+                        onClick={() => setSelectedStream(stream.user_name)}
                         >
                             <div className="card">
                                 <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
@@ -313,7 +314,13 @@ return (
                     )) : <p className="stream-details">No streams available.</p>}
                 </div>
                 <div className="pagination">
-                    {[...Array(pages).keys()].map(i =>
+                    <button 
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </button>
+                    {[...Array(pages).keys()].slice(Math.max(0, currentPage - 3), currentPage + 2).map(i =>
                         <button 
                             key={i} 
                             onClick={() => handlePageChange(i + 1)}
@@ -322,6 +329,12 @@ return (
                             {i + 1}
                         </button>
                     )}
+                    <button 
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === pages}
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
         </div>

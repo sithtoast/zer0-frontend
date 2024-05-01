@@ -93,7 +93,7 @@ function shuffleAndPick(array, numItems) {
 			
 			// Use shuffleAndPick to select a random subset of streams
 			const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
-			console.log(shuffledPickedStreams);
+			
 
 			const shuffledPickedStreamsWithFollowerCounts = [];
 			for (const stream of shuffledPickedStreams) {
@@ -108,7 +108,7 @@ function shuffleAndPick(array, numItems) {
 					shuffledPickedStreamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
 				}
 			}
-	
+			console.log(shuffledPickedStreamsWithFollowerCounts);
 			// Update the state with the fetched and shuffled streams
 			setFavorites(prevFavorites => prevFavorites.map(category => 
 				category.id === categoryId ? {...category, streams: shuffledPickedStreamsWithFollowerCounts} : category

@@ -170,7 +170,7 @@ return (
                         setSelectedStream(stream);
                     }}
                 >
-                    <div className="card">
+                    <div className="stream-card">
                         <img 
                             src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} 
                             className="card-img-top" 

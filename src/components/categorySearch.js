@@ -4,6 +4,10 @@ import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
 import Footer from './Footer';
+import StreamerBadge from './streamerBadge';
+import AffiliateIcon from '../assets/affiliate.png';
+import { Tooltip, OverlayTrigger } from 'react-bootstrap';
+
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -17,6 +21,10 @@ const [loading, setLoading] = useState(false);
 const [error, setError] = useState('');
 const [searchQuery, setSearchQuery] = useState('');
 const [errorMessage, setErrorMessage] = useState(null);
+const [currentPage, setCurrentPage] = useState(1);
+const streamsPerPage = 30;
+const [selectedStream, setSelectedStream] = useState(null);
+const [pages, setPages] = useState(0);  // Initialize total pages
 
 
 useEffect(() => {
@@ -125,38 +133,83 @@ const toggleFavorite = async (category, e) => {
 	};
 
 const handleCategorySelect = async (categoryId) => {
-		setSelectedCategory(categoryId);
-		setLoading(true);
-		const token = localStorage.getItem('token');
-		const decoded = jwtDecode(token);
-		const userId = decoded.user.userId;
-		
-		const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-			headers: { 'Authorization': `Bearer ${token}` }
-		});
-		const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-		
-		let fetchedStreams = [];
-		let cursor = null;
-		try {
-			do {
-				const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
-					headers: { 'Authorization': `Bearer ${twitchAccessToken}` },
-					params: { limit: 100, cursor: cursor }
-				});
-				fetchedStreams = [...fetchedStreams, ...response.data.streams];
-				cursor = response.data.cursor; // Assuming the cursor is passed directly like this
-			} while (fetchedStreams.length < 1500 && cursor);
-	
-			// Filter streams with 3 or fewer viewers
-			const lowViewerStreams = fetchedStreams.filter(stream => stream.viewer_count <= 3);
-			setStreams(lowViewerStreams);
-		} catch (err) {
-			setError('Failed to fetch streams');
-			console.error('Error fetching streams:', err);
-		}
-		setLoading(false);
-	};
+    setSelectedCategory(categoryId);
+    setLoading(true);
+    try {
+        const token = localStorage.getItem('token');
+        const decoded = jwtDecode(token);
+        const userId = decoded.user.userId;
+
+        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+
+        const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
+            headers: {
+                'Authorization': `Bearer ${twitchAccessToken}`
+            },
+            params: {
+                first: 1500,  // Fetch all streams
+                after: null  // Use cursor for pagination
+            }
+        });
+		setStreams([]);
+        const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
+        // Fetch user info in batches of 100
+        const batchSize = 100;
+        for (let i = 0; i < filteredStreams.length; i += batchSize) {
+            const batch = filteredStreams.slice(i, i + batchSize);
+            const userIds = batch.map(stream => stream.user_id);
+            try {
+                const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+                    headers: {
+                        'Authorization': `Bearer ${twitchAccessToken}`
+                    }
+                });
+                // Add user info to streams
+                const userInfoData = userInfoResponse.data.data;
+                for (let j = 0; j < batch.length; j++) {
+                    const stream = batch[j];
+                    const userInfo = userInfoData.find(user => user.id === stream.user_id);
+                    if (userInfo) {
+                        stream.user_info = userInfo;
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+            }
+        }
+
+        // Fetch follower counts one at a time for streams on the current page
+        const startIndex = (currentPage - 1) * 30;
+        const endIndex = currentPage * 30;
+        const currentPageStreams = filteredStreams.slice(startIndex, endIndex);
+        const currentPageStreamsWithFollowerCounts = [];
+        for (const stream of currentPageStreams) {
+            try {
+                const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                });
+                console.log(followerCountResponse.data);
+                const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
+                currentPageStreamsWithFollowerCounts.push({ ...stream, followerCount });
+            } catch (err) {
+                console.error('Error fetching follower count for stream:', stream.user_id, err);
+                currentPageStreamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
+            }
+        }
+        console.log("Current page streams with follower counts:", currentPageStreamsWithFollowerCounts);
+        setStreams(currentPageStreamsWithFollowerCounts);
+        setPages(Math.ceil(filteredStreams.length / 30));
+    } catch (err) {
+        setError(`Failed to fetch streams for category ${categoryId}`);
+        console.error('Error fetching streams:', err);
+    } finally {
+        setLoading(false);
+        console.log("Streams fetched:", streams);
+    }
+};
 
 return (
     <div>
@@ -170,18 +223,21 @@ return (
                         <h1>Search Categories</h1>
                         {errorMessage && <div className="error-message">{errorMessage}</div>}
                         <form onSubmit={handleSearch}>
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search categories"
-                                autoComplete="off"
-                            />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                handleSearch(e);
+                            }}
+                            placeholder="Search categories"
+                            autoComplete="off"
+                        />
                         </form>
                         <table className="category-table">
                             <tbody>
                                 {categories.map(category => (
-                                    <tr key={category.id} onClick={() => handleCategorySelect(category.id)}>
+                                    <tr key={category.id} onClick={() => handleCategorySelect(category.id, null)}>
                                         <td><img src={category.boxArtUrl} alt={`Box art for ${category.name}`} className="category-box-art" /></td>
                                         <td className="category-name">{category.name}</td>
                                         <td>
@@ -194,39 +250,88 @@ return (
                             </tbody>
                         </table>
                     </div>
-                    {selectedCategory && (
-                        <div className="stream-details">
-                            <h2>Streams for {categories.find(cat => cat.id === selectedCategory)?.name || 'selected category'}</h2>
-                            {streams.length > 0 ? (
-                                <ul className="streams-list">
-                                    {streams.map((stream, index) => (
-                                        <li key={stream.id} className="stream-card">
-                                            <img src={stream.thumbnail_url} alt={`Stream by ${stream.user_name}`} className="stream-thumbnail" />
-                                            <div className="stream-info">
-                                                <p>{stream.title} by {stream.user_name}</p>
-                                                <p>{stream.viewer_count} viewers</p>
-                                                <p>Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                                <p>Language: {stream.language}</p>
-                                            </div>
-                                        </li>
-                                    ))}
-                                    {streams.length < 5 && [...Array(5 - streams.length)].map((_, index) => (
-                                        <li key={`placeholder-${index}`} className="stream-card">
-                                            <img src="placeholder.jpg" alt="Placeholder" className="stream-thumbnail" />
-                                            <div className="stream-info">
-                                                <p>Placeholder Stream</p>
-                                                <p>0 viewers</p>
-                                                <p>Started at: N/A</p>
-                                                <p>Language: N/A</p>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No streams available for this category.</p>
-                            )}
-                        </div>
-                    )}
+					{selectedCategory && (
+						<div className="stream-details">
+							<h2>Streams for {categories.find(cat => cat.id === selectedCategory)?.name || 'selected category'}</h2>
+							{loading ? (
+								[...Array(30)].map((_, i) => (
+									<div key={i} className="col-md-3 mb-4">
+										<div className="card loading-card" aria-hidden="true">
+											<div className="card-body">
+												<h5 className="card-title">
+													<span className="placeholder col-7"></span>
+												</h5>
+												<div className="placeholder-glow">
+													<span className="placeholder col-7"></span>
+													<span className="placeholder col-4"></span>
+													<span className="placeholder col-6"></span>
+													<span className="placeholder col-8"></span>
+												</div>
+											</div>
+										</div>
+									</div>
+								))
+							) : streams.length > 0 ? (
+								<div className="streams-list row">
+								{streams.map((stream) => (
+									<div 
+										key={stream.id} 
+										className={`col-md-4 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
+										onClick={() => setSelectedStream(stream.user_name)}
+									>
+										<div className="card">
+											<img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
+											<div className="card-body">
+												<OverlayTrigger
+													placement="left"
+													overlay={
+														<Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
+															<img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
+															<strong>{stream.user_name}</strong><br />
+															Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
+															Followers: {stream.followerCount}<br />
+															Created at: {new Date(stream.user_info.created_at).toLocaleString()}
+														</Tooltip>
+													}
+												>
+													<h5 className="card-title">
+														{stream.user_name}
+														{stream.user_info.broadcaster_type === "affiliate" && 
+															<img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
+														}
+													</h5>
+												</OverlayTrigger>
+												<p className="card-text">Viewers: {stream.viewer_count}</p>
+												<p className="card-text">Language: {stream.language}</p>
+												<p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+												<StreamerBadge stream={stream} />
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+							) : (
+								<p>No streams available for this category.</p>
+							)}
+						</div>
+					)}
+					{pages > 1 && (
+						<div className="pagination">
+							<button
+								onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+								disabled={currentPage === 1}
+							>
+								Previous
+							</button>
+							<span>Page {currentPage} of {pages}</span>
+							<button
+								onClick={() => setCurrentPage(prev => Math.min(prev + 1, pages))}
+								disabled={currentPage === pages}
+							>
+								Next
+							</button>
+						</div>
+					)}
                 </>
             )}
         </div>

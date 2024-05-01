@@ -55,11 +55,22 @@ return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <div className="container-fluid">
             <a className="navbar-brand" href="/">zer0.tv</a>
-            <NavLink className="nav-item nav-link" to="/top-games">Top Games</NavLink>
-            <NavLink className="nav-item nav-link" to="/favorites">Your Top 8</NavLink>
-            <NavLink className="nav-item nav-link" to="/followed-streamers">Followed Streamers</NavLink>
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span className="navbar-toggler-icon"></span>
+            </button>
             <div className="collapse navbar-collapse" id="navbarNav">
-                <ul className="navbar-nav ms-auto">
+                <ul className="navbar-nav me-auto">
+                    <li className="nav-item">
+                        <NavLink className="nav-link" to="/top-games">Top Games</NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink className="nav-link" to="/favorites">Your Top 8</NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink className="nav-link" to="/followed-streamers">Followed Streamers</NavLink>
+                    </li>
+                </ul>
+                <ul className="navbar-nav ms-auto align-items-center">
                     {!isAuthenticated() && (
                         <React.Fragment>
                             <li className="nav-item">
@@ -75,21 +86,22 @@ return (
                     )}
                     {isAuthenticated() && (
                         <React.Fragment>
-                            <li className="nav-item">
-                                <NavLink className="nav-link" to="/profile">
-                                    {profileData.twitch?.profileImageUrl && (
-                                        <img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginRight: '10px'}} />
-                                    )}
-                                    Welcome, {profileData.user?.username}
-                                </NavLink>
-                            </li>
+								<li className="nav-item d-none d-lg-block">
+									<NavLink className="nav-link" to="/profile">
+										
+										{profileData.twitch?.profileImageUrl && (
+											<img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginLeft: '10px'}} />
+										)}
+									</NavLink>
+								</li>
                             {!profileData.twitch?.twitchId && (
                                 <li className="nav-item">
                                     <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>Link Twitch Account</button>
                                 </li>
                             )}
-                            <div style={{ width: '20px' }}></div>
-                            <li><button onClick={handleLogout}>Logout</button></li>
+                            <li className="nav-item">
+                                <button onClick={handleLogout}>Logout</button>
+                            </li>
                         </React.Fragment>
                     )}
                 </ul>

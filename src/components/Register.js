@@ -39,59 +39,63 @@ function Register() {
 
 	return (
 		<div>
-		<Navbar />
-		<div className="signup-container">
-			<ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-			<div className="row justify-content-center">
-				<div className="col-md-6">
-					<h1 className="text-center mb-4">Sign Up</h1>
-					<form onSubmit={onSubmit}>
-						<div className="form-group">
-							<label>Username</label>
-							<input
-								type="text"
-								className="form-control"
-								placeholder="Username"
-								name="username"
-								value={username}
-								onChange={onChange}
-								required
-							/>
+			<Navbar />
+			<div className="signup-container">
+				<ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+				<div className="row justify-content-center">
+					<div className="col-md-6">
+						<h1 className="text-center mb-4">Sign Up</h1>
+						<div className="text-center"> {/* Add this line */}
+							<button className="btn btn-primary">
+								<i className="fab fa-twitch"></i> {/* Add this line */}
+								Sign Up with Twitch
+							</button>
 						</div>
-						<div className="form-group">
-							<label>Email Address</label>
-							<input
-								type="email"
-								className="form-control"
-								placeholder="Email Address"
-								name="email"
-								value={email}
-								onChange={onChange}
-								required
-							/>
-						</div>
-						<div className="form-group">
-							<label>Password</label>
-							<input
-								type="password"
-								className="form-control"
-								placeholder="Password"
-								name="password"
-								value={password}
-								onChange={onChange}
-								required
-							/>
-						</div>
-						<button type="submit" className="btn btn-primary btn-block">Register</button>
-					</form>
-				</div>
-			</div>
-			
-		</div>
-		<Footer />
-		</div>
-
-	);
+						<form onSubmit={onSubmit}>
+                        <div className="form-group">
+                            <label>Username</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Username"
+                                name="username"
+                                value={username}
+                                onChange={onChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Email Address</label>
+                            <input
+                                type="email"
+                                className="form-control"
+                                placeholder="Email Address"
+                                name="email"
+                                value={email}
+                                onChange={onChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Password</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                placeholder="Password"
+                                name="password"
+                                value={password}
+                                onChange={onChange}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="btn btn-primary btn-block">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <Footer />
+    </div>
+);
 }
 
 export default Register;
