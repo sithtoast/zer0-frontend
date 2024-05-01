@@ -132,11 +132,12 @@ nav a:hover, nav a:focus {
 }
 
 .tag {
-    margin: 0.2em;
-    padding: 0.2em;
-    font-size: 0.8em;  /* New line */
-    background-color: var(--twitch-gray);
-    border-radius: 3px;
+	margin: 0.2em;
+	padding: 0.5em;
+	font-size: 0.8em;
+	background-color: var(--twitch-accent);
+	border-radius: 5px;
+	color: white;
 }
 
 /* Category Search Container Styles */
