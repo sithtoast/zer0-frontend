@@ -338,3 +338,12 @@ nav a:hover, nav a:focus {
 .profile-container .btn {
     margin-top: 20px;
 }
+
+.just-started-message {
+	padding: 5px 10px;
+	color: #fff;
+	background: #32cd32;
+	border-radius: 20px;
+	text-align: center;
+	box-shadow: 0 0 10px #32cd32, 0 0 40px #32cd32, 0 0 80px #32cd32;
+}
