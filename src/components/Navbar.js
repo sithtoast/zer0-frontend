@@ -68,24 +68,27 @@ return (
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/register">Register</NavLink>
                             </li>
+                            <li className="nav-item">
+                                <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>Register/Login with Twitch</button>
+                            </li>
                         </React.Fragment>
                     )}
                     {isAuthenticated() && (
                         <React.Fragment>
-						<li className="nav-item">
-							<NavLink className="nav-link" to="/profile">
-								{profileData.twitch?.profileImageUrl && (
-									<img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginRight: '10px'}} />
-								)}
-								Welcome, {profileData.user?.username}
-							</NavLink>
-						</li>
+                            <li className="nav-item">
+                                <NavLink className="nav-link" to="/profile">
+                                    {profileData.twitch?.profileImageUrl && (
+                                        <img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginRight: '10px'}} />
+                                    )}
+                                    Welcome, {profileData.user?.username}
+                                </NavLink>
+                            </li>
                             {!profileData.twitch?.twitchId && (
                                 <li className="nav-item">
                                     <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>Link Twitch Account</button>
                                 </li>
                             )}
-							<div style={{ width: '20px' }}></div>
+                            <div style={{ width: '20px' }}></div>
                             <li><button onClick={handleLogout}>Logout</button></li>
                         </React.Fragment>
                     )}
