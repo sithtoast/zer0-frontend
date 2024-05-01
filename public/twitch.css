@@ -132,11 +132,12 @@ nav a:hover, nav a:focus {
 }
 
 .tag {
-    margin: 0.2em;
-    padding: 0.2em;
-    font-size: 0.8em;  /* New line */
-    background-color: var(--twitch-gray);
-    border-radius: 3px;
+	margin: 0.2em;
+	padding: 0.4em;
+	font-size: 0.8em;
+	background-color: var(--twitch-accent);
+	border-radius: 5px;
+	color: white;
 }
 
 /* Category Search Container Styles */
@@ -192,13 +193,14 @@ nav a:hover, nav a:focus {
 }
 
 .stream-card {
-    background-color: var(--twitch-dark-alt);
-    color: var(--twitch-text);
-    border-radius: 4px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+	background-color: var(--twitch-dark-alt);
+	color: var(--twitch-text);
+	border-radius: 4px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 350px;
 }
 
 .stream-card img {
@@ -290,7 +292,7 @@ nav a:hover, nav a:focus {
 
 .newbie-message {
     padding: 5px 10px;
-    color: #fff;
+    color: black;
     background: #add8e6;
     border-radius: 20px;
     text-align: center;
@@ -299,7 +301,7 @@ nav a:hover, nav a:focus {
 
 .affiliate-message {
     padding: 5px 10px;
-    color: #fff;
+    color: black;
     background: linear-gradient(160deg, #ffcc00, #ffcc00 50%, #d4af37);
     border-radius: 20px;
     text-align: center;
@@ -337,4 +339,45 @@ nav a:hover, nav a:focus {
 
 .profile-container .btn {
     margin-top: 20px;
+}
+
+.just-started-message {
+	padding: 5px 10px;
+	color: #fff;
+	background: #32cd32;
+	border-radius: 20px;
+	text-align: center;
+	box-shadow: 0 0 10px #32cd32, 0 0 40px #32cd32, 0 0 80px #32cd32;
+}
+
+.current-page {
+    background-color: var(--twitch-accent);
+    color: white;
+}
+
+.old-friend-message {
+	padding: 5px 10px;
+	color: #fff;
+	background: #ba742e;
+	border-radius: 20px;
+	text-align: center;
+	box-shadow: 0 0 10px #cd7f32, 0 0 40px #cd7f32, 0 0 80px #cd7f32;
+}
+
+.justins-friend-message {
+    padding: 5px 10px;
+    color: #fff;
+    background: #3e8dd7;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 10px #8B4513, 0 0 40px #8B4513, 0 0 80px #8B4513;
+}
+
+.twitch-veteran-message {
+    padding: 5px 10px;
+    color: #fff;
+    background: #6A5ACD;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 10px #6A5ACD, 0 0 40px #6A5ACD, 0 0 80px #6A5ACD;
 }
