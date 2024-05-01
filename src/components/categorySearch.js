@@ -16,6 +16,8 @@ const [selectedCategory, setSelectedCategory] = useState(null);
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState('');
 const [searchQuery, setSearchQuery] = useState('');
+const [errorMessage, setErrorMessage] = useState(null);
+
 
 useEffect(() => {
 	const checkAuthentication = () => {
@@ -93,7 +95,11 @@ const toggleFavorite = async (category, e) => {
 		console.log("Category passed to toggleFavorite:", category);
 		const isFavorite = favorites.has(category.id);
 		const actionUrl = `${apiUrl}/api/favorites/${isFavorite ? 'remove' : 'add'}`;
-	
+		
+		if (!isFavorite && favorites.size >= 8) {
+			setErrorMessage("You can only choose 8 categories at a time.");
+			return;
+		}
 		const data = {
 			userId,
 			categoryId: category.id,
@@ -162,6 +168,7 @@ return (
                 <>
                     <div className="search-results">
                         <h1>Search Categories</h1>
+                        {errorMessage && <div className="error-message">{errorMessage}</div>}
                         <form onSubmit={handleSearch}>
                             <input
                                 type="text"
