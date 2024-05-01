@@ -226,6 +226,8 @@ const handleClickCategory = (categoryId) => {
 	setCurrentGameName(categories.find(category => category.id === categoryId)?.name);  // Update the game name
 };
 
+console.log(streams);
+
 return (
     <div>
         <Navbar />
@@ -270,9 +272,9 @@ return (
                         </>
                     )}
                 </div>
-                {selectedCategory && (
+                {selectedCategoryId && (
                     <div className="col-md-8 streams">
-                        <h2 className="stream-details">Streams for {categories.find(cat => cat.id === selectedCategory)?.name || 'selected category'}</h2>
+                        <h2 className="stream-details">Streams for {categories.find(cat => cat.id === selectedCategoryId)?.name || 'selected category'}</h2>
                         <div id="twitch-embed"></div>
                         <div className="row">
                             {loading ? (

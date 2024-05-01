@@ -165,6 +165,23 @@ return (
         <div className="container">
             <div className="d-flex flex-wrap align-items-start">
                 <div className="w-100">
+				{selectedStream && (
+                <div className="embed-container w-100" style={{ minHeight: "480px" }}>
+                    <iframe
+                        src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
+                        height="480"
+                        width="800"
+                        allowFullScreen={true}
+                        style={{ width: "100%" }}>
+                    </iframe>
+                    <iframe
+                        src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
+                        height="480"
+                        width="350"
+                        style={{ width: "100%" }}>
+                    </iframe>
+                </div>
+            )}
                     <h1>Your Favorite Categories</h1>
                 </div>
                 {favorites.length === 0 && loading ? (
@@ -240,23 +257,6 @@ return (
                     <p className="w-100 text-center">You have no favorite categories. Start adding some!</p>
                 )}
             </div>
-            {selectedStream && (
-                <div className="embed-container w-100" style={{ minHeight: "480px" }}>
-                    <iframe
-                        src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
-                        height="480"
-                        width="800"
-                        allowFullScreen={true}
-                        style={{ width: "100%" }}>
-                    </iframe>
-                    <iframe
-                        src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
-                        height="480"
-                        width="350"
-                        style={{ width: "100%" }}>
-                    </iframe>
-                </div>
-            )}
         </div>
         <Footer />
     </div>

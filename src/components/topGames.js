@@ -26,7 +26,6 @@ const TopCategories = () => {
     const [nextCursor] = useState(null);
     const [selectedStream, setSelectedStream] = useState(null);
     const [userProfileResponse, setUserProfileResponse] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
     
 
 useEffect(() => {
@@ -43,34 +42,6 @@ useEffect(() => {
         });
     }
 }, [selectedStream]);
-
-const searchCategories = async (query) => {
-    setLoading(true);
-    try {
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        const userId = decoded.user.userId;
-        
-        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-        
-        const response = await axios.get(`${apiUrl}/api/twitch/search/categories`, {
-            headers: { 'Authorization': `Bearer ${twitchAccessToken}` },
-            params: { name: query }  // Ensure this matches your API expectation
-        });
-        setCategories(response.data);
-    } catch (err) {
-        setError('Failed to fetch categories, please try linking a Twitch account first.');
-        console.error('Error fetching categories:', err);
-    }
-    setLoading(false);
-};
-
-const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-};
 
 
 const fetchCategories = async () => {
@@ -266,23 +237,6 @@ return (
                     <div>Please link your Twitch account to continue</div>
                 ) : (
                     <>
-                        <h1>Search Categories</h1>
-                        <input type="text" value={searchQuery} onChange={handleSearchChange} placeholder="Search for categories" />
-                            <button onClick={() => searchCategories(searchQuery)}>Search</button>
-                            {loading ? (
-                                <p>Loading...</p>
-                            ) : error ? (
-                                <p>{error}</p>
-                            ) : (
-                                <div>
-                                    {categories.map(category => (
-                                        <div key={category.id}>
-                                            <h2>{category.name}</h2>
-                                            <img src={category.boxArtUrl} alt={category.name} />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
                         <h1 className="category-search-container">Top Categories</h1>
                         <ul className="list-group">
                             {categories.map(category => (
