@@ -381,3 +381,18 @@ nav a:hover, nav a:focus {
     text-align: center;
     box-shadow: 0 0 10px #6A5ACD, 0 0 40px #6A5ACD, 0 0 80px #6A5ACD;
 }
+
+.embed-container {
+    display: flex;
+    justify-content: space-between;
+    z-index: 1000; /* Add this line */
+    position: relative; /* Add this line if the z-index doesn't work without it */
+}
+
+.embed-container iframe:first-child {
+    flex: 2;
+}
+
+.embed-container iframe:last-child {
+    flex: 1;
+}
