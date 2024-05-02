@@ -19,7 +19,8 @@ const Navbar = () => {
 				  withCredentials: true, // This allows the request to send cookies
 				  headers: {
 					  'Content-Type': 'application/json'
-				  }
+				  },
+				  credentials: 'include'
 			  });
 			  console.log(response.data);
 			  setProfileData(response.data);

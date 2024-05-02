@@ -52,8 +52,9 @@ const fetchCategories = async () => {
             headers: { 'Content-Type': 'application/json' }
         });
         const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+        console.log(twitchAccessToken);
         setUserProfileResponse(userProfileResponse.data);
-        console.log(userProfileResponse);
+        console.log(userProfileResponse.data.twitch.accessToken);
 
         if (!twitchAccessToken) {
             setError('Please link your Twitch account to continue');
