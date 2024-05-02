@@ -31,23 +31,28 @@ const [currentCursor, setCurrentCursor] = useState(null);
 
 
 useEffect(() => {
-	const checkAuthentication = () => {
-		const token = localStorage.getItem('token');
-		if (!token) {
-			navigate('/login');
-		}
-	};
+    const checkAuthentication = async () => {
+        try {
+            const response = await axios.get(`${apiUrl}/api/users/profile`, {
+                withCredentials: true, // This allows the request to send cookies
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.data.user) {
+                navigate('/login');
+            }
+        } catch (err) {
+            navigate('/login');
+        }
+    };
 
-	checkAuthentication();
+    checkAuthentication();
 
 	const fetchInitialFavorites = async () => {
 		setLoading(true);
 		try {
-			const token = localStorage.getItem('token');
-			if (!token) return;  // Early return if token is not available
-			const userId = jwtDecode(token).user.userId;
-			const response = await axios.get(`${apiUrl}/api/favorites/${userId}`, {
-				headers: { 'Authorization': `Bearer ${token}` }
+			const response = await axios.get(`${apiUrl}/api/favorites`, {
+				withCredentials: true, // This allows the request to send cookies
+				headers: { 'Content-Type': 'application/json' }
 			});
 			console.log(response.data);
 			const favoriteCategories = response.data.map(fav => fav.categoryId);
@@ -59,37 +64,35 @@ useEffect(() => {
 		} catch (err) {
 			setError('Failed to load favorites');
 			console.error('Error loading favorites:', err);
+			setFavorites(new Set());  // Initialize favorites as an empty Set in case of error
 		}
 		setLoading(false);
 	};
 
-	fetchInitialFavorites();
+    fetchInitialFavorites();
 }, [navigate]);
 
 
-	const fetchCategories = async (query) => {
-		setLoading(true);
-		try {
-			const token = localStorage.getItem('token');
-			const decoded = jwtDecode(token);
-			const userId = decoded.user.userId;
-			
-			const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-				headers: { 'Authorization': `Bearer ${token}` }
-			});
-			const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-			
-			const response = await axios.get(`${apiUrl}/api/twitch/search/categories`, {
-				headers: { 'Authorization': `Bearer ${twitchAccessToken}` },
-				params: { name: query }  // Ensure this matches your API expectation
-			});
-			setCategories(response.data);
-		} catch (err) {
-			setError('Failed to fetch categories, please try linking a Twitch account first.');
-			console.error('Error fetching categories:', err);
-		}
-		setLoading(false);
-	};
+const fetchCategories = async (query) => {
+    setLoading(true);
+    try {
+        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+            withCredentials: true, // This allows the request to send cookies
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+        
+        const response = await axios.get(`${apiUrl}/api/twitch/search/categories`, {
+            headers: { 'Authorization': `Bearer ${twitchAccessToken}` },
+            params: { name: query }  // Ensure this matches your API expectation
+        });
+        setCategories(response.data);
+    } catch (err) {
+        setError('Failed to fetch categories, please try linking a Twitch account first.');
+        console.error('Error fetching categories:', err);
+    }
+    setLoading(false);
+};
 
 	const handleSearch = (event) => {
 		event.preventDefault();
@@ -98,11 +101,8 @@ useEffect(() => {
 		}
 	};
 
-const toggleFavorite = async (category, e) => {
+	const toggleFavorite = async (category, e) => {
 		e.stopPropagation();  // Stop the event from bubbling up to the list item click
-		const token = localStorage.getItem('token');
-		const userId = jwtDecode(token).user.userId;
-		console.log("User ID:", userId);
 		console.log("Category passed to toggleFavorite:", category);
 		const isFavorite = favorites.has(category.id);
 		const actionUrl = `${apiUrl}/api/favorites/${isFavorite ? 'remove' : 'add'}`;
@@ -112,14 +112,14 @@ const toggleFavorite = async (category, e) => {
 			return;
 		}
 		const data = {
-			userId,
 			categoryId: category.id,
 			name: category.name  // Ensure to pass the name when adding a favorite
 		};
 		console.log("Data sent to server:", data);
 		try {
 			await axios.post(actionUrl, data, {
-				headers: { 'Authorization': `Bearer ${token}` }
+				withCredentials: true, // This allows the request to send cookies
+				headers: { 'Content-Type': 'application/json' }
 			});
 			setFavorites(prev => {
 				const updated = new Set(prev);
@@ -135,27 +135,24 @@ const toggleFavorite = async (category, e) => {
 		}
 	};
 
-const fetchStreams = async (categoryId, cursor) => {
-    setLoading(true);
-    try {
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        const userId = decoded.user.userId;
-        
-        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-        
-        const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
-            headers: {
-                'Authorization': `Bearer ${twitchAccessToken}`
-            },
-            params: {
-                first: 1500,  // Fetch all streams
-                after: cursor  // Use cursor for pagination
-            }
-        });
+	const fetchStreams = async (categoryId, cursor) => {
+		setLoading(true);
+		try {
+			const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+				withCredentials: true, // This allows the request to send cookies
+				headers: { 'Content-Type': 'application/json' }
+			});
+			const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+			
+			const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
+				headers: {
+					'Authorization': `Bearer ${twitchAccessToken}`
+				},
+				params: {
+					first: 1500,  // Fetch all streams
+					after: cursor  // Use cursor for pagination
+				}
+			});
         const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
         // Fetch user info in batches of 100
         const batchSize = 100;

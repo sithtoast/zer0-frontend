@@ -41,6 +41,11 @@ function Login() {
 	  }
 	};
 
+	const handleTwitchLogin = () => {
+		// Redirect to the backend route configured for Passport Twitch authentication
+		window.location.href = `${apiUrl}/auth/twitch`;
+	};
+
 return (
 <div>
 <Navbar />
@@ -50,7 +55,8 @@ return (
             <div className="col-md-6">
                 <h1 className="text-center mb-4">Sign In</h1>
                 <form onSubmit={e => onSubmit(e)}>
-                    <div className="form-group">
+				<button onClick={handleTwitchLogin} className="btn btn-secondary btn-block">Login with Twitch</button>
+					<div className="form-group">
                         <label>Email Address</label>
                         <input type="email" className="form-control" placeholder="Enter email" name="email" value={email} onChange={e => onChange(e)} required />
                     </div>

@@ -15,21 +15,12 @@ const FavoritesPage = () => {
 	const [error, setError] = useState('');
 	const [openCategories, setOpenCategories] = useState({});
 
-useEffect(() => {
+	useEffect(() => {
 		const fetchFavorites = async () => {
 			try {
-				const token = localStorage.getItem('token');
-				if (!token) {
-					setError('Authentication required.');
-					setLoading(false);
-					return;
-				}
-	
-				const decoded = jwtDecode(token);
-				const userId = decoded.user.userId;
-	
-				const response = await axios.get(`${apiUrl}/api/favorites/${userId}`, {
-					headers: { 'Authorization': `Bearer ${token}` }
+				const response = await axios.get(`${apiUrl}/api/favorites`, {
+					withCredentials: true, // This allows the request to send cookies
+					headers: { 'Content-Type': 'application/json' }
 				});
 	
 				if (response.data && Array.isArray(response.data)) {
@@ -72,29 +63,20 @@ function shuffleAndPick(array, numItems) {
 	}
 	
 	const fetchStreamsForCategory = async (categoryId) => {
-		const token = localStorage.getItem('token');
-		if (!token) {
-			setError('Authentication required.');
-			return;
-		}
-
-		const decoded = jwtDecode(token);
-		const userId = decoded.user.userId;
-		
-		const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-			headers: { 'Authorization': `Bearer ${token}` }
-		});
-		const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-		
 		try {
+			const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+				withCredentials: true, // This allows the request to send cookies
+				headers: { 'Content-Type': 'application/json' }
+			});
+			const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+	
 			const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
 				headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
 			});
-			
+	
 			// Use shuffleAndPick to select a random subset of streams
 			const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
-			
-
+	
 			const shuffledPickedStreamsWithFollowerCounts = [];
 			for (const stream of shuffledPickedStreams) {
 				try {
@@ -132,18 +114,10 @@ function shuffleAndPick(array, numItems) {
 	};
 
 	const removeFavoriteCategory = async (categoryId) => {
-		const token = localStorage.getItem('token');
-		if (!token) {
-			setError('Authentication required.');
-			return;
-		}
-	
-		const decoded = jwtDecode(token);
-		const userId = decoded.user.userId;
-	
 		try {
-			await axios.post(`${apiUrl}/api/favorites/remove`, { userId, categoryId }, {
-				headers: { 'Authorization': `Bearer ${token}` }
+			await axios.post(`${apiUrl}/api/favorites/remove`, { categoryId }, {
+				withCredentials: true, // This allows the request to send cookies
+				headers: { 'Content-Type': 'application/json' }
 			});
 	
 			// Update the favorites state to remove the category

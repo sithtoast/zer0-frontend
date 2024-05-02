@@ -6,50 +6,52 @@ import { jwtDecode } from 'jwt-decode';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Navbar = () => {
-  const navigate = useNavigate();
-
-  const [profileData, setProfileData] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-	const fetchProfileData = async () => {
+	const navigate = useNavigate();
+  
+	const [profileData, setProfileData] = useState({});
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState('');
+  
+	useEffect(() => {
+	  const fetchProfileData = async () => {
+		  try {
+			  const response = await axios.get(`${apiUrl}/api/users/profile`, {
+				  withCredentials: true, // This allows the request to send cookies
+				  headers: {
+					  'Content-Type': 'application/json'
+				  }
+			  });
+			  console.log(response.data);
+			  setProfileData(response.data);
+			  setLoading(false);
+		  } catch (err) {
+			  setError('Failed to fetch profile data');
+			  setLoading(false);
+			  console.error('There was an error!', err);
+		  }
+	  };
+  
+	  fetchProfileData();
+  }, []);
+  
+	const isAuthenticated = () => {
+	  return profileData.user; // Check if the user data exists
+	};
+  
+	const handleLogout = async () => {
 	  try {
-		const token = localStorage.getItem('token');
-		if (!token) {
-		  setLoading(false);
-		  return;
-		}
-		const decoded = jwtDecode(token);
-		const userId = decoded.user.userId;
-
-		const response = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
+		await axios.post(`${apiUrl}/api/users/logout`, {}, {
+		  withCredentials: true, // This allows the request to send cookies
 		  headers: {
-			'Authorization': `Bearer ${token}`,
-			'Content-Type': 'application/json'
+			  'Content-Type': 'application/json'
 		  }
 		});
-		setProfileData(response.data);
-		console.log(response.data);
-		setLoading(false);
+		setProfileData({});
+		navigate('/');
 	  } catch (err) {
-		setError('Failed to fetch profile data');
-		setLoading(false);
-		console.error('There was an error!', err);
+		console.error('Failed to logout:', err);
 	  }
 	};
-
-	fetchProfileData();
-  }, []);
-
-  const isAuthenticated = () => {
-	return !!localStorage.getItem('token'); // Check if the token exists
-  };
-
-  const handleLogout = () => {
-	localStorage.removeItem('token');
-	navigate('/');
-  };
 
 return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">

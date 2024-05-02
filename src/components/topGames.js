@@ -47,12 +47,9 @@ useEffect(() => {
 const fetchCategories = async () => {
     setLoading(true);
     try {
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        const userId = decoded.user.userId;
-        
-        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+            withCredentials: true, // This allows the request to send cookies
+            headers: { 'Content-Type': 'application/json' }
         });
         const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
         setUserProfileResponse(userProfileResponse.data);
@@ -81,12 +78,10 @@ const fetchCategories = async () => {
 
 const fetchFavorites = async () => {
     setLoading(true);
-    const token = localStorage.getItem('token');
     try {
-        const decoded = jwtDecode(token);
-        const userId = decoded.user.userId;
-        const response = await axios.get(`${apiUrl}/api/favorites/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const response = await axios.get(`${apiUrl}/api/favorites`, {
+            withCredentials: true, // This allows the request to send cookies
+            headers: { 'Content-Type': 'application/json' }
         });
         setFavorites(new Set(response.data.map(cat => cat.categoryId)));
     } catch (err) {
@@ -94,47 +89,42 @@ const fetchFavorites = async () => {
     }
     setLoading(false);
 };
-    
+
 const toggleFavorite = async (category, event) => {
-        event.stopPropagation();
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        const userId = decoded?.user?.userId;
+    event.stopPropagation();
+    if (!category?.id) {
+        console.error("Missing required parameters", {categoryId: category?.id});
+        setError("Missing required parameters");
+        return;
+    }
+
+    const action = favorites.has(category.id) ? 'remove' : 'add';
+    console.log("Category passed to toggleFavorite:", category);
     
-        if (!userId || !category?.id) {
-            console.error("Missing required parameters", {userId, categoryId: category?.id});
-            setError("Missing required parameters");
-            return;
-        }
-    
-        const action = favorites.has(category.id) ? 'remove' : 'add';
-        console.log("User ID:", userId);
-        console.log("Category passed to toggleFavorite:", category);
-        
-        try {
-            console.log("Sending data:", { userId, categoryId: category.id, name: category.name });
-            await axios.post(`${apiUrl}/api/favorites/${action}`, {
-                userId,  // Include userId in the request
-                categoryId: category.id,
-                name: category.name
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-    
-            setFavorites(prev => {
-                const updated = new Set(prev);
-                if (action === 'add') {
-                    updated.add(category.id);
-                } else {
-                    updated.delete(category.id);
-                }
-                return updated;
-            });
-        } catch (err) {
-            console.error(`Failed to ${action} favorite:`, err.response ? err.response.data : err);
-            setError(`Failed to ${action} favorite: ${err.response ? err.response.data.message : "Unknown error"}`);
-        }
-    };
+    try {
+        console.log("Sending data:", { categoryId: category.id, name: category.name });
+        await axios.post(`${apiUrl}/api/favorites/${action}`, {
+            categoryId: category.id,
+            name: category.name
+        }, {
+            withCredentials: true, // This allows the request to send cookies
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        setFavorites(prev => {
+            const updated = new Set(prev);
+            if (action === 'add') {
+                updated.add(category.id);
+            } else {
+                updated.delete(category.id);
+            }
+            return updated;
+        });
+    } catch (err) {
+        console.error(`Failed to ${action} favorite:`, err.response ? err.response.data : err);
+        setError(`Failed to ${action} favorite: ${err.response ? err.response.data.message : "Unknown error"}`);
+    }
+};
     
 const handleClickCategory = (categoryId) => {
         setCurrentPage(1);  // Reset to first page on category change
@@ -145,27 +135,24 @@ const handleClickCategory = (categoryId) => {
         setCurrentGameName(categories.find(category => category.id === categoryId)?.name);  // Update the game name
     };
 
-const fetchStreams = async (categoryId, cursor) => {
-    setLoading(true);
-    try {
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        const userId = decoded.user.userId;
-        
-        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-        
-        const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
-            headers: {
-                'Authorization': `Bearer ${twitchAccessToken}`
-            },
-            params: {
-                first: 1500,  // Fetch all streams
-                after: cursor  // Use cursor for pagination
-            }
-        });
+    const fetchStreams = async (categoryId, cursor) => {
+        setLoading(true);
+        try {
+            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+                withCredentials: true, // This allows the request to send cookies
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+            
+            const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
+                headers: {
+                    'Authorization': `Bearer ${twitchAccessToken}`
+                },
+                params: {
+                    first: 1500,  // Fetch all streams
+                    after: cursor  // Use cursor for pagination
+                }
+            });
         const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
         // Fetch user info in batches of 100
         const batchSize = 100;

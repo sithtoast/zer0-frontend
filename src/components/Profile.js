@@ -28,31 +28,27 @@ const handleUnlink = async () => {
     }
 };
 
-	useEffect(() => {
-		const fetchProfileData = async () => {
-			try {
-				const token = localStorage.getItem('token');
-				const decoded = jwtDecode(token);
-				const userId = decoded.user.userId;
+useEffect(() => {
+    const fetchProfileData = async () => {
+        try {
+            const response = await axios.get(`${apiUrl}/api/users/profile`, {
+                withCredentials: true, // Add this line
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log(response.data);
+            setProfileData(response.data);
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to fetch profile data');
+            setLoading(false);
+            console.error('There was an error!', err);
+        }
+    };
 
-				const response = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`,
-						'Content-Type': 'application/json'
-					}
-				});
-				console.log(response.data);
-				setProfileData(response.data);
-				setLoading(false);
-			} catch (err) {
-				setError('Failed to fetch profile data');
-				setLoading(false);
-				console.error('There was an error!', err);
-			}
-		};
-
-		fetchProfileData();
-	}, []);
+    fetchProfileData();
+}, []);
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;

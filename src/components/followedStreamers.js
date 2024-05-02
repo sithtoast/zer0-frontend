@@ -17,12 +17,10 @@ const FollowedStreams = () => {
 
     const fetchFavorites = async () => {
         setLoading(true);
-        const token = localStorage.getItem('token');
         try {
-            const decoded = jwtDecode(token);
-            const userId = decoded.user.userId;
-            const response = await axios.get(`${apiUrl}/api/favorites/${userId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const response = await axios.get(`${apiUrl}/api/favorites`, {
+                withCredentials: true, // This allows the request to send cookies
+                headers: { 'Content-Type': 'application/json' }
             });
             setFavorites(new Set(response.data.map(cat => cat.categoryId)));
         } catch (err) {
@@ -33,28 +31,24 @@ const FollowedStreams = () => {
     
     const toggleFavorite = async (category, event) => {
         event.stopPropagation();
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-        const userId = decoded?.user?.userId;
     
-        if (!userId || !category?.id) {
-            console.error("Missing required parameters", {userId, categoryId: category?.id});
+        if (!category?.id) {
+            console.error("Missing required parameters", {categoryId: category?.id});
             setError("Missing required parameters");
             return;
         }
     
         const action = favorites.has(category.id) ? 'remove' : 'add';
-        console.log("User ID:", userId);
         console.log("Category passed to toggleFavorite:", category);
         
         try {
-            console.log("Sending data:", { userId, categoryId: category.id, name: category.name });
+            console.log("Sending data:", { categoryId: category.id, name: category.name });
             await axios.post(`${apiUrl}/api/favorites/${action}`, {
-                userId,  // Include userId in the request
                 categoryId: category.id,
                 name: category.name
             }, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                withCredentials: true, // This allows the request to send cookies
+                headers: { 'Content-Type': 'application/json' }
             });
     
             setFavorites(prev => {
@@ -73,59 +67,57 @@ const FollowedStreams = () => {
     };
     
     useEffect(() => {
-    const fetchStreams = async () => {
-        setLoading(true);
-        try {
-            const token = localStorage.getItem('token');
-            const decoded = jwtDecode(token);
-            const userId = decoded.user.userId;
-
-            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile/${userId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setUserProfileResponse(userProfileResponse.data);
-            // Check if Twitch account is linked
-            if (!userProfileResponse.data.twitch) {
-                setError('Please link your Twitch account to continue');
-                setLoading(false);
-                return;  // Skip the rest of the function
-            }
-
-            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-
-            const response = await axios.get(`${apiUrl}/api/twitch/followed-streams/${userId}`, {
-                headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-            });
-            console.log(response.data);
-
-            // Fetch follower counts one at a time
-            const streamsWithFollowerCounts = [];
-            for (const stream of response.data) {
-                try {
-                    const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
-                        headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-                    });
-                    console.log(followerCountResponse.data);
-                    const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
-                    streamsWithFollowerCounts.push({ ...stream, followerCount });
-                } catch (err) {
-                    console.error('Error fetching follower count for stream:', stream.user_id, err);
-                    streamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
+        const fetchStreams = async () => {
+            setLoading(true);
+            try {
+                const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+                    withCredentials: true, // This allows the request to send cookies
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                setUserProfileResponse(userProfileResponse.data);
+                // Check if Twitch account is linked
+                if (!userProfileResponse.data.twitch) {
+                    setError('Please link your Twitch account to continue');
+                    setLoading(false);
+                    return;  // Skip the rest of the function
                 }
+    
+                const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+    
+                const response = await axios.get(`${apiUrl}/api/twitch/followed-streams`, {
+                    withCredentials: true, // This allows the request to send cookies
+                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                });
+                console.log(response.data);
+    
+                // Fetch follower counts one at a time
+                const streamsWithFollowerCounts = [];
+                for (const stream of response.data) {
+                    try {
+                        const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                            headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                        });
+                        console.log(followerCountResponse.data);
+                        const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
+                        streamsWithFollowerCounts.push({ ...stream, followerCount });
+                    } catch (err) {
+                        console.error('Error fetching follower count for stream:', stream.user_id, err);
+                        streamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
+                    }
+                }
+                setStreams(streamsWithFollowerCounts);
+    
+                setLoading(false);
+            } catch (err) {
+                setError('Failed to fetch followed streams');
+                setLoading(false);
+                console.error('Error:', err);
             }
-            setStreams(streamsWithFollowerCounts);
-
-            setLoading(false);
-        } catch (err) {
-            setError('Failed to fetch followed streams');
-            setLoading(false);
-            console.error('Error:', err);
-        }
-    };
-
-    fetchStreams();
-    fetchFavorites();
-}, []);
+        };
+    
+        fetchStreams();
+        fetchFavorites();
+    }, []);
 
     useEffect(() => {
     console.log(userProfileResponse);
