@@ -1,13 +1,13 @@
 /* global Twitch */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { Tooltip, OverlayTrigger } from 'react-bootstrap';
 import StreamerBadge from './streamerBadge';
 import AffiliateIcon from '../assets/affiliate.png';
+import ReactSlider from 'react-slider';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -27,11 +27,120 @@ const TopCategories = () => {
     const [selectedStream, setSelectedStream] = useState(null);
     const [userProfileResponse, setUserProfileResponse] = useState(null);
     const [categoryClicked, setCategoryClicked] = useState(false);
+    const [minViewerCount, setMinViewerCount] = useState(0);
+    const [maxViewerCount, setMaxViewerCount] = useState(3);
+    const [minJoinDate, setMinJoinDate] = useState(new Date(0)); // Default to epoch
+    const [maxJoinDate, setMaxJoinDate] = useState(new Date()); // Default to now
+    const [startedWithinHour, setStartedWithinHour] = useState(false); // Default to not filtering by start time
+    const [matureContent, setMatureContent] = useState(true);
+    const [nonMatureContent, setNonMatureContent] = useState(true);
+    const [nearAffiliate, setNearAffiliate] = useState(false);
+    const [allStreamsWithFollowerCounts, setAllStreamsWithFollowerCounts] = useState([]);
     
 
+const fetchStreams = useCallback(async (categoryId, cursor) => {
+    setLoading(true);
+    try {
+        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+            withCredentials: true, // This allows the request to send cookies
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+        
+        const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
+            headers:{
+                'Authorization': `Bearer ${twitchAccessToken}`
+            },
+            params: {
+                first: 1500,  // Fetch all streams
+                after: cursor  // Use cursor for pagination
+            }
+        });
+        let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
+    // Fetch user info in batches of 100
+    const batchSize = 100;
+    for (let i = 0; i < filteredStreams.length; i += batchSize) {
+        const batch = filteredStreams.slice(i, i + batchSize);
+        const userIds = batch.map(stream => stream.user_id);
+        try {
+            const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+                headers: {
+                    'Authorization': `Bearer ${twitchAccessToken}`
+                }
+            });
+            // Add user info to streams
+            const userInfoData = userInfoResponse.data.data;
+            for (let j = 0; j < batch.length; j++) {
+                const stream = batch[j];
+                const userInfo = userInfoData.find(user => user.id === stream.user_id);
+                if (userInfo) {
+                    stream.user_info = userInfo;
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching user data:', err);
+        }
+    }
+
+        // Clear the allStreamsWithFollowerCounts array
+        setAllStreamsWithFollowerCounts([]);
+
+        // Fetch follower counts for all streams
+        for (const stream of filteredStreams) {
+            // Check if follower count for this stream has already been fetched
+            if (!stream.followerCount) {
+                try {
+                    const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                        headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                    });
+                    console.log(followerCountResponse.data);
+                    const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
+                    stream.followerCount = followerCount; // Add follower count to stream
+                } catch (err) {
+                    console.error('Error fetching follower count for stream:', stream.user_id, err);
+                    stream.followerCount = 0; // Set follower count to 0 if fetching fails
+                }
+            }
+            // Add stream to array
+            setAllStreamsWithFollowerCounts(prevStreams => [...prevStreams, stream]);
+        }
+    } catch (err) {
+        setError(`Failed to fetch streams for category ${categoryId}`);
+        console.error('Error fetching streams:', err);
+    } finally {
+        setLoading(false);
+        console.log("Streams fetched:", streams);
+    }
+}, []); // Add the dependencies of the fetchStreams function here
+
+// Fetch streams when the component mounts
 useEffect(() => {
     fetchCategories();
     fetchFavorites();
+    fetchStreams();
+}, [fetchStreams]);
+
+// Filter and set streams whenever allStreamsWithFollowerCounts or any of the filters change
+useEffect(() => {
+    const filteredStreams = allStreamsWithFollowerCounts.filter(stream => {
+        const meetsViewerCount = stream.viewer_count >= minViewerCount && stream.viewer_count <= maxViewerCount;
+        const meetsFollowerCount = !nearAffiliate || (stream.followerCount >= 45 && stream.followerCount < 50);
+        const joinDate = new Date(stream.user_info.created_at);
+        const meetsJoinDate = joinDate >= minJoinDate && joinDate <= maxJoinDate;
+        const meetsMaturity = (matureContent && stream.is_mature) || (nonMatureContent && !stream.is_mature);
+        const startedTime = new Date(stream.started_at);
+        const meetsStartedWithinHour = !startedWithinHour || (new Date() - startedTime) <= 60 * 60 * 1000;
+
+        return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour;
+    });
+
+    // Now you can paginate the filtered streams
+    const startIndex = (currentPage - 1) * 30;
+    const endIndex = currentPage * 30;
+    const currentPageStreamsWithFollowerCounts = filteredStreams.slice(startIndex, endIndex);
+
+    setStreams(currentPageStreamsWithFollowerCounts);
+    setPages(Math.ceil(filteredStreams.length / 30));
 
     if (selectedStream) {
         new Twitch.Embed("twitch-embed", {
@@ -42,8 +151,7 @@ useEffect(() => {
             parent: ["zer0.tv"]
         });
     }
-}, [selectedStream]);
-
+}, [minViewerCount, maxViewerCount, nearAffiliate, minJoinDate, maxJoinDate, matureContent, nonMatureContent, startedWithinHour, selectedStream, allStreamsWithFollowerCounts]);
 
 const fetchCategories = async () => {
     setLoading(true);
@@ -137,79 +245,7 @@ const handleClickCategory = (categoryId) => {
         setCurrentGameName(categories.find(category => category.id === categoryId)?.name);  // Update the game name
     };
 
-    const fetchStreams = async (categoryId, cursor) => {
-        setLoading(true);
-        try {
-            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                withCredentials: true, // This allows the request to send cookies
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-            
-            const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
-                headers: {
-                    'Authorization': `Bearer ${twitchAccessToken}`
-                },
-                params: {
-                    first: 1500,  // Fetch all streams
-                    after: cursor  // Use cursor for pagination
-                }
-            });
-        const filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
-        // Fetch user info in batches of 100
-        const batchSize = 100;
-        for (let i = 0; i < filteredStreams.length; i += batchSize) {
-            const batch = filteredStreams.slice(i, i + batchSize);
-            const userIds = batch.map(stream => stream.user_id);
-            try {
-                const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
-                    headers: {
-                        'Authorization': `Bearer ${twitchAccessToken}`
-                    }
-                });
-                // Add user info to streams
-                const userInfoData = userInfoResponse.data.data;
-                for (let j = 0; j < batch.length; j++) {
-                    const stream = batch[j];
-                    const userInfo = userInfoData.find(user => user.id === stream.user_id);
-                    if (userInfo) {
-                        stream.user_info = userInfo;
-                    }
-                }
-            } catch (err) {
-                console.error('Error fetching user data:', err);
-            }
-        }
-
-        // Fetch follower counts one at a time for streams on the current page
-        const startIndex = (currentPage - 1) * 30;
-        const endIndex = currentPage * 30;
-        const currentPageStreams = filteredStreams.slice(startIndex, endIndex);
-        const currentPageStreamsWithFollowerCounts = [];
-        for (const stream of currentPageStreams) {
-            try {
-                const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
-                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-                });
-                console.log(followerCountResponse.data);
-                const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
-                currentPageStreamsWithFollowerCounts.push({ ...stream, followerCount });
-            } catch (err) {
-                console.error('Error fetching follower count for stream:', stream.user_id, err);
-                currentPageStreamsWithFollowerCounts.push({ ...stream, followerCount: 0 });
-            }
-        }
-        console.log("Current page streams with follower counts:", currentPageStreamsWithFollowerCounts);
-        setStreams(currentPageStreamsWithFollowerCounts);
-        setPages(Math.ceil(filteredStreams.length / 30));
-    } catch (err) {
-        setError(`Failed to fetch streams for category ${categoryId}`);
-        console.error('Error fetching streams:', err);
-    } finally {
-        setLoading(false);
-        console.log("Streams fetched:", streams);
-    }
-};
+ 
     
 const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -246,7 +282,51 @@ return (
                 )}
             </div>
             {categoryClicked && ( // only render this div if a category has been clicked
-                <div className="col-md-8 streams">
+                <div className="col-md-8 streams"> 
+                <div id="filter" classname="filter-box">
+                    {/* Add filter inputs here */}
+                    <div className="mb-3">
+                        <label htmlFor="viewerCount" className="form-label">Viewer Count:</label>
+                        <ReactSlider
+                            className="react-slider"
+                            thumbClassName="thumb"
+                            trackClassName="track"
+                            min={0}
+                            max={3}
+                            value={[minViewerCount, maxViewerCount]}
+                            onChange={([min, max]) => {
+                                setMinViewerCount(min);
+                                setMaxViewerCount(max);
+                            }}
+                            pearling
+                            minDistance={0}
+                        />
+                        <p>Selected range: {minViewerCount} - {maxViewerCount}</p>
+                    </div>
+                    <div className="mb-3 form-check">
+                        <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
+                        <label className="form-check-label" htmlFor="nearAffiliate">Near Affiliate</label>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="minJoinDate" className="form-label">Minimum Join Date:</label>
+                        <input type="date" className="form-control" id="minJoinDate" value={minJoinDate.toISOString().split('T')[0]} onChange={e => setMinJoinDate(new Date(e.target.value))} />
+
+                        <label htmlFor="maxJoinDate" className="form-label">Maximum Join Date:</label>
+                        <input type="date" className="form-control" id="maxJoinDate" value={maxJoinDate.toISOString().split('T')[0]} onChange={e => setMaxJoinDate(new Date(e.target.value))} />
+                    </div>
+                    <div className="mb-3 form-check">
+                        <input type="checkbox" className="form-check-input" id="matureContent" checked={matureContent} onChange={e => setMatureContent(e.target.checked)} />
+                        <label className="form-check-label" htmlFor="matureContent">Mature Content</label>
+                    </div>
+                    <div className="mb-3 form-check">
+                        <input type="checkbox" className="form-check-input" id="nonMatureContent" checked={nonMatureContent} onChange={e => setNonMatureContent(e.target.checked)} />
+                        <label className="form-check-label" htmlFor="nonMatureContent">Non-Mature Content</label>
+                    </div>
+                    <div className="mb-3 form-check">
+                        <input type="checkbox" className="form-check-input" id="startedWithinHour" checked={startedWithinHour} onChange={e => setStartedWithinHour(e.target.checked)} />
+                        <label className="form-check-label" htmlFor="startedWithinHour">Started Within Last Hour</label>
+                    </div>
+                </div>
                     <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
                     <div id="twitch-embed"></div>
                     <div className="row">
@@ -269,6 +349,7 @@ return (
                             </div>
                         ))
                         ) : streams.length ? streams.map(stream => (
+                            
                             <div 
                             key={stream.id} 
                             className={`col-md-4 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
