@@ -22,22 +22,22 @@ const StreamerBadge = ({ stream }) => {
             </div>
             <div className="badge-messages">
                 {isNearAffiliate &&
-                    <p className="card-text affiliate-message">Near Affiliate</p>
+                    <p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p>
                 }
                 {isNewbie &&
-                    <p className="card-text newbie-message">Twitch Newbie</p>
+                    <p className="card-text newbie-message" title="This user's account is less than 6 months old.">Twitch Newbie</p>
                 }
                 {justStarted &&
-                    <p className="card-text just-started-message">Just Started</p>
+                    <p className="card-text just-started-message" title="This user has just started streaming.">Just Started</p>
                 }
                 {oldFriend &&
-                    <p className="card-text old-friend-message">Old Friend</p>
+                    <p className="card-text old-friend-message" title="This user has been on Twitch for a long time. (5-9 yrs)">Old Friend</p>
                 }
                 {justinsFriend &&
-                    <p className="card-text justins-friend-message">Justin's Friend</p>
+                    <p className="card-text justins-friend-message" title="This user's account was made in the Justin.tv days.">Justin's Friend</p>
                 }
                 {twitchVeteran &&
-                    <p className="card-text twitch-veteran-message">Twitch Veteran</p>
+                    <p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p>
                 }
             </div>
         </div>

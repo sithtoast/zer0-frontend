@@ -26,6 +26,7 @@ const TopCategories = () => {
     const [nextCursor] = useState(null);
     const [selectedStream, setSelectedStream] = useState(null);
     const [userProfileResponse, setUserProfileResponse] = useState(null);
+    const [categoryClicked, setCategoryClicked] = useState(false);
     
 
 useEffect(() => {
@@ -229,7 +230,10 @@ return (
                         <ul className="list-group">
                             {categories.map(category => (
                                 <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <span onClick={() => handleClickCategory(category.id)}>
+                                    <span onClick={() => {
+                                        handleClickCategory(category.id);
+                                        setCategoryClicked(true); // set state variable to true when a category is clicked
+                                    }}>
                                         {category.name}
                                     </span>
                                     <button onClick={(e) => toggleFavorite(category, e)}>
@@ -241,94 +245,96 @@ return (
                     </>
                 )}
             </div>
-            <div className="col-md-8 streams">
-                <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
-                <div id="twitch-embed"></div>
-                <div className="row">
-                {loading ? (
-                    [...Array(30)].map((_, i) => (
-                        <div key={i} className="col-md-4 mb-4">
-                            <div className="card loading-card" aria-hidden="true">
-                                <div className="card-body">
-                                    <h5 className="card-title">
-                                        <span className="placeholder col-7"></span>
-                                    </h5>
-                                    <div className="placeholder-glow">
-                                        <span className="placeholder col-7"></span>
-                                        <span className="placeholder col-4"></span>
-                                        <span className="placeholder col-6"></span>
-                                        <span className="placeholder col-8"></span>
+            {categoryClicked && ( // only render this div if a category has been clicked
+                <div className="col-md-8 streams">
+                    <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
+                    <div id="twitch-embed"></div>
+                    <div className="row">
+                    {loading ? (
+                        [...Array(30)].map((_, i) => (
+                            <div key={i} className="col-md-4 mb-4">
+                                <div className="card loading-card" aria-hidden="true">
+                                    <div className="card-body">
+                                        <h5 className="card-title">
+                                            <span className="placeholder col-7"></span>
+                                        </h5>
+                                        <div className="placeholder-glow">
+                                            <span className="placeholder col-7"></span>
+                                            <span className="placeholder col-4"></span>
+                                            <span className="placeholder col-6"></span>
+                                            <span className="placeholder col-8"></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))
-                    ) : streams.length ? streams.map(stream => (
-                        <div 
-                        key={stream.id} 
-                        className={`col-md-4 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
-                        onClick={() => setSelectedStream(stream.user_name)}
-                        >
-                            <div className="card">
-                                <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
-                                <div className="card-body">
-                                <OverlayTrigger
-                                    placement="left"
-                                    overlay={
-                                        <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
-                                            <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
-                                            <strong>{stream.user_name}</strong><br />
-                                            Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                                            Followers: {stream.followerCount}<br />
-                                            Created at: {new Date(stream.user_info.created_at).toLocaleString()}
-                                        </Tooltip>
-                                    }
-                                >
-                                <h5 className="card-title">
-                                    {stream.user_name}
-                                    {stream.user_info.broadcaster_type === "affiliate" && 
-                                        <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
-                                    }
-                                </h5>
-                                </OverlayTrigger>
-                                <p className="card-text">Viewers: {stream.viewer_count}</p>
-                                <p className="card-text">Language: {stream.language}</p>
-                                <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                <StreamerBadge stream={stream} />
+                        ))
+                        ) : streams.length ? streams.map(stream => (
+                            <div 
+                            key={stream.id} 
+                            className={`col-md-4 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
+                            onClick={() => setSelectedStream(stream.user_name)}
+                            >
+                                <div className="card">
+                                    <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
+                                    <div className="card-body">
+                                    <OverlayTrigger
+                                        placement="left"
+                                        overlay={
+                                            <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
+                                                <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
+                                                <strong>{stream.user_name}</strong><br />
+                                                Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
+                                                Followers: {stream.followerCount}<br />
+                                                Created at: {new Date(stream.user_info.created_at).toLocaleString()}
+                                            </Tooltip>
+                                        }
+                                    >
+                                    <h5 className="card-title">
+                                        {stream.user_name}
+                                        {stream.user_info.broadcaster_type === "affiliate" && 
+                                            <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
+                                        }
+                                    </h5>
+                                    </OverlayTrigger>
+                                    <p className="card-text">Viewers: {stream.viewer_count}</p>
+                                    <p className="card-text">Language: {stream.language}</p>
+                                    <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                                    <StreamerBadge stream={stream} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )) : <p className="stream-details">No streams available.</p>}
-                </div>
-                <div className="pagination">
-                    <button 
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                    >
-                        Previous
-                    </button>
-                    {[...Array(pages).keys()].slice(Math.max(0, currentPage - 3), currentPage + 2).map(i =>
+                        )) : <p className="stream-details">No streams available.</p>}
+                    </div>
+                    <div className="pagination">
                         <button 
-                            key={i} 
-                            onClick={() => handlePageChange(i + 1)}
-                            className={`page-item ${currentPage === (i + 1) ? 'current-page' : ''}`}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
                         >
-                            {i + 1}
+                            Previous
                         </button>
-                    )}
-                    <button 
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === pages}
-                    >
-                        Next
-                    </button>
+                        {[...Array(pages).keys()].slice(Math.max(0, currentPage - 3), currentPage + 2).map(i =>
+                            <button 
+                                key={i} 
+                                onClick={() => handlePageChange(i + 1)}
+                                className={`page-item ${currentPage === (i + 1) ? 'current-page' : ''}`}
+                            >
+                                {i + 1}
+                            </button>
+                        )}
+                        <button 
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === pages}
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     </div>
     <Footer />
 </div>
-    )
+)
 };
     
 export default TopCategories;
