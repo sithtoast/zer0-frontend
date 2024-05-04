@@ -16,7 +16,6 @@ const navigate = useNavigate();
 const [categories, setCategories] = useState([]);
 const [favorites, setFavorites] = useState(new Set());
 const [streams, setStreams] = useState([]);
-const [selectedCategory, setSelectedCategory] = useState(null);
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState('');
 const [searchQuery, setSearchQuery] = useState('');
@@ -28,6 +27,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 const [nextCursor] = useState(null);
 const [currentGameName, setCurrentGameName] = useState('');
 const [currentCursor, setCurrentCursor] = useState(null);
+
 
 
 useEffect(() => {
@@ -275,6 +275,7 @@ return (
 								
 								{selectedStream && (
 									<div className="embed-container w-100" style={{ minHeight: "480px" }}>
+										<button onClick={() => setSelectedStream(null)}>Close Stream</button>
 										<iframe
 											src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
 											height="480"
