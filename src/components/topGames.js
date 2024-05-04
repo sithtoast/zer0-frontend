@@ -36,74 +36,77 @@ const TopCategories = () => {
     const [nonMatureContent, setNonMatureContent] = useState(true);
     const [nearAffiliate, setNearAffiliate] = useState(false);
     const [allStreamsWithFollowerCounts, setAllStreamsWithFollowerCounts] = useState([]);
+    const [lessThanSixMonths, setLessThanSixMonths] = useState(false);
+    const [fiveToNineYears, setFiveToNineYears] = useState(false);
+    const [overTenYears, setOverTenYears] = useState(false);
+    const [specificPeriod, setSpecificPeriod] = useState(false);
+    const [fetchedStreams, setFetchedStreams] = useState([]);
     
 
 const fetchStreams = useCallback(async (categoryId, cursor) => {
     setLoading(true);
     try {
         const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-            withCredentials: true, // This allows the request to send cookies
+            withCredentials: true,
             headers: { 'Content-Type': 'application/json' }
         });
         const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-        
+
         const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
             headers:{
                 'Authorization': `Bearer ${twitchAccessToken}`
             },
             params: {
-                first: 1500,  // Fetch all streams
-                after: cursor  // Use cursor for pagination
+                first: 1500,
+                after: cursor
             }
         });
+
         let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
-    // Fetch user info in batches of 100
-    const batchSize = 100;
-    for (let i = 0; i < filteredStreams.length; i += batchSize) {
-        const batch = filteredStreams.slice(i, i + batchSize);
-        const userIds = batch.map(stream => stream.user_id);
-        try {
-            const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
-                headers: {
-                    'Authorization': `Bearer ${twitchAccessToken}`
+
+        const batchSize = 100;
+        for (let i = 0; i < filteredStreams.length; i += batchSize) {
+            const batch = filteredStreams.slice(i, i + batchSize);
+            const userIds = batch.map(stream => stream.user_id);
+            try {
+                const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+                    headers: {
+                        'Authorization': `Bearer ${twitchAccessToken}`
+                    }
+                });
+                const userInfoData = userInfoResponse.data.data;
+                for (let j = 0; j < batch.length; j++) {
+                    const stream = batch[j];
+                    const userInfo = userInfoData.find(user => user.id === stream.user_id);
+                    if (userInfo) {
+                        stream.user_info = userInfo;
+                    }
                 }
-            });
-            // Add user info to streams
-            const userInfoData = userInfoResponse.data.data;
-            for (let j = 0; j < batch.length; j++) {
-                const stream = batch[j];
-                const userInfo = userInfoData.find(user => user.id === stream.user_id);
-                if (userInfo) {
-                    stream.user_info = userInfo;
-                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
             }
-        } catch (err) {
-            console.error('Error fetching user data:', err);
         }
-    }
 
-        // Clear the allStreamsWithFollowerCounts array
-        setAllStreamsWithFollowerCounts([]);
+        let newStreams = [];
 
-        // Fetch follower counts for all streams
         for (const stream of filteredStreams) {
-            // Check if follower count for this stream has already been fetched
             if (!stream.followerCount) {
                 try {
                     const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
                         headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
                     });
-                    console.log(followerCountResponse.data);
                     const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
-                    stream.followerCount = followerCount; // Add follower count to stream
+                    stream.followerCount = followerCount;
                 } catch (err) {
                     console.error('Error fetching follower count for stream:', stream.user_id, err);
-                    stream.followerCount = 0; // Set follower count to 0 if fetching fails
+                    stream.followerCount = 0;
                 }
             }
-            // Add stream to array
-            setAllStreamsWithFollowerCounts(prevStreams => [...prevStreams, stream]);
+            newStreams.push(stream);
         }
+
+        setAllStreamsWithFollowerCounts(newStreams);
+        setFetchedStreams(filteredStreams);
     } catch (err) {
         setError(`Failed to fetch streams for category ${categoryId}`);
         console.error('Error fetching streams:', err);
@@ -111,47 +114,7 @@ const fetchStreams = useCallback(async (categoryId, cursor) => {
         setLoading(false);
         console.log("Streams fetched:", streams);
     }
-}, []); // Add the dependencies of the fetchStreams function here
-
-// Fetch streams when the component mounts
-useEffect(() => {
-    fetchCategories();
-    fetchFavorites();
-    fetchStreams();
-}, [fetchStreams]);
-
-// Filter and set streams whenever allStreamsWithFollowerCounts or any of the filters change
-useEffect(() => {
-    const filteredStreams = allStreamsWithFollowerCounts.filter(stream => {
-        const meetsViewerCount = stream.viewer_count >= minViewerCount && stream.viewer_count <= maxViewerCount;
-        const meetsFollowerCount = !nearAffiliate || (stream.followerCount >= 45 && stream.followerCount < 50);
-        const joinDate = new Date(stream.user_info.created_at);
-        const meetsJoinDate = joinDate >= minJoinDate && joinDate <= maxJoinDate;
-        const meetsMaturity = (matureContent && stream.is_mature) || (nonMatureContent && !stream.is_mature);
-        const startedTime = new Date(stream.started_at);
-        const meetsStartedWithinHour = !startedWithinHour || (new Date() - startedTime) <= 60 * 60 * 1000;
-
-        return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour;
-    });
-
-    // Now you can paginate the filtered streams
-    const startIndex = (currentPage - 1) * 30;
-    const endIndex = currentPage * 30;
-    const currentPageStreamsWithFollowerCounts = filteredStreams.slice(startIndex, endIndex);
-
-    setStreams(currentPageStreamsWithFollowerCounts);
-    setPages(Math.ceil(filteredStreams.length / 30));
-
-    if (selectedStream) {
-        new Twitch.Embed("twitch-embed", {
-            width: "100%",
-            height: '500px',
-            channel: selectedStream,
-            layout: "video-with-chat",
-            parent: ["zer0.tv"]
-        });
-    }
-}, [minViewerCount, maxViewerCount, nearAffiliate, minJoinDate, maxJoinDate, matureContent, nonMatureContent, startedWithinHour, selectedStream, allStreamsWithFollowerCounts]);
+}, [selectedCategoryId]); // Added categoryId to dependencies
 
 const fetchCategories = async () => {
     setLoading(true);
@@ -252,12 +215,74 @@ const handlePageChange = (pageNumber) => {
     fetchStreams(selectedCategoryId, nextCursor);  // Use the cursor for the next page
 };
 
+
+
+
+// Fetch streams when the component mounts
+useEffect(() => {
+    fetchCategories();
+    fetchFavorites();
+}, []); // Removed fetchStreams from dependencies
+
+// Call fetchStreams manually when needed
+// For example, when selectedCategoryId changes
+useEffect(() => {
+    if (selectedCategoryId) {
+        fetchStreams(selectedCategoryId, null);
+    }
+}, [selectedCategoryId, fetchStreams]);
+
+// Filter and set streams whenever allStreamsWithFollowerCounts or any of the filters change
+useEffect(() => {
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+    const fiveYearsAgo = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+    const nineYearsAgo = new Date(now.getFullYear() - 9, now.getMonth(), now.getDate());
+    const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
+    const specificStartDate = new Date('2007-03-01');
+    const specificEndDate = new Date('2011-06-14');
+
+    const filteredStreams = allStreamsWithFollowerCounts.filter(stream => {
+        const meetsViewerCount = stream.viewer_count >= minViewerCount && stream.viewer_count <= maxViewerCount;
+        const meetsFollowerCount = !nearAffiliate || (stream.followerCount >= 45 && stream.followerCount < 50);
+        const joinDate = new Date(stream.user_info.created_at);
+        const meetsJoinDate = 
+            (!lessThanSixMonths || joinDate >= sixMonthsAgo) &&
+            (!fiveToNineYears || (joinDate <= fiveYearsAgo && joinDate > tenYearsAgo)) &&
+            (!overTenYears || joinDate <= tenYearsAgo) &&
+            (!specificPeriod || (joinDate >= specificStartDate && joinDate <= specificEndDate));
+        const meetsMaturity = (matureContent && stream.is_mature) || (nonMatureContent && !stream.is_mature);
+        const startedTime = new Date(stream.started_at);
+        const meetsStartedWithinHour = !startedWithinHour || (new Date() - startedTime) <= 60 * 60 * 1000;
+
+        return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour;
+    });
+
+    const startIndex = (currentPage - 1) * 30;
+    const endIndex = currentPage * 30;
+    const currentPageStreamsWithFollowerCounts = filteredStreams.slice(startIndex, endIndex);
+
+    setStreams(currentPageStreamsWithFollowerCounts);
+    setPages(Math.ceil(filteredStreams.length / 30));
+
+    if (selectedStream) {
+        new Twitch.Embed("twitch-embed", {
+            width: "100%",
+            height: '500px',
+            channel: selectedStream,
+            layout: "video-with-chat",
+            parent: ["zer0.tv"]
+        });
+    }
+}, [minViewerCount, maxViewerCount, nearAffiliate, minJoinDate, maxJoinDate, matureContent, nonMatureContent, startedWithinHour, selectedStream, allStreamsWithFollowerCounts, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod]);
+
+
 return (
 <div>
     <Navbar />
     <div className="container mt-3">
-        <div className="row">
-            <div className="col-md-4 categories">
+        <div className="row d-flex">
+            <div className="col-md-4 categories flex-column">
                 {!userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
                     <div>Please link your Twitch account to continue</div>
                 ) : (
@@ -282,8 +307,8 @@ return (
                 )}
             </div>
             {categoryClicked && ( // only render this div if a category has been clicked
-                <div className="col-md-8 streams"> 
-                <div id="filter" classname="filter-box">
+                <div className="col-md-8 streams flex-column" style={{minHeight: '500px', flexGrow: 2}}> 
+                <div id="filter" className="filter-box">
                     {/* Add filter inputs here */}
                     <div className="mb-3">
                         <label htmlFor="viewerCount" className="form-label">Viewer Count:</label>
@@ -305,14 +330,25 @@ return (
                     </div>
                     <div className="mb-3 form-check">
                         <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="nearAffiliate">Near Affiliate</label>
+                        <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
                     </div>
-                    <div className="mb-3">
-                        <label htmlFor="minJoinDate" className="form-label">Minimum Join Date:</label>
-                        <input type="date" className="form-control" id="minJoinDate" value={minJoinDate.toISOString().split('T')[0]} onChange={e => setMinJoinDate(new Date(e.target.value))} />
-
-                        <label htmlFor="maxJoinDate" className="form-label">Maximum Join Date:</label>
-                        <input type="date" className="form-control" id="maxJoinDate" value={maxJoinDate.toISOString().split('T')[0]} onChange={e => setMaxJoinDate(new Date(e.target.value))} />
+                    <div className="mb-3 form-check-group">
+                        <div className="form-check">
+                            <input className="form-check-input" type="checkbox" id="lessThanSixMonths" checked={lessThanSixMonths} onChange={e => setLessThanSixMonths(e.target.checked)} />
+                            <label className="form-check-label" htmlFor="lessThanSixMonths"><p className="card-text newbie-message" title="This user's account is less than 6 months old.">Twitch Newbie</p></label>
+                        </div>
+                        <div className="form-check">
+                            <input className="form-check-input" type="checkbox" id="fiveToNineYears" checked={fiveToNineYears} onChange={e => { setFiveToNineYears(e.target.checked); setSelectedStream(null); }} />
+                            <label className="form-check-label" htmlFor="fiveToNineYears"><p className="card-text old-friend-message" title="This user has been on Twitch for a long time. (5-9 yrs)">Old Friend</p></label>
+                        </div>
+                        <div className="form-check">
+                            <input className="form-check-input" type="checkbox" id="overTenYears" checked={overTenYears} onChange={e => setOverTenYears(e.target.checked)} />
+                            <label className="form-check-label" htmlFor="overTenYears"><p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p></label>
+                        </div>
+                        <div className="form-check">
+                            <input className="form-check-input" type="checkbox" id="specificPeriod" checked={specificPeriod} onChange={e => setSpecificPeriod(e.target.checked)} />
+                            <label className="form-check-label" htmlFor="specificPeriod"><p className="card-text justins-friend-message" title="This user's account was made in the Justin.tv days.">Justin's Friend</p></label>
+                        </div>
                     </div>
                     <div className="mb-3 form-check">
                         <input type="checkbox" className="form-check-input" id="matureContent" checked={matureContent} onChange={e => setMatureContent(e.target.checked)} />
@@ -324,7 +360,7 @@ return (
                     </div>
                     <div className="mb-3 form-check">
                         <input type="checkbox" className="form-check-input" id="startedWithinHour" checked={startedWithinHour} onChange={e => setStartedWithinHour(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="startedWithinHour">Started Within Last Hour</label>
+                        <label className="form-check-label" htmlFor="startedWithinHour"><p className="card-text just-started-message" title="This user has just started streaming.">Just Started</p></label>
                     </div>
                 </div>
                     <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
