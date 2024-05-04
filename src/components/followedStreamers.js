@@ -184,47 +184,40 @@ return (
                 {error && <div>Error: {error}</div>}
                 <div className="row">
                     {streams.map(stream => (
-                        <div 
-                            key={stream.id} 
-                            className={`col-md-12 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
-                            onClick={() => {
-                                // If the clicked stream is already the selected stream, return early
-                                if (stream === selectedStream) {
-                                    return;
-                                }
-
-                                setSelectedStream(stream);
-                            }}
-                        >
-                            <div className="card">
-                                <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
-                                <div className="card-body">
-                                    <OverlayTrigger
-                                        placement="left"
-                                        overlay={
-                                            <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
-                                                <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
-                                                <strong>{stream.user_name}</strong><br />
-                                                Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                                                Followers: {stream.followerCount}<br />
-                                                Created at: {new Date(stream.user_info.created_at).toLocaleString()}
-                                            </Tooltip>
-                                        }
-                                    >
-                                    <h5 className="card-title">
-                                        {stream.user_name}
-                                        {stream.user_info.broadcaster_type === "affiliate" && 
-                                            <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
-                                        }
-                                    </h5>
-                                    </OverlayTrigger>
-                                    <p className="card-text">Viewers: {stream.viewer_count}</p>
-                                    <p className="card-text">Language: {stream.language}</p>
-                                    <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                    <StreamerBadge stream={stream} />
-                                </div>
-                            </div>
-                        </div>
+                                 <div 
+                                 key={stream.id} 
+                                 className={`col-md-12 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
+                                 onClick={() => setSelectedStream(stream.user_name)}
+                             >
+                                 <div className="card">
+                                     <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
+                                     <div className="card-body">
+                                         <OverlayTrigger
+                                             placement="left"
+                                             overlay={
+                                                 <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
+                                                     <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
+                                                     <strong>{stream.user_name}</strong><br />
+                                                     Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
+                                                     Followers: {stream.followerCount}<br />
+                                                     Created at: {new Date(stream.user_info.created_at).toLocaleString()}
+                                                 </Tooltip>
+                                             }
+                                         >
+                                             <h5 className="card-title">
+                                                 {stream.user_name}
+                                                 {stream.user_info.broadcaster_type === "affiliate" && 
+                                                     <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
+                                                 }
+                                             </h5>
+                                         </OverlayTrigger>
+                                         <p className="card-text">Viewers: {stream.viewer_count}</p>
+                                         <p className="card-text">Language: {stream.language}</p>
+                                         <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                                         <StreamerBadge stream={stream} />
+                                     </div>
+                                 </div>
+                             </div>
                     ))}
                 </div>
             </div>
