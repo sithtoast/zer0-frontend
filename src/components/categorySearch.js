@@ -274,7 +274,7 @@ return (
 								<h2 className="stream-details">Streams for {categories.find(cat => cat.id === selectedCategoryId)?.name || 'selected category'}</h2>
 								
 								{selectedStream && (
-									<div className="embed-container w-100" style={{ minHeight: "480px" }}>
+									<div className="embed-container w-100" style={{ minHeight: "480px", marginBottom: "20px" }}>
 										<button onClick={() => setSelectedStream(null)}>Close Stream</button>
 										<iframe
 											src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
