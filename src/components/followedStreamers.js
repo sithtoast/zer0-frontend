@@ -151,21 +151,27 @@ useEffect(() => {
     console.log(userProfileResponse);
 }, [userProfileResponse]);
 
-    useEffect(() => {
-        if (selectedStream) {
-            // Make sure the Twitch object is defined before trying to use it
-            if (window.Twitch && window.Twitch.Embed) {
-                new window.Twitch.Embed("twitch-embed", {
-                    width: '100%',
-                    height: 480,
-                    channel: selectedStream.user_name,
-                    layout: "video-with-chat",
-                    autoplay: false,
-                    parent: "zer0.tv"
-                });
-            }
-        }
-    }, [selectedStream]);
+useEffect(() => {
+    if (selectedStream) {
+        return (
+            <div className="embed-container w-100" style={{ minHeight: "480px" }}>
+                <iframe
+                    src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
+                    height="480"
+                    width="800"
+                    allowFullScreen={true}
+                    style={{ width: "100%" }}>
+                </iframe>
+                <iframe
+                    src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
+                    height="480"
+                    width="350"
+                    style={{ width: "100%" }}>
+                </iframe>
+            </div>
+        );
+    }
+}, [selectedStream]);
 
 
 return (
@@ -180,7 +186,7 @@ return (
                     {streams.map(stream => (
                         <div 
                             key={stream.id} 
-                            className={`col-md-4 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
+                            className={`col-md-6 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
                             onClick={() => {
                                 // If the clicked stream is already the selected stream, return early
                                 if (stream === selectedStream) {

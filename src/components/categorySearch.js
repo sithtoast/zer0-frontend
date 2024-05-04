@@ -268,30 +268,49 @@ return (
                             </div>
                         </>
                     )}
-                </div>
-                {selectedCategoryId && (
-                    <div className="col-md-8 streams">
-                        <h2 className="stream-details">Streams for {categories.find(cat => cat.id === selectedCategoryId)?.name || 'selected category'}</h2>
-                        <div id="twitch-embed"></div>
-                        <div className="row">
-                            {loading ? (
-                                [...Array(30)].map((_, i) => (
-                                    <div key={i} className="col-md-4 mb-4">
-                                        <div className="card loading-card" aria-hidden="true">
-                                            <div className="card-body">
-                                                <h5 className="card-title">
-                                                    <span className="placeholder col-7"></span>
-                                                </h5>
-                                                <div className="placeholder-glow">
-                                                    <span className="placeholder col-7"></span>
-                                                    <span className="placeholder col-4"></span>
-                                                    <span className="placeholder col-6"></span>
-                                                    <span className="placeholder col-8"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
+               </div>
+						{selectedCategoryId && (
+							<div className="col-md-8 streams">
+								<h2 className="stream-details">Streams for {categories.find(cat => cat.id === selectedCategoryId)?.name || 'selected category'}</h2>
+								
+								{selectedStream && (
+									<div className="embed-container w-100" style={{ minHeight: "480px" }}>
+										<iframe
+											src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
+											height="480"
+											width="800"
+											allowFullScreen={true}
+											style={{ width: "100%" }}>
+										</iframe>
+										<iframe
+											src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
+											height="480"
+											width="350"
+											style={{ width: "100%" }}>
+										</iframe>
+									</div>
+								)}
+
+								<div id="twitch-embed"></div>
+								<div className="row">
+									{loading ? (
+										[...Array(30)].map((_, i) => (
+											<div key={i} className="col-md-4 mb-4">
+												<div className="card loading-card" aria-hidden="true">
+													<div className="card-body">
+														<h5 className="card-title">
+															<span className="placeholder col-7"></span>
+														</h5>
+														<div className="placeholder-glow">
+															<span className="placeholder col-7"></span>
+															<span className="placeholder col-4"></span>
+															<span className="placeholder col-6"></span>
+															<span className="placeholder col-8"></span>
+														</div>
+													</div>
+												</div>
+											</div>
+										))
                             ) : streams.length ? streams.map(stream => (
                                 <div 
                                     key={stream.id} 
