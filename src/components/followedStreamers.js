@@ -151,35 +151,30 @@ useEffect(() => {
     console.log(userProfileResponse);
 }, [userProfileResponse]);
 
-useEffect(() => {
-    if (selectedStream) {
-        return (
-            <div className="embed-container w-100" style={{ minHeight: "480px" }}>
-                <iframe
-                    src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
-                    height="480"
-                    width="800"
-                    allowFullScreen={true}
-                    style={{ width: "100%" }}>
-                </iframe>
-                <iframe
-                    src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
-                    height="480"
-                    width="350"
-                    style={{ width: "100%" }}>
-                </iframe>
-            </div>
-        );
-    }
-}, [selectedStream]);
-
 
 return (
     <div>
         <Navbar />
         <div className="container">
             <div className="content">
-                <h1>Followed Streams</h1>
+                <h1>Followed Streamers</h1>
+                {selectedStream && (
+                    <div className="embed-container w-100" style={{ minHeight: "480px" }}>
+                        <iframe
+                            src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
+                            height="480"
+                            width="800"
+                            allowFullScreen={true}
+                            style={{ width: "100%" }}>
+                        </iframe>
+                        <iframe
+                            src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
+                            height="480"
+                            width="350"
+                            style={{ width: "100%" }}>
+                        </iframe>
+                    </div>
+                )}
                 <div id="twitch-embed"></div>
                 {error && <div>Error: {error}</div>}
                 <div className="row">
