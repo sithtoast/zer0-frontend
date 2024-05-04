@@ -186,7 +186,7 @@ return (
                     {streams.map(stream => (
                         <div 
                             key={stream.id} 
-                            className={`col-md-6 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
+                            className={`col-md-12 mb-4 ${stream === selectedStream ? 'selected' : ''}`}
                             onClick={() => {
                                 // If the clicked stream is already the selected stream, return early
                                 if (stream === selectedStream) {
