@@ -16,7 +16,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/top-games" element={<TopGames />} />
-                    <Route path="/" element={<CategorySearch />} />
+                    <Route path="/" element={<TopGames />} />
                     <Route path="/favorites" element={<TopEight />} />
                     <Route path="/followed-streamers" element={<FollowedStreamers />} />
                     <Route path="/tag-search" element={<TagSearch />} />

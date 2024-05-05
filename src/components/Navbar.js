@@ -64,7 +64,7 @@ return (
             <div className="collapse navbar-collapse" id="navbarNav">
                 <ul className="navbar-nav me-auto">
                     <li className="nav-item">
-                        <NavLink className="nav-link" to="/top-games">Top Games</NavLink>
+                        <NavLink className="nav-link" to="/top-games">Search</NavLink>
                     </li>
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/favorites">Your Top 8</NavLink>
