@@ -77,13 +77,7 @@ return (
                     {!isAuthenticated() && (
                         <React.Fragment>
                             <li className="nav-item">
-                                <NavLink className="nav-link" to="/login">Login</NavLink>
-                            </li>
-                            <li className="nav-item">
-                                <NavLink className="nav-link" to="/register">Register</NavLink>
-                            </li>
-                            <li className="nav-item">
-                                <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>Register/Login with Twitch</button>
+                                <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}><i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>Register/Login with Twitch</button>
                             </li>
                         </React.Fragment>
                     )}

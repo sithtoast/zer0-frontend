@@ -1,6 +1,5 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Register from './components/Register';
 import Login from './components/Login';
 import Profile from './components/Profile';
 import TopGames from './components/topGames';
@@ -13,7 +12,6 @@ function App() {
         <Router>
             <div>
                 <Routes>
-                    <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/top-games" element={<TopGames />} />
