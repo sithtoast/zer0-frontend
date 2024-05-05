@@ -284,7 +284,7 @@ const handleTagClick = async (tag) => {
 return (
     <div>
         <Navbar />
-        <div className="container mt-3">
+        <div className="category-search-container" style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div className="row">
                 <div className="col-md-4 categories">
                     {error ? (
@@ -427,7 +427,7 @@ return (
                                 <div 
                                     key={stream.id} 
                                     className={`col-md-4 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
-                                    onClick={() => setSelectedStream(stream.user_name)}
+                                    onClick={() => setSelectedStream(stream)}
                                 >
                                     <div className="card">
                                         <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />

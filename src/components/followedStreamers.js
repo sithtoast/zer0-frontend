@@ -195,7 +195,7 @@ return (
                                  className={`col-md-12 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
                                  onClick={() => {
                                     console.log(stream.user_name);
-                                    setSelectedStream(stream.user_name);
+                                    setSelectedStream(stream);
                                 }}
                              >
                                  <div className="card">
