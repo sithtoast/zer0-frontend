@@ -127,7 +127,7 @@ const fetchCategories = async (query) => {
 			});
 	
 			let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
-	
+			console.log("Filtered streams:", filteredStreams);
 			const batchSize = 100;
 			for (let i = 0; i < filteredStreams.length; i += batchSize) {
 				const batch = filteredStreams.slice(i, i + batchSize);
@@ -269,7 +269,17 @@ useEffect(() => {
 
 }, [navigate, minViewerCount, maxViewerCount, nearAffiliate, minJoinDate, maxJoinDate, matureContent, nonMatureContent, startedWithinHour, selectedStream, allStreamsWithFollowerCounts, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod]);
 
-console.log(streams);
+
+const handleTagClick = async (tag) => {
+    try {
+        const response = await axios.get(`${apiUrl}/api/twitch/streams/tag/${tag}`);
+        const streamers = response.data;
+        console.log(streamers);
+        // Update your state or UI with the fetched streamers
+    } catch (err) {
+        console.error('Error fetching streamers by tag:', err);
+    }
+};
 
 return (
     <div>
@@ -441,10 +451,16 @@ return (
                                                     }
                                                 </h5>
                                             </OverlayTrigger>
-                                            <p className="card-text">Viewers: {stream.viewer_count}</p>
+                                            <p className='card-text'>{stream.title}</p>
+											<p className="card-text">Viewers: {stream.viewer_count}</p>
                                             <p className="card-text">Language: {stream.language}</p>
                                             <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                            <StreamerBadge stream={stream} />
+											<div className="tag-cloud">
+												{stream.tags && stream.tags.map((tag, index) => (
+													<span key={index} className="tag" onClick={() => handleTagClick(tag)}>{tag}</span>
+												))}
+											</div>
+											<StreamerBadge stream={stream} />
                                         </div>
                                     </div>
                                 </div>

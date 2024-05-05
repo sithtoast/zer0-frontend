@@ -4,6 +4,10 @@ import Navbar from './Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Collapse } from 'react-bootstrap';
 import Footer from './Footer';
+import StreamerBadge from './streamerBadge';
+import AffiliateIcon from '../assets/affiliate.png';
+import { Tooltip, OverlayTrigger } from 'react-bootstrap';
+
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -13,6 +17,7 @@ const FavoritesPage = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [openCategories, setOpenCategories] = useState({});
+	const [isRaiding, setIsRaiding] = useState(false);
 
 	useEffect(() => {
 		const fetchFavorites = async () => {
@@ -75,6 +80,29 @@ function shuffleAndPick(array, numItems) {
 	
 			// Use shuffleAndPick to select a random subset of streams
 			const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
+
+			const batchSize = 8;
+			for (let i = 0; i < shuffledPickedStreams.length; i += batchSize) {
+				const batch = shuffledPickedStreams.slice(i, i + batchSize);
+				const userIds = batch.map(stream => stream.user_id);
+				try {
+					const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+						headers: {
+							'Authorization': `Bearer ${twitchAccessToken}`
+						}
+					});
+					const userInfoData = userInfoResponse.data.data;
+					for (let j = 0; j < batch.length; j++) {
+						const stream = batch[j];
+						const userInfo = userInfoData.find(user => user.id === stream.user_id);
+						if (userInfo) {
+							stream.user_info = userInfo;
+						}
+					}
+				} catch (err) {
+					console.error('Error fetching user data:', err);
+				}
+			}
 	
 			const shuffledPickedStreamsWithFollowerCounts = [];
 			for (const stream of shuffledPickedStreams) {
@@ -127,7 +155,33 @@ function shuffleAndPick(array, numItems) {
 		}
 	};
 
-
+	const handleRaid = async (fromBroadcasterId, toBroadcasterId, broadcasterId) => {
+		const accessToken = localStorage.getItem('accessToken'); // Replace this with your method of storing access tokens
+	
+		try {
+			if (!isRaiding) {
+				const response = await axios.post(`${apiUrl}/api/twitch/start-raid`, { fromBroadcasterId, toBroadcasterId }, {
+					headers: {
+						'Authorization': `Bearer ${accessToken}`
+					}
+				});
+	
+				console.log(response.data);
+				setIsRaiding(true);
+			} else {
+				const response = await axios.delete(`${apiUrl}/api/twitch/cancel-raid`, { data: { broadcasterId } }, {
+					headers: {
+						'Authorization': `Bearer ${accessToken}`
+					}
+				});
+	
+				console.log(response.data);
+				setIsRaiding(false);
+			}
+		} catch (err) {
+			console.error('Error handling raid:', err);
+		}
+	};
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
@@ -140,6 +194,9 @@ return (
                 <div className="w-100">
 				{selectedStream && (
                 <div className="embed-container w-100" style={{ minHeight: "480px" }}>
+					<button onClick={() => handleRaid('fromBroadcasterId', 'toBroadcasterId', 'broadcasterId')}>
+                                {isRaiding ? 'Cancel Raid' : 'Start Raid'}
+					</button>
                     <iframe
                         src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
                         height="480"
@@ -192,21 +249,41 @@ return (
                                     {cat.streams.length > 0 ? (
                                         cat.streams.map(stream => (
 										<div className="col-md-4" key={stream.id} onClick={() => handleStreamSelect(stream)}>
-											<div className="card">
-												<img src={stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')} className="card-img-top" alt={`${stream.user_name}'s stream thumbnail`} />
-												<div className="card-body">
-													<h5 className="card-title">{stream.user_name}</h5>
-													<p className="card-text">Viewers: {stream.viewer_count}</p>
-													<p className="card-text">Followers: {stream.followerCount}</p>
-													<p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-													<div className="tag-cloud">
-														{stream.tags.map((tag, index) => (
-															<span key={index} className="tag">{tag}</span>
-														))}
-													</div>
-												</div>
+	                              <div className="card">
+                                    <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
+                                    <div className="card-body">
+                                    <OverlayTrigger
+                                        placement="left"
+                                        overlay={
+                                            <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
+                                                <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
+                                                <strong>{stream.user_name}</strong><br />
+                                                Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
+                                                Followers: {stream.followerCount}<br />
+                                                Created at: {new Date(stream.user_info.created_at).toLocaleString()}
+                                            </Tooltip>
+                                        }
+                                    >
+                                    <h5 className="card-title">
+                                        {stream.user_name}
+                                        {stream.user_info.broadcaster_type === "affiliate" && 
+                                            <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
+                                        }
+                                    </h5>
+                                    </OverlayTrigger>
+                                    <p className='card-text'>{stream.title}</p>
+									<p className="card-text">Viewers: {stream.viewer_count}</p>
+                                    <p className="card-text">Language: {stream.language}</p>
+                                    <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+									<div className="tag-cloud">
+											{stream.tags && stream.tags.map((tag, index) => (
+												<span key={index} className="tag">{tag}</span>
+											))}
 											</div>
-										</div>
+									<StreamerBadge stream={stream} />
+                                    </div>
+                                </div>
+                            </div>
 ))
                                     ) : (
                                         Array.from({ length: 8 }).map((_, index) => (

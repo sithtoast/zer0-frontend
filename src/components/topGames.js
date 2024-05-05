@@ -413,9 +413,15 @@ return (
                                         }
                                     </h5>
                                     </OverlayTrigger>
+                                    <p className='card-text'>{stream.title}</p>
                                     <p className="card-text">Viewers: {stream.viewer_count}</p>
                                     <p className="card-text">Language: {stream.language}</p>
                                     <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                                    <div className="tag-cloud">
+                                    {stream.tags && stream.tags.map((tag, index) => (
+                                        <span key={index} className="tag">{tag}</span>
+                                    ))}
+                                    </div>
                                     <StreamerBadge stream={stream} />
                                     </div>
                                 </div>

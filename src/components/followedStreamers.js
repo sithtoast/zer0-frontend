@@ -152,6 +152,17 @@ useEffect(() => {
 }, [userProfileResponse]);
 
 
+const handleTagClick = async (tagId) => {
+    try {
+        const response = await axios.get(`${apiUrl}/api/twitch/streams/tag/${tagId}`);
+        const streamers = response.data;
+        console.log(streamers);
+        // Update your state or UI with the fetched streamers
+    } catch (err) {
+        console.error('Error fetching streamers by tag:', err);
+    }
+};
+
 return (
     <div>
         <Navbar />
@@ -182,7 +193,10 @@ return (
                                  <div 
                                  key={stream.id} 
                                  className={`col-md-12 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
-                                 onClick={() => setSelectedStream(stream.user_name)}
+                                 onClick={() => {
+                                    console.log(stream.user_name);
+                                    setSelectedStream(stream.user_name);
+                                }}
                              >
                                  <div className="card">
                                      <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
@@ -206,9 +220,15 @@ return (
                                                  }
                                              </h5>
                                          </OverlayTrigger>
+                                         <p className='card-text'>{stream.title}</p>
                                          <p className="card-text">Viewers: {stream.viewer_count}</p>
                                          <p className="card-text">Language: {stream.language}</p>
                                          <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                                         <div className="tag-cloud">
+                                            {stream.tags && stream.tags.map((tag, index) => (
+                                                <span key={index} className="tag" onClick={() => handleTagClick(tag)}>{tag}</span>
+                                            ))}
+                                        </div>
                                          <StreamerBadge stream={stream} />
                                      </div>
                                  </div>
