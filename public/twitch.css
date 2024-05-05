@@ -539,3 +539,22 @@ nav a:hover, nav a:focus {
 	background-color: var(--twitch-accent) !important;
 	color: var(--twitch-text) !important;
 }
+
+.followed-container {
+    width: 100%;
+    padding: 0 15px; /* Optional: Add some padding if you want some space around the cards */
+	color: var(--twitch-text);
+}
+
+.followed-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Optional: Add this if you want some space between the cards */
+}
+
+.followed-row .col-md-12 {
+    flex: 0 0 33.33%; /* This makes each card take up 1/3 of the row */
+    max-width: 33.33%; /* This makes sure the card doesn't grow larger than 1/3 of the row */
+    box-sizing: border-box; /* This makes sure the padding and border of the card are included in its width */
+    padding: 0 15px; /* Optional: Add some padding if you want some space around the cards */
+}

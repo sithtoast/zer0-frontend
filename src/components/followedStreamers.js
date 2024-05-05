@@ -166,7 +166,7 @@ const handleTagClick = async (tagId) => {
 return (
     <div>
         <Navbar />
-        <div className="container">
+        <div className="followed-container">
             <div className="content">
                 <h1>Followed Streamers</h1>
                 {selectedStream && (
@@ -188,7 +188,7 @@ return (
                 )}
                 <div id="twitch-embed"></div>
                 {error && <div>Error: {error}</div>}
-                <div className="row">
+                <div className="followed-row">
                     {streams.map(stream => (
                                  <div 
                                  key={stream.id} 
