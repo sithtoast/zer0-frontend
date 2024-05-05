@@ -114,7 +114,7 @@ const fetchStreams = useCallback(async (categoryId, cursor) => {
         setLoading(false);
         console.log("Streams fetched:", streams);
     }
-}, [selectedCategoryId]); // Added categoryId to dependencies
+}, []); // Added categoryId to dependencies
 
 const fetchCategories = async () => {
     setLoading(true);
@@ -237,7 +237,6 @@ useEffect(() => {
     const now = new Date();
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
     const fiveYearsAgo = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
-    const nineYearsAgo = new Date(now.getFullYear() - 9, now.getMonth(), now.getDate());
     const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
     const specificStartDate = new Date('2007-03-01');
     const specificEndDate = new Date('2011-06-14');
@@ -274,13 +273,13 @@ useEffect(() => {
             parent: ["zer0.tv"]
         });
     }
-}, [minViewerCount, maxViewerCount, nearAffiliate, minJoinDate, maxJoinDate, matureContent, nonMatureContent, startedWithinHour, selectedStream, allStreamsWithFollowerCounts, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod]);
+}, [minViewerCount, maxViewerCount, nearAffiliate, minJoinDate, maxJoinDate, matureContent, nonMatureContent, startedWithinHour, selectedStream, allStreamsWithFollowerCounts, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod, currentPage]);
 
 
 return (
 <div>
     <Navbar />
-    <div className="container mt-3">
+    <div className="top-category-container">
         <div className="row d-flex">
             <div className="col-md-4 categories flex-column">
                 {!userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
