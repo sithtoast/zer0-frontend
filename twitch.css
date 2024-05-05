@@ -450,3 +450,39 @@ nav a:hover, nav a:focus {
     justify-content: space-between;
     flex-wrap: wrap;
 }
+
+.streamer-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.results {
+    display: block;
+}
+
+/* Container Styles */
+.tag-search-container {
+    background-color: var(--twitch-dark-alt);
+    color: var(--twitch-text);
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+	display: block;
+    justify-content: space-between;
+	width: 100%;
+
+}
+
+.tag-search-container h1, .tag-search-container h2, .tag-search-container h3, .tag-search-container h4, .tag-search-container h5, .tag-search-container h6 {
+    color: var(--twitch-primary);
+}
+
+.tag-search-container a {
+    color: var(--twitch-primary);
+}
+
+.tag-search-container a:hover, .tag-search-container a:focus {
+    color: var(--twitch-accent);
+    text-decoration: underline;
+}
