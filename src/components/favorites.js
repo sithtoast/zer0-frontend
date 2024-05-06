@@ -258,16 +258,20 @@ return (
                                                 <img className="card-img-top" src={stream.thumbnail_url.replace('{width}', '350').replace('{height}', '200')} alt={stream.title} />
                                                 <div className="card-body">
                                                     <OverlayTrigger
-                                                        placement="top"
+                                                        placement="left"
                                                         overlay={
-                                                            <Tooltip id={`tooltip-top`}>
-                                                                {stream.user_name}
+                                                            <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
+                                                                <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
+                                                                <strong>{stream.user_name}</strong><br />
+                                                                Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
+                                                                Followers: {stream.followerCount}<br />
+                                                                Created at: {new Date(stream.user_info.created_at).toLocaleString()}
                                                             </Tooltip>
                                                         }
                                                     >
                                                         <h5 className="card-title">
                                                             {stream.user_name}
-                                                            {stream.is_affiliate &&
+                                                            {stream.user_info.broadcaster_type === "affiliate" && 
                                                                 <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
                                                             }
                                                         </h5>
