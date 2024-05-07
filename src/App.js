@@ -7,6 +7,7 @@ import CategorySearch from './components/categorySearch';
 import TopEight from './components/favorites';
 import FollowedStreamers from './components/followedStreamers';
 import TagSearch from './components/tagSearch';
+import TopCategories from './components/TopCategories';
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                     <Route path="/favorites" element={<TopEight />} />
                     <Route path="/followed-streamers" element={<FollowedStreamers />} />
                     <Route path="/tag-search" element={<TagSearch />} />
+                    <Route path="/top-categories" element={<TopCategories />} />
                     
                 </Routes>
             </div>

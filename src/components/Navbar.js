@@ -71,6 +71,12 @@ return (
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/followed-streamers">Followed Streamers</NavLink>
                     </li>
+					<li className="nav-item">
+						<NavLink className="nav-link" to="/tag-search">Tag Search</NavLink>
+					</li>
+					<li className="nav-item">
+						<NavLink className="nav-link" to="/top-categories">Top Categories</NavLink>
+					</li>
                 </ul>
                 <ul className="navbar-nav ms-auto align-items-center">
                     {!isAuthenticated() && (
