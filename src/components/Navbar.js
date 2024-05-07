@@ -75,7 +75,7 @@ return (
 						<NavLink className="nav-link" to="/tag-search">Tag Search</NavLink>
 					</li>
 					<li className="nav-item">
-						<NavLink className="nav-link" to="/top-categories">Top Categories</NavLink>
+						<NavLink className="nav-link" to="/top-categories">Top on zer0</NavLink>
 					</li>
                 </ul>
                 <ul className="navbar-nav ms-auto align-items-center">
