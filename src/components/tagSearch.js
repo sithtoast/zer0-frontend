@@ -161,6 +161,7 @@ return (
                                 </h5>
                             </OverlayTrigger>
                             <p className='card-text'>{stream.title}</p>
+                            <p className="card-text">Game: {stream.game_name}</p>
                             <p className="card-text">Viewers: {stream.viewer_count}</p>
                             <p className="card-text">Language: {stream.language}</p>
                             <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
