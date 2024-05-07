@@ -28,6 +28,8 @@ const TopCategories = () => {
     const [userProfileResponse, setUserProfileResponse] = useState(null);
     const [categoryClicked, setCategoryClicked] = useState(false);
     const [fetchedStreams, setFetchedStreams] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
 
     
 
@@ -125,6 +127,7 @@ const fetchCategories = async () => {
         const response = await axios.get(`${apiUrl}/api/twitch/top-categories`, {
             headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
         });
+        console.log(response.data);
         setCategories(response.data);
     } catch (err) {
         if (err.response && err.response.status === 401) {
@@ -204,7 +207,22 @@ const handlePageChange = (pageNumber) => {
 };
 
 
+const handleSearch = async (e) => {
+    e.preventDefault();
 
+        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+            withCredentials: true, // This allows the request to send cookies
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+
+        const response = await axios.get(`${apiUrl}/api/twitch/search/categories`, {
+            headers: { 'Authorization': `Bearer ${twitchAccessToken}` },
+            params: { name: searchQuery }  // Ensure this matches your API expectation
+        });
+        console.log(response.data);
+    setSearchResults(response.data);
+}
 
 // Fetch streams when the component mounts
 useEffect(() => {
@@ -242,34 +260,68 @@ useEffect(() => {
 
 
 return (
-<div>
-    <Navbar />
-    <div className="top-category-container">
-        <div className="row d-flex">
-            <div className="col-md-4 categories flex-column">
-                {!userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
-                    <div>Please link your Twitch account to continue</div>
-                ) : (
-                    <>
-                        <h1 className="category-search-container">Top Categories</h1>
-                        <ul className="list-group">
-                            {categories.map(category => (
-                                <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <span onClick={() => {
-                                        handleClickCategory(category.id);
-                                        setCategoryClicked(true); // set state variable to true when a category is clicked
-                                    }}>
-                                        {category.name}
-                                    </span>
-                                    <button onClick={(e) => toggleFavorite(category, e)}>
-                                        {favorites.has(category.id) ? '★' : '☆'}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </div>
+
+    <div>
+        <Navbar />
+        <div className="top-category-container">
+            <div className="row d-flex">
+                <div className="col-md-4 categories flex-column">
+                    {!userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
+                        <div>Please link your Twitch account to continue</div>
+                    ) : (
+                        <>
+                            <h1 className="category-search-box-container">Search</h1>
+                            <form onSubmit={handleSearch}>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search categories"
+                                    autoComplete="off"
+                                />
+                                <button type="submit">Search</button>
+                            </form>
+                            {searchResults.length > 0 && (
+                                <>
+                                    <h1 className="category-search-container">Search Results</h1>
+                                    <ul className="list-group">
+                                        {searchResults.map(category => (
+                                            <li key={category.id} className="list-group-item search-list d-flex justify-content-between align-items-center">
+                                                <img src={category.boxArtUrl} alt={category.name} />
+                                                <span onClick={() => {
+                                                    handleClickCategory(category.id);
+                                                    setCategoryClicked(true); // set state variable to true when a category is clicked
+                                                }}>
+                                                    {category.name}
+                                                </span>
+                                                <button onClick={(e) => toggleFavorite(category, e)}>
+                                                    {favorites.has(category.id) ? '★' : '☆'}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
+                            <h1 className="top-category-container">Top Categories</h1>
+                            <ul className="list-group">
+                                {categories.map(category => (
+                                    <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                        <img src={category.boxArtUrl} alt={category.name} />
+                                        <span onClick={() => {
+                                            handleClickCategory(category.id);
+                                            setCategoryClicked(true); // set state variable to true when a category is clicked
+                                        }}>
+                                            {category.name}
+                                        </span>
+                                        <button onClick={(e) => toggleFavorite(category, e)}>
+                                            {favorites.has(category.id) ? '★' : '☆'}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </div>
             {categoryClicked && ( // only render this div if a category has been clicked
                 <div className="col-md-8 streams flex-column" style={{minHeight: '500px', flexGrow: 2}}> 
                     <FilterBox 
