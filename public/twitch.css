@@ -558,3 +558,12 @@ nav a:hover, nav a:focus {
     box-sizing: border-box; /* This makes sure the padding and border of the card are included in its width */
     padding: 0 15px; /* Optional: Add some padding if you want some space around the cards */
 }
+
+.live-dot {
+    height: 10px;
+    width: 10px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px; /* Adjust this value as needed */
+}

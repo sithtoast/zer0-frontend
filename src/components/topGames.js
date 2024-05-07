@@ -4,16 +4,16 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { Tooltip, OverlayTrigger } from 'react-bootstrap';
-import StreamerBadge from './streamerBadge';
-import AffiliateIcon from '../assets/affiliate.png';
-import ReactSlider from 'react-slider';
+import StreamCard from './streamCard';
+import FilterBox from './filterBox';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const TopCategories = () => {
     const [categories, setCategories] = useState([]);
+    const [allStreamsWithFollowerCounts, setAllStreamsWithFollowerCounts] = useState([]);
+    const [filteredStreams, setFilteredStreams] = useState([]);
     const [streams, setStreams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -27,20 +27,8 @@ const TopCategories = () => {
     const [selectedStream, setSelectedStream] = useState(null);
     const [userProfileResponse, setUserProfileResponse] = useState(null);
     const [categoryClicked, setCategoryClicked] = useState(false);
-    const [minViewerCount, setMinViewerCount] = useState(0);
-    const [maxViewerCount, setMaxViewerCount] = useState(3);
-    const [minJoinDate, setMinJoinDate] = useState(new Date(0)); // Default to epoch
-    const [maxJoinDate, setMaxJoinDate] = useState(new Date()); // Default to now
-    const [startedWithinHour, setStartedWithinHour] = useState(false); // Default to not filtering by start time
-    const [matureContent, setMatureContent] = useState(true);
-    const [nonMatureContent, setNonMatureContent] = useState(true);
-    const [nearAffiliate, setNearAffiliate] = useState(false);
-    const [allStreamsWithFollowerCounts, setAllStreamsWithFollowerCounts] = useState([]);
-    const [lessThanSixMonths, setLessThanSixMonths] = useState(false);
-    const [fiveToNineYears, setFiveToNineYears] = useState(false);
-    const [overTenYears, setOverTenYears] = useState(false);
-    const [specificPeriod, setSpecificPeriod] = useState(false);
     const [fetchedStreams, setFetchedStreams] = useState([]);
+
     
 
 const fetchStreams = useCallback(async (categoryId, cursor) => {
@@ -234,29 +222,6 @@ useEffect(() => {
 
 // Filter and set streams whenever allStreamsWithFollowerCounts or any of the filters change
 useEffect(() => {
-    const now = new Date();
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-    const fiveYearsAgo = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
-    const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
-    const specificStartDate = new Date('2007-03-01');
-    const specificEndDate = new Date('2011-06-14');
-
-    const filteredStreams = allStreamsWithFollowerCounts.filter(stream => {
-        const meetsViewerCount = stream.viewer_count >= minViewerCount && stream.viewer_count <= maxViewerCount;
-        const meetsFollowerCount = !nearAffiliate || (stream.followerCount >= 45 && stream.followerCount < 50);
-        const joinDate = new Date(stream.user_info.created_at);
-        const meetsJoinDate = 
-            (!lessThanSixMonths || joinDate >= sixMonthsAgo) &&
-            (!fiveToNineYears || (joinDate <= fiveYearsAgo && joinDate > tenYearsAgo)) &&
-            (!overTenYears || joinDate <= tenYearsAgo) &&
-            (!specificPeriod || (joinDate >= specificStartDate && joinDate <= specificEndDate));
-        const meetsMaturity = (matureContent && stream.is_mature) || (nonMatureContent && !stream.is_mature);
-        const startedTime = new Date(stream.started_at);
-        const meetsStartedWithinHour = !startedWithinHour || (new Date() - startedTime) <= 60 * 60 * 1000;
-
-        return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour;
-    });
-
     const startIndex = (currentPage - 1) * 30;
     const endIndex = currentPage * 30;
     const currentPageStreamsWithFollowerCounts = filteredStreams.slice(startIndex, endIndex);
@@ -273,7 +238,7 @@ useEffect(() => {
             parent: ["zer0.tv"]
         });
     }
-}, [minViewerCount, maxViewerCount, nearAffiliate, minJoinDate, maxJoinDate, matureContent, nonMatureContent, startedWithinHour, selectedStream, allStreamsWithFollowerCounts, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod, currentPage]);
+}, [filteredStreams, currentPage, selectedStream]);
 
 
 return (
@@ -307,61 +272,12 @@ return (
             </div>
             {categoryClicked && ( // only render this div if a category has been clicked
                 <div className="col-md-8 streams flex-column" style={{minHeight: '500px', flexGrow: 2}}> 
-                <div id="filter" className="filter-box">
-                    {/* Add filter inputs here */}
-                    <div className="mb-3">
-                        <label htmlFor="viewerCount" className="form-label">Viewer Count:</label>
-                        <ReactSlider
-                            className="react-slider"
-                            thumbClassName="thumb"
-                            trackClassName="track"
-                            min={0}
-                            max={3}
-                            value={[minViewerCount, maxViewerCount]}
-                            onChange={([min, max]) => {
-                                setMinViewerCount(min);
-                                setMaxViewerCount(max);
-                            }}
-                            pearling
-                            minDistance={0}
-                        />
-                        <p>Selected range: {minViewerCount} - {maxViewerCount}</p>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
-                    </div>
-                    <div className="mb-3 form-check-group">
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="lessThanSixMonths" checked={lessThanSixMonths} onChange={e => setLessThanSixMonths(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="lessThanSixMonths"><p className="card-text newbie-message" title="This user's account is less than 6 months old.">Twitch Newbie</p></label>
-                        </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="fiveToNineYears" checked={fiveToNineYears} onChange={e => { setFiveToNineYears(e.target.checked); setSelectedStream(null); }} />
-                            <label className="form-check-label" htmlFor="fiveToNineYears"><p className="card-text old-friend-message" title="This user has been on Twitch for a long time. (5-9 yrs)">Old Friend</p></label>
-                        </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="overTenYears" checked={overTenYears} onChange={e => setOverTenYears(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="overTenYears"><p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p></label>
-                        </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="specificPeriod" checked={specificPeriod} onChange={e => setSpecificPeriod(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="specificPeriod"><p className="card-text justins-friend-message" title="This user's account was made in the Justin.tv days.">Justin's Friend</p></label>
-                        </div>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="matureContent" checked={matureContent} onChange={e => setMatureContent(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="matureContent">Mature Content</label>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="nonMatureContent" checked={nonMatureContent} onChange={e => setNonMatureContent(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="nonMatureContent">Non-Mature Content</label>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="startedWithinHour" checked={startedWithinHour} onChange={e => setStartedWithinHour(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="startedWithinHour"><p className="card-text just-started-message" title="This user has just started streaming.">Just Started</p></label>
-                    </div>
-                </div>
+                    <FilterBox 
+                        selectedStream={selectedStream} 
+                        setSelectedStream={setSelectedStream} 
+                        allStreamsWithFollowerCounts={allStreamsWithFollowerCounts} 
+                        setFilteredStreams={setFilteredStreams} 
+                    />
                     <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
                     <div id="twitch-embed"></div>
                     <div className="row">
@@ -385,46 +301,12 @@ return (
                         ))
                         ) : streams.length ? streams.map(stream => (
                             
-                            <div 
-                            key={stream.id} 
-                            className={`col-md-4 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
-                            onClick={() => setSelectedStream(stream.user_name)}
-                            >
-                                <div className="card">
-                                    <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
-                                    <div className="card-body">
-                                    <OverlayTrigger
-                                        placement="left"
-                                        overlay={
-                                            <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
-                                                <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
-                                                <strong>{stream.user_name}</strong><br />
-                                                Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                                                Followers: {stream.followerCount}<br />
-                                                Created at: {new Date(stream.user_info.created_at).toLocaleString()}
-                                            </Tooltip>
-                                        }
-                                    >
-                                    <h5 className="card-title">
-                                        {stream.user_name}
-                                        {stream.user_info.broadcaster_type === "affiliate" && 
-                                            <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
-                                        }
-                                    </h5>
-                                    </OverlayTrigger>
-                                    <p className='card-text'>{stream.title}</p>
-                                    <p className="card-text">Viewers: {stream.viewer_count}</p>
-                                    <p className="card-text">Language: {stream.language}</p>
-                                    <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                    <div className="tag-cloud">
-                                    {stream.tags && stream.tags.map((tag, index) => (
-                                        <span key={index} className="tag">{tag}</span>
-                                    ))}
-                                    </div>
-                                    <StreamerBadge stream={stream} />
-                                    </div>
-                                </div>
-                            </div>
+                            <StreamCard 
+                            key={stream.id}
+                            stream={stream} 
+                            selectedStream={selectedStream} 
+                            setSelectedStream={setSelectedStream} 
+                        />
                         )) : <p className="stream-details">No streams available.</p>}
                     </div>
                     <div className="pagination">
