@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -72,6 +71,12 @@ return (
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/followed-streamers">Followed Streamers</NavLink>
                     </li>
+					<li className="nav-item">
+						<NavLink className="nav-link" to="/tag-search">Tag Search</NavLink>
+					</li>
+					<li className="nav-item">
+						<NavLink className="nav-link" to="/top-categories">Top on zer0</NavLink>
+					</li>
                 </ul>
                 <ul className="navbar-nav ms-auto align-items-center">
                     {!isAuthenticated() && (
