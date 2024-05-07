@@ -78,10 +78,16 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
         >
             <div className="card">
                 <img 
-                src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} 
-                className="card-img-top" 
-                alt="Stream thumbnail" 
-                onClick={() => setSelectedStream(stream.user_name)}
+                    src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} 
+                    className="card-img-top" 
+                    alt="Stream thumbnail" 
+                    onClick={() => {
+                        if (selectedStream === stream.user_name) {
+                            setSelectedStream(null);
+                        } else {
+                            setSelectedStream(stream.user_name);
+                        }
+                    }}
                 />
                 <div className="card-body">
                 <OverlayTrigger

@@ -5,8 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Collapse } from 'react-bootstrap';
 import Footer from './Footer';
 import StreamerBadge from './streamerBadge';
-import AffiliateIcon from '../assets/affiliate.png';
-import { Tooltip, OverlayTrigger } from 'react-bootstrap';
+import StreamCard from './streamCard';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -176,20 +175,33 @@ function shuffleAndPick(array, numItems) {
         fetchFavorites();
     }, []);
 
-    useEffect(() => {
-        setLoading(true);
+useEffect(() => {
+    setLoading(true);
+    let timeoutId = null;
 
-        timeoutId = setTimeout(() => {
-            setShowNoStreamsMessage(true);
-            setLoading(false); // Stop loading after 10 seconds regardless of data status
-        }, 10000);
-    
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, [categoryId]);
+    const fetchStreams = async () => {
+        try {
+            // Fetch your streams here
+            // If successful, clear the timeout
+            clearTimeout(timeoutId);
+        } catch (error) {
+            // Handle error
+        }
+    };
+
+    timeoutId = setTimeout(() => {
+        setShowNoStreamsMessage(true);
+        setLoading(false); // Stop loading after 10 seconds regardless of data status
+    }, 10000);
+
+    fetchStreams();
+
+    return () => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+    };
+}, [categoryId]);
 
 	
 return (
@@ -252,43 +264,14 @@ return (
                                         </div>
                                     ))
                                 ) : cat.streams.length > 0 ? (
-                                    cat.streams.map(stream => (
-                                        <div className="col-md-4" key={stream.id} onClick={() => handleStreamSelect(stream)}>
-                                            <div className="card">
-                                                <img className="card-img-top" src={stream.thumbnail_url.replace('{width}', '350').replace('{height}', '200')} alt={stream.title} />
-                                                <div className="card-body">
-                                                    <OverlayTrigger
-                                                        placement="left"
-                                                        overlay={
-                                                            <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
-                                                                <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
-                                                                <strong>{stream.user_name}</strong><br />
-                                                                Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                                                                Followers: {stream.followerCount}<br />
-                                                                Created at: {new Date(stream.user_info.created_at).toLocaleString()}
-                                                            </Tooltip>
-                                                        }
-                                                    >
-                                                        <h5 className="card-title">
-                                                            {stream.user_name}
-                                                            {stream.user_info.broadcaster_type === "affiliate" && 
-                                                                <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
-                                                            }
-                                                        </h5>
-                                                    </OverlayTrigger>
-                                                    <p className='card-text'>{stream.title}</p>
-                                                    <p className="card-text">Viewers: {stream.viewer_count}</p>
-                                                    <p className="card-text">Language: {stream.language}</p>
-                                                    <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                                    <div className="tag-cloud">
-                                                        {stream.tags && stream.tags.map((tag, index) => (
-                                                            <span key={index} className="tag">{tag}</span>
-                                                        ))}
-                                                    </div>
-                                                    <StreamerBadge stream={stream} />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        cat.streams.map(stream => (
+                                            <StreamCard 
+                                                key={stream.id}
+                                                stream={stream} 
+                                                selectedStream={selectedStream} 
+                                                setSelectedStream={setSelectedStream} 
+                                            />
+
                                     ))
                                 ) : showNoStreamsMessage && (
                                     <p>No streams were found for this category.</p>

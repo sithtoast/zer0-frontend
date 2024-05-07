@@ -3,9 +3,7 @@ import axios from 'axios';
 import Footer from './Footer';
 import Navbar from './Navbar'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import StreamerBadge from './streamerBadge';
-import AffiliateIcon from '../assets/affiliate.png';
-import { Tooltip, OverlayTrigger } from 'react-bootstrap';
+import StreamCard from './streamCard';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -29,43 +27,6 @@ const FollowedStreams = () => {
             console.error('Failed to fetch favorites:', err);
         }
         setLoading(false);
-    };
-    
-    const toggleFavorite = async (category, event) => {
-        event.stopPropagation();
-    
-        if (!category?.id) {
-            console.error("Missing required parameters", {categoryId: category?.id});
-            setError("Missing required parameters");
-            return;
-        }
-    
-        const action = favorites.has(category.id) ? 'remove' : 'add';
-        console.log("Category passed to toggleFavorite:", category);
-        
-        try {
-            console.log("Sending data:", { categoryId: category.id, name: category.name });
-            await axios.post(`${apiUrl}/api/favorites/${action}`, {
-                categoryId: category.id,
-                name: category.name
-            }, {
-                withCredentials: true, // This allows the request to send cookies
-                headers: { 'Content-Type': 'application/json' }
-            });
-    
-            setFavorites(prev => {
-                const updated = new Set(prev);
-                if (action === 'add') {
-                    updated.add(category.id);
-                } else {
-                    updated.delete(category.id);
-                }
-                return updated;
-            });
-        } catch (err) {
-            console.error(`Failed to ${action} favorite:`, err.response ? err.response.data : err);
-            setError(`Failed to ${action} favorite: ${err.response ? err.response.data.message : "Unknown error"}`);
-        }
     };
     
 useEffect(() => {
@@ -190,49 +151,12 @@ return (
                 {error && <div>Error: {error}</div>}
                 <div className="followed-row">
                     {streams.map(stream => (
-                                 <div 
-                                 key={stream.id} 
-                                 className={`col-md-12 mb-4 selected-stream ${selectedStream === stream.id ? 'selected-stream' : ''}`}
-                                 onClick={() => {
-                                    console.log(stream.user_name);
-                                    setSelectedStream(stream);
-                                }}
-                             >
-                                 <div className="card">
-                                     <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
-                                     <div className="card-body">
-                                         <OverlayTrigger
-                                             placement="left"
-                                             overlay={
-                                                 <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
-                                                     <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
-                                                     <strong>{stream.user_name}</strong><br />
-                                                     Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                                                     Followers: {stream.followerCount}<br />
-                                                     Created at: {new Date(stream.user_info.created_at).toLocaleString()}
-                                                 </Tooltip>
-                                             }
-                                         >
-                                             <h5 className="card-title">
-                                                 {stream.user_name}
-                                                 {stream.user_info.broadcaster_type === "affiliate" && 
-                                                     <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
-                                                 }
-                                             </h5>
-                                         </OverlayTrigger>
-                                         <p className='card-text'>{stream.title}</p>
-                                         <p className="card-text">Viewers: {stream.viewer_count}</p>
-                                         <p className="card-text">Language: {stream.language}</p>
-                                         <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                                         <div className="tag-cloud">
-                                            {stream.tags && stream.tags.map((tag, index) => (
-                                                <span key={index} className="tag" onClick={() => handleTagClick(tag)}>{tag}</span>
-                                            ))}
-                                        </div>
-                                         <StreamerBadge stream={stream} />
-                                     </div>
-                                 </div>
-                             </div>
+                        <StreamCard 
+                        key={stream.id}
+                        stream={stream} 
+                        selectedStream={selectedStream} 
+                        setSelectedStream={setSelectedStream} 
+                    />
                     ))}
                 </div>
             </div>

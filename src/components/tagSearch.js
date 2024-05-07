@@ -1,11 +1,12 @@
+/* global Twitch */
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import StreamerBadge from './streamerBadge';
-import AffiliateIcon from '../assets/affiliate.png';
-import { Tooltip, OverlayTrigger } from 'react-bootstrap';
+import StreamCard from './streamCard';
+import FilterBox from './filterBox';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -16,6 +17,13 @@ const TagSearch = () => {
     const [streamers, setStreamers] = useState([]);
     const [suggestedTags, setSuggestedTags] = useState([]);
     const [topTags, setTopTags] = useState([]);
+    const [selectedStream, setSelectedStream] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [filteredStreams, setFilteredStreams] = useState([]);
+
+
+
+    const itemsPerPage = 30;
 
     const fetchTopTags = async () => {
         try {
@@ -61,43 +69,73 @@ const handleSearch = async (searchTag = tag) => {
         }
     });
     return streamResponse.data;
-}))).filter(stream => stream.length > 0);
+        }))).filter(stream => stream.length > 0);
 
-// Flatten the array
-streams = streams.flat();
+        // Flatten the array
+        streams = streams.flat();
 
-// Filter the streams
-streams = streams.filter(stream => stream.viewer_count <= 3);
+        // Filter the streams
+        streams = streams.filter(stream => stream.viewer_count <= 3);
 
-const batchSize = 100;
-console.log(streams);
-for (let i = 0; i < streams.length; i += batchSize) {
-    const batch = streams.slice(i, i + batchSize);
-    const userIds = batch.map(stream => stream.user_id);
-    try {
-        const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
-            headers: {
-                'Authorization': `Bearer ${twitchAccessToken}`
-            }
-        });
-        const userInfoData = userInfoResponse.data.data;
-        for (let j = 0; j < batch.length; j++) {
-            const stream = batch[j];
-            const userInfo = userInfoData.find(user => user.id === stream.user_id);
-            if (userInfo) {
-                stream.user_info = userInfo;
+        const batchSize = 100;
+        console.log(streams);
+        for (let i = 0; i < streams.length; i += batchSize) {
+            const batch = streams.slice(i, i + batchSize);
+            const userIds = batch.map(stream => stream.user_id);
+            try {
+                const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+                    headers: {
+                        'Authorization': `Bearer ${twitchAccessToken}`
+                    }
+                });
+                const userInfoData = userInfoResponse.data.data;
+                for (let j = 0; j < batch.length; j++) {
+                    const stream = batch[j];
+                    const userInfo = userInfoData.find(user => user.id === stream.user_id);
+                    if (userInfo) {
+                        stream.user_info = userInfo;
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
             }
         }
-    } catch (err) {
-        console.error('Error fetching user data:', err);
-    }
-}
 
-        setStreamers(streams);
-        console.log(streams);
-    } catch (err) {
-        console.error('Error fetching streamers by tag:', err);
+                setStreamers(streams);
+                console.log(streams);
+            } catch (err) {
+                console.error('Error fetching streamers by tag:', err);
+            }
+};
+
+// Calculate the total number of pages
+const totalPages = Math.ceil(filteredStreams.length / itemsPerPage);
+
+// Calculate the items for the current page
+const indexOfLastItem = currentPage * itemsPerPage;
+const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+const currentItems = filteredStreams.slice(indexOfFirstItem, indexOfLastItem);
+
+// Add functions to handle clicking the previous and next buttons
+const handlePreviousClick = () => {
+    if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
     }
+};
+
+const handleNextClick = () => {
+    if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+    }
+};
+
+// Add a function to handle page changes
+const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+};
+
+const handleFilterChange = (filtered) => {
+    setFilteredStreams(filtered);
 };
 
     const handleTagClick = (clickedTag) => {
@@ -108,6 +146,19 @@ for (let i = 0; i < streams.length; i += batchSize) {
     useEffect(() => {
         fetchTopTags();
     }, []);
+
+    useEffect(() => {
+
+        if (selectedStream) {
+            new Twitch.Embed("twitch-embed", {
+                width: "100%",
+                height: '500px',
+                channel: selectedStream,
+                layout: "video-with-chat",
+                parent: ["zer0.tv"]
+            });
+        }
+    }, [selectedStream]);
 
 return (
     <div>
@@ -135,45 +186,48 @@ return (
                 ))}
                 </ul>
             </div>
-            
-            <div className="results" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                {streamers.map((stream, index) => (
-                    <div key={index} className="card" style={{ flex: '0 0 30%', margin: '1%' }}>
-                        <img src={stream.thumbnail_url.replace('{width}x{height}', '320x180')} className="card-img-top" alt="Stream thumbnail" />
-                        <div className="card-body">
-                            <OverlayTrigger
-                                placement="left"
-                                overlay={
-                                    <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
-                                        <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
-                                        <strong>{stream.user_name}</strong><br />
-                                        Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                                        Followers: {stream.followerCount}<br />
-                                        Created at: {new Date(stream.user_info.created_at).toLocaleString()}
-                                    </Tooltip>
-                                }
-                            >
-                                <h5 className="card-title">
-                                    {stream.user_name}
-                                    {stream.user_info.broadcaster_type === "affiliate" && 
-                                        <img className="affiliate-icon" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
-                                    }
-                                </h5>
-                            </OverlayTrigger>
-                            <p className='card-text'>{stream.title}</p>
-                            <p className="card-text">Game: {stream.game_name}</p>
-                            <p className="card-text">Viewers: {stream.viewer_count}</p>
-                            <p className="card-text">Language: {stream.language}</p>
-                            <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
-                            <div className="tag-cloud">
-                                {stream.tags && stream.tags.map((tag, index) => (
-                                    <span key={index} className="tag" onClick={() => handleTagClick(tag)}>{tag}</span>
-                                ))}
-                            </div>
-                            <StreamerBadge stream={stream} />
-                        </div>
+            <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+            <FilterBox 
+                        selectedStream={selectedStream} 
+                        setSelectedStream={setSelectedStream} 
+                        allStreamsWithFollowerCounts={streamers} 
+                        setFilteredStreams={handleFilterChange} 
+                    />
+                
+                {selectedStream && (
+                    <div>
+                    <div id="twitch-embed"></div>
+                    <button onClick={() => setSelectedStream(null)}>Close Stream</button>
                     </div>
-                ))}
+                )}
+                <div className="results" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                {currentItems.map((stream, index) => (
+                        
+                        <StreamCard 
+                            key={stream.id}
+                            stream={stream} 
+                            selectedStream={selectedStream} 
+                            setSelectedStream={setSelectedStream} 
+                        />
+                    ))}
+                </div>
+                <div>
+    <button onClick={handlePreviousClick} disabled={currentPage === 1}>
+        Previous
+    </button>
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
+        <button 
+            key={pageNumber} 
+            onClick={() => handlePageChange(pageNumber)}
+            style={{ backgroundColor: pageNumber === currentPage ? '#9146FF' : '#E0B2FF', color: pageNumber === currentPage ? 'white' : 'black' }}
+        >
+            {pageNumber}
+        </button>
+    ))}
+    <button onClick={handleNextClick} disabled={currentPage === totalPages}>
+        Next
+    </button>
+</div>
             </div>
         </div>
         <Footer />
