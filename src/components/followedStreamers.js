@@ -133,14 +133,14 @@ return (
                 {selectedStream && (
                     <div className="embed-container w-100" style={{ minHeight: "480px" }}>
                         <iframe
-                            src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
+                            src={`https://player.twitch.tv/?channel=${selectedStream}&parent=zer0.tv`}
                             height="480"
                             width="800"
                             allowFullScreen={true}
                             style={{ width: "100%" }}>
                         </iframe>
                         <iframe
-                            src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
+                            src={`https://www.twitch.tv/embed/${selectedStream}/chat?parent=zer0.tv`}
                             height="480"
                             width="350"
                             style={{ width: "100%" }}>
