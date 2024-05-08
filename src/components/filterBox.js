@@ -1,10 +1,11 @@
 // FilterBox.js
 import React, { useEffect, useState } from 'react';
 import ReactSlider from 'react-slider';
+import Affiliate from '../assets/affiliate.png';
 
 const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCounts, setFilteredStreams }) => {
     const [minViewerCount, setMinViewerCount] = useState(0);
-    const [maxViewerCount, setMaxViewerCount] = useState(3);
+    const [maxViewerCount, setMaxViewerCount] = useState(10);
     const [startedWithinHour, setStartedWithinHour] = useState(false); // Default to not filtering by start time
     const [matureContent, setMatureContent] = useState(true);
     const [nonMatureContent, setNonMatureContent] = useState(true);
@@ -13,7 +14,8 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
     const [fiveToNineYears, setFiveToNineYears] = useState(false);
     const [overTenYears, setOverTenYears] = useState(false);
     const [specificPeriod, setSpecificPeriod] = useState(false);
-    // Add other state variables and setters here
+    const [isAffiliate, setIsAffiliate] = useState(true);
+    const [isNotAffiliate, setIsNotAffiliate] = useState(true);
 
     useEffect(() => {
         const now = new Date();
@@ -22,6 +24,7 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
         const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
         const specificStartDate = new Date('2007-03-01');
         const specificEndDate = new Date('2011-06-14');
+        
     
         const filteredStreams = allStreamsWithFollowerCounts.filter(stream => {
             const meetsViewerCount = stream.viewer_count >= minViewerCount && stream.viewer_count <= maxViewerCount;
@@ -35,16 +38,17 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
             const meetsMaturity = (matureContent && stream.is_mature) || (nonMatureContent && !stream.is_mature);
             const startedTime = new Date(stream.started_at);
             const meetsStartedWithinHour = !startedWithinHour || (new Date() - startedTime) <= 60 * 60 * 1000;
+            const meetsAffiliateStatus = 
+                (isAffiliate && stream.user_info.broadcaster_type === 'affiliate') ||
+                (isNotAffiliate && stream.user_info.broadcaster_type !== 'affiliate');
     
-            return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour;
+            return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour && meetsAffiliateStatus;
         });
 
         if (typeof setFilteredStreams === 'function') {
             setFilteredStreams(filteredStreams);
         }
-    }, [minViewerCount, maxViewerCount, startedWithinHour, matureContent, nonMatureContent, nearAffiliate, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod, allStreamsWithFollowerCounts]);
-
-    return (
+    }, [minViewerCount, maxViewerCount, startedWithinHour, matureContent, nonMatureContent, nearAffiliate, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod, isAffiliate, isNotAffiliate, allStreamsWithFollowerCounts]);    return (
         <div id="filter" className="filter-box">
                     {/* Add filter inputs here */}
                     <div className="mb-3">
@@ -64,6 +68,14 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
                             minDistance={0}
                         />
                         <p>Selected range: {minViewerCount} - {maxViewerCount}</p>
+                    </div>
+                    <div className="mb-3 form-check">
+                        <input type="checkbox" className="form-check-input" id="isAffiliate" checked={isAffiliate} onChange={e => setIsAffiliate(e.target.checked)} />
+                        <label className="form-check-label" htmlFor="isAffiliate">Affiliate</label>
+                    </div>
+                    <div className="mb-3 form-check">
+                        <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} />
+                        <label className="form-check-label" htmlFor="isNotAffiliate">Not Affiliate</label>
                     </div>
                     <div className="mb-3 form-check">
                         <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />

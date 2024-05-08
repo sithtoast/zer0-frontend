@@ -52,7 +52,7 @@ const fetchStreams = useCallback(async (categoryId, cursor) => {
             }
         });
 
-        let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 3);
+        let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 10);
 
         const batchSize = 100;
         for (let i = 0; i < filteredStreams.length; i += batchSize) {

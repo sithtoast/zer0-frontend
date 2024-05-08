@@ -75,7 +75,7 @@ const handleSearch = async (searchTag = tag) => {
         streams = streams.flat();
 
         // Filter the streams
-        streams = streams.filter(stream => stream.viewer_count <= 3);
+        streams = streams.filter(stream => stream.viewer_count <= 10);
 
         const batchSize = 100;
         console.log(streams);
@@ -160,32 +160,34 @@ const handleFilterChange = (filtered) => {
         }
     }, [selectedStream]);
 
-return (
-    <div>
-        <Navbar />  
-        <div className='tag-search-container' style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div>
-                <h3>Search Streamers by Tag</h3>
-                <input type="text" value={tag} onChange={handleInputChange} />
-                <button onClick={handleSearch}>Search</button>
-                <div className="top-tags" style={{ paddingTop: '20px' }}>
-                    <h3>Top Tags</h3>
-                    <div>
-                        {topTags.map((tag, index) => (
-                            <button key={index} className="tag-button" onClick={() => handleTagClick(tag.name)}>
-                                {tag.name} <span className="badge">{tag.count}</span>
-                            </button>
+    return (
+        <div>
+            <Navbar />  
+            <div className='tag-search-container' style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>
+                    <h3>Search Streamers by Tag</h3>
+                    <input type="text" value={tag} onChange={handleInputChange} />
+                    <button onClick={handleSearch}>Search</button>
+                    <div className="top-tags" style={{ paddingTop: '20px' }}>
+                        <h3>Top Tags</h3>
+                        <div>
+                            {topTags.map((tag, index) => (
+                                <button key={index} className="tag-button" onClick={() => handleTagClick(tag.name)}>
+                                    {tag.name} <span className="badge">{tag.count}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="tag-search-results">
+                        <ul>
+                        {suggestedTags.flatMap(tagItem => [tagItem]).filter(currentTag => currentTag.name.toLowerCase().includes(tag.toLowerCase())).map((currentTag, index) => (
+                            <li key={index} onClick={() => handleTagClick(currentTag.name)}>
+                                {currentTag.name} <span className="badge">{currentTag.count}</span>
+                            </li>
                         ))}
+                        </ul>
                     </div>
                 </div>
-                <ul>
-                {suggestedTags.flatMap(tagItem => [tagItem]).filter(currentTag => currentTag.name.toLowerCase().includes(tag.toLowerCase())).map((currentTag, index) => (
-                    <li key={index} onClick={() => handleTagClick(currentTag.name)}>
-                        {currentTag.name} <span className="badge">{currentTag.count}</span>
-                    </li>
-                ))}
-                </ul>
-            </div>
             <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
             <FilterBox 
                         selectedStream={selectedStream} 
