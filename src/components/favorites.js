@@ -216,14 +216,14 @@ return (
                                 {isRaiding ? 'Cancel Raid' : 'Start Raid'}
                             </button>
                             <iframe
-                                src={`https://player.twitch.tv/?channel=${selectedStream.user_name}&parent=zer0.tv`}
+                                src={`https://player.twitch.tv/?channel=${selectedStream.username}&parent=zer0.tv`}
                                 height="480"
                                 width="800"
                                 allowFullScreen={true}
                                 style={{ width: "100%" }}>
                             </iframe>
                             <iframe
-                                src={`https://www.twitch.tv/embed/${selectedStream.user_name}/chat?parent=zer0.tv`}
+                                src={`https://www.twitch.tv/embed/${selectedStream.username}/chat?parent=zer0.tv`}
                                 height="480"
                                 width="350"
                                 style={{ width: "100%" }}>
