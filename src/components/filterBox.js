@@ -69,18 +69,20 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
                         />
                         <p>Selected range: {minViewerCount} - {maxViewerCount}</p>
                     </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="isAffiliate" checked={isAffiliate} onChange={e => setIsAffiliate(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="isAffiliate">Affiliate</label>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="isNotAffiliate">Not Affiliate</label>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
-                    </div>
+                   <div className="mb-3 form-check-group">
+                        <div className="mb-3 form-check">
+                            <input type="checkbox" className="form-check-input" id="isAffiliate" checked={isAffiliate} onChange={e => setIsAffiliate(e.target.checked)} />
+                            <label className="form-check-label" htmlFor="isAffiliate">Affiliate</label>
+                        </div>
+                        <div className="mb-3 form-check">
+                            <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} />
+                            <label className="form-check-label" htmlFor="isNotAffiliate">Not Affiliate</label>
+                        </div>
+                        <div className="mb-3 form-check">
+                            <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
+                            <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
+                        </div>
+                   </div>
                     <div className="mb-3 form-check-group">
                         <div className="form-check">
                             <input className="form-check-input" type="checkbox" id="lessThanSixMonths" checked={lessThanSixMonths} onChange={e => setLessThanSixMonths(e.target.checked)} />
