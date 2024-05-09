@@ -25,7 +25,7 @@ const FavoritesPage = (categoryId) => {
 	
 function shuffleAndPick(array, numItems) {
 		// Filter the array for streams with 3 or fewer viewers
-		const filteredArray = array.filter(stream => stream.viewer_count <= 3);
+		const filteredArray = array.filter(stream => stream.viewer_count <= 10);
 	
 		// Shuffle the filtered array using the Durstenfeld shuffle algorithm
 		for (let i = filteredArray.length - 1; i > 0; i--) {
@@ -94,53 +94,72 @@ function shuffleAndPick(array, numItems) {
 	};
 
 	const fetchStreamsForCategory = async (categoryId) => {
-        setLoading(prevLoading => ({ ...prevLoading, [categoryId]: true }));
-        try {
-            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                withCredentials: true,
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+    setLoading(prevLoading => ({ ...prevLoading, [categoryId]: true }));
+    try {
+        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
 
-            const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
-                headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-            });
+        const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
+            headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+        });
 
-            const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
+        const shuffledPickedStreams = shuffleAndPick(response.data.streams, 8);
 
-            const batchSize = 8;
-            for (let i = 0; i < shuffledPickedStreams.length; i += batchSize) {
-                const batch = shuffledPickedStreams.slice(i, i + batchSize);
-                const userIds = batch.map(stream => stream.user_id);
-                try {
-                    const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
-                        headers: {
-                            'Authorization': `Bearer ${twitchAccessToken}`
-                        }
-                    });
-                    const userInfoData = userInfoResponse.data.data;
-                    for (let j = 0; j < batch.length; j++) {
-                        const stream = batch[j];
-                        const userInfo = userInfoData.find(user => user.id === stream.user_id);
-                        if (userInfo) {
-                            stream.user_info = userInfo;
-                        }
+        const batchSize = 8;
+        for (let i = 0; i < shuffledPickedStreams.length; i += batchSize) {
+            const batch = shuffledPickedStreams.slice(i, i + batchSize);
+            const userIds = batch.map(stream => stream.user_id);
+            try {
+                const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+                    headers: {
+                        'Authorization': `Bearer ${twitchAccessToken}`
                     }
+                });
+                const userInfoData = userInfoResponse.data.data;
+                for (let j = 0; j < batch.length; j++) {
+                    const stream = batch[j];
+                    const userInfo = userInfoData.find(user => user.id === stream.user_id);
+                    if (userInfo) {
+                        stream.user_info = userInfo;
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+            }
+        }
+
+        // Fetch follower counts for each stream
+        const newStreams = [];
+        for (const stream of shuffledPickedStreams) {
+            if (!stream.followerCount) {
+                try {
+                    const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                        headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                    });
+                    const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
+                    const followerCount = followerData ? followerData.followerCount : 0;
+                    stream.followerCount = followerCount;
                 } catch (err) {
-                    console.error('Error fetching user data:', err);
+                    console.error('Error fetching follower count for stream:', stream.user_id, err);
+                    stream.followerCount = 0;
                 }
             }
-            
-            setFavorites(prevFavorites => prevFavorites.map(category => 
-                category.id === categoryId ? {...category, streams: shuffledPickedStreams} : category
-            ));
-        } catch (err) {
-            console.error(`Failed to fetch streams for category ${categoryId}:`, err);
-            setError(`Failed to fetch streams for category: ${err.message}`);
-        } finally {
-            setLoading(prevLoading => ({ ...prevLoading, [categoryId]: false }));
+            newStreams.push(stream);
         }
-    };
+
+        setFavorites(prevFavorites => prevFavorites.map(category => 
+            category.id === categoryId ? {...category, streams: newStreams} : category
+        ));
+    } catch (err) {
+        console.error(`Failed to fetch streams for category ${categoryId}:`, err);
+        setError(`Failed to fetch streams for category: ${err.message}`);
+    } finally {
+        setLoading(prevLoading => ({ ...prevLoading, [categoryId]: false }));
+    }
+};
 
 	const handleStreamSelect = (stream) => {
 		setSelectedStream(stream);
