@@ -7,6 +7,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import StreamCard from './streamCard';
 import FilterBox from './filterBox';
+import StreamEmbed from './streamEmbed';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -147,19 +148,6 @@ const handleFilterChange = (filtered) => {
         fetchTopTags();
     }, []);
 
-    useEffect(() => {
-
-        if (selectedStream) {
-            new Twitch.Embed("twitch-embed", {
-                width: "100%",
-                height: '500px',
-                channel: selectedStream,
-                layout: "video-with-chat",
-                parent: ["zer0.tv"]
-            });
-        }
-    }, [selectedStream]);
-
     return (
         <div>
             <Navbar />  
@@ -196,12 +184,7 @@ const handleFilterChange = (filtered) => {
                         setFilteredStreams={handleFilterChange} 
                     />
                 
-                {selectedStream && (
-                    <div>
-                    <div id="twitch-embed"></div>
-                    <button onClick={() => setSelectedStream(null)}>Close Stream</button>
-                    </div>
-                )}
+                <StreamEmbed stream={selectedStream} closeStream={() => setSelectedStream(null)} />
                 <div className="results" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                 {currentItems.map((stream, index) => (
                         

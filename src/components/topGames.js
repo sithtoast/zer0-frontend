@@ -247,16 +247,7 @@ useEffect(() => {
     setStreams(currentPageStreamsWithFollowerCounts);
     setPages(Math.ceil(filteredStreams.length / 30));
 
-    if (selectedStream) {
-        new Twitch.Embed("twitch-embed", {
-            width: "100%",
-            height: '500px',
-            channel: selectedStream,
-            layout: "video-with-chat",
-            parent: ["zer0.tv"]
-        });
-    }
-}, [filteredStreams, currentPage, selectedStream]);
+}, [filteredStreams, currentPage]);
 
 
 return (
@@ -331,7 +322,7 @@ return (
                         setFilteredStreams={setFilteredStreams} 
                     />
                     <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
-                    <div id="twitch-embed"></div>
+                    <StreamEmbed stream={selectedStream} closeStream={() => setSelectedStream(null)} />
                     <div className="row">
                     {loading ? (
                         [...Array(30)].map((_, i) => (

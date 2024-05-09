@@ -4,6 +4,7 @@ import Footer from './Footer';
 import Navbar from './Navbar'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import StreamCard from './streamCard';
+import StreamEmbed from './streamEmbed';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -130,24 +131,7 @@ return (
         <div className="followed-container">
             <div className="content">
                 <h1>Followed Streamers</h1>
-                {selectedStream && (
-                    <div className="embed-container w-100" style={{ minHeight: "480px" }}>
-                        <iframe
-                            src={`https://player.twitch.tv/?channel=${selectedStream}&parent=zer0.tv`}
-                            height="480"
-                            width="800"
-                            allowFullScreen={true}
-                            style={{ width: "100%" }}>
-                        </iframe>
-                        <iframe
-                            src={`https://www.twitch.tv/embed/${selectedStream}/chat?parent=zer0.tv`}
-                            height="480"
-                            width="350"
-                            style={{ width: "100%" }}>
-                        </iframe>
-                    </div>
-                )}
-                <div id="twitch-embed"></div>
+                <StreamEmbed stream={selectedStream} closeStream={() => setSelectedStream(null)} />
                 {error && <div>Error: {error}</div>}
                 <div className="followed-row">
                     {streams.map(stream => (
