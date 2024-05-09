@@ -71,16 +71,17 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
                     </div>
                    <div className="mb-3 form-check-group">
                         <div className="mb-3 form-check">
+                            <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
+                            <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
+                        </div>
+                        <div className="mb-3 form-check">
                             <input type="checkbox" className="form-check-input" id="isAffiliate" checked={isAffiliate} onChange={e => setIsAffiliate(e.target.checked)} />
                             <label className="form-check-label" htmlFor="isAffiliate">Affiliate</label>
+                            <img className="affiliate-icon ml-2" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
                         </div>
                         <div className="mb-3 form-check">
                             <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} />
                             <label className="form-check-label" htmlFor="isNotAffiliate">Not Affiliate</label>
-                        </div>
-                        <div className="mb-3 form-check">
-                            <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
                         </div>
                    </div>
                     <div className="mb-3 form-check-group">
