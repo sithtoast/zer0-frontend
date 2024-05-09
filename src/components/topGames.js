@@ -253,7 +253,6 @@ useEffect(() => {
 
 
 return (
-
     <div>
         <Navbar />
         <div className="top-category-container">
