@@ -134,7 +134,11 @@ return (
         <div className="followed-container">
             <div className="content">
                 <h1>Followed Streamers</h1>
-                <StreamEmbed stream={selectedStream} closeStream={() => setSelectedStream(null)} />
+                <StreamEmbed 
+                            stream={selectedStream} 
+                            streams={streams} 
+                            closeStream={() => setSelectedStream(null)} 
+                        />
                 {error && <div>Error: {error}</div>}
                 <div className="followed-row">
                     {streams.map(stream => (

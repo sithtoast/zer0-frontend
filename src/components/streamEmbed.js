@@ -47,25 +47,30 @@ useEffect(() => {
 
 
         const startRaid = async () => {
-
-            const profileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                withCredentials: true, // This allows the request to send cookies
-                headers: { 'Content-Type': 'application/json' }
-            });
-            
-            const fromBroadcasterId = profileResponse.data.twitch.twitchId;
-            const accessToken = profileResponse.data.twitch.accessToken;
-
-            const toBroadcasterId = streamInfo.user_id; 
-
-        
             try {
-                const response = await axios.post(`${apiUrl}/api/twitch/start-raid`, { fromBroadcasterId, toBroadcasterId }, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                const profileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+                    withCredentials: true, // This allows the request to send cookies
+                    headers: { 'Content-Type': 'application/json' }
                 });
-                console.log(response.data);
+
+                const fromBroadcasterId = profileResponse.data.twitch.twitchId;
+                const accessToken = profileResponse.data.twitch.accessToken;
+                const toBroadcasterId = streamInfo.user_id;
+
+                try {
+                    const response = await axios.post(`${apiUrl}/api/twitch/start-raid`, { fromBroadcasterId, toBroadcasterId }, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    console.log(response.data);
+                    return response;
+                } catch (err) {
+                    console.error('Error starting raid:', err);
+                    if (err.response && err.response.status === 400) {
+                        alert("Channel not accepting raids at this time.");
+                    }
+                }
             } catch (err) {
-                console.error('Error starting raid:', err);
+                console.error('Error getting profile:', err);
             }
         };
         
@@ -88,15 +93,25 @@ useEffect(() => {
             }
         };
 
-    const handleRaid = async () => {
-        if (isRaiding) {
+const handleRaid = async () => {
+    if (!isRaiding) {
+        try {
+            const response = await startRaid();
+            if (response.status !== 400) {
+                setIsRaiding(true);
+            }
+        } catch (err) {
+            console.error('Error starting raid:', err);
+        }
+    } else {
+        try {
             await cancelRaid();
             setIsRaiding(false);
-        } else {
-            await startRaid();
-            setIsRaiding(true);
+        } catch (err) {
+            console.error('Error cancelling raid:', err);
         }
-    };
+    }
+};
     
 return (
     <div id="twitch-embed">

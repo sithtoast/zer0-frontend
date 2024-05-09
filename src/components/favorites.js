@@ -4,8 +4,8 @@ import Navbar from './Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Collapse } from 'react-bootstrap';
 import Footer from './Footer';
-import StreamerBadge from './streamerBadge';
 import StreamCard from './streamCard';
+import StreamEmbed from './streamEmbed';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -18,6 +18,7 @@ const FavoritesPage = (categoryId) => {
 	const [openCategories, setOpenCategories] = useState({});
 	const [isRaiding, setIsRaiding] = useState(false);
 	const [showNoStreamsMessage, setShowNoStreamsMessage] = useState(false);
+    const [streams, setStreams] = useState([]);
 	
 	
 	let timeoutId = null;
@@ -62,34 +63,6 @@ function shuffleAndPick(array, numItems) {
 		} catch (err) {
 			console.error(`Failed to remove favorite category ${categoryId}:`, err);
 			setError(`Failed to remove favorite category: ${err.message}`);
-		}
-	};
-
-	const handleRaid = async (fromBroadcasterId, toBroadcasterId, broadcasterId) => {
-		const accessToken = localStorage.getItem('accessToken'); // Replace this with your method of storing access tokens
-	
-		try {
-			if (!isRaiding) {
-				const response = await axios.post(`${apiUrl}/api/twitch/start-raid`, { fromBroadcasterId, toBroadcasterId }, {
-					headers: {
-						'Authorization': `Bearer ${accessToken}`
-					}
-				});
-	
-				console.log(response.data);
-				setIsRaiding(true);
-			} else {
-				const response = await axios.delete(`${apiUrl}/api/twitch/cancel-raid`, { data: { broadcasterId } }, {
-					headers: {
-						'Authorization': `Bearer ${accessToken}`
-					}
-				});
-	
-				console.log(response.data);
-				setIsRaiding(false);
-			}
-		} catch (err) {
-			console.error('Error handling raid:', err);
 		}
 	};
 
@@ -153,6 +126,8 @@ function shuffleAndPick(array, numItems) {
         setFavorites(prevFavorites => prevFavorites.map(category => 
             category.id === categoryId ? {...category, streams: newStreams} : category
         ));
+
+        setStreams(newStreams);
     } catch (err) {
         console.error(`Failed to fetch streams for category ${categoryId}:`, err);
         setError(`Failed to fetch streams for category: ${err.message}`);
@@ -161,9 +136,6 @@ function shuffleAndPick(array, numItems) {
     }
 };
 
-	const handleStreamSelect = (stream) => {
-		setSelectedStream(stream);
-	};
 
 	useEffect(() => {
         const fetchFavorites = async () => {
@@ -234,24 +206,11 @@ return (
             <div className="d-flex flex-wrap align-items-start">
                 <div className="w-100">
                     {selectedStream && (
-                        <div className="embed-container w-100" style={{ minHeight: "480px" }}>
-                            <button onClick={() => handleRaid('fromBroadcasterId', 'toBroadcasterId', 'broadcasterId')}>
-                                {isRaiding ? 'Cancel Raid' : 'Start Raid'}
-                            </button>
-                            <iframe
-                                src={`https://player.twitch.tv/?channel=${selectedStream}&parent=zer0.tv`}
-                                height="480"
-                                width="800"
-                                allowFullScreen={true}
-                                style={{ width: "100%" }}>
-                            </iframe>
-                            <iframe
-                                src={`https://www.twitch.tv/embed/${selectedStream}/chat?parent=zer0.tv`}
-                                height="480"
-                                width="350"
-                                style={{ width: "100%" }}>
-                            </iframe>
-                        </div>
+                        <StreamEmbed 
+                            stream={selectedStream} 
+                            streams={streams} 
+                            closeStream={() => setSelectedStream(null)} 
+                        />
                     )}
                     <h1>Your Favorite Categories</h1>
                 </div>
