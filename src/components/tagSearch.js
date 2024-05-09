@@ -53,7 +53,7 @@ const handleInputChange = (e) => {
 
 const handleSearch = async (searchTag = tag) => {
     try {
-        const response = await axios.get(`${apiUrl}/api/twitch//streamers-by-tags/${searchTag}`);
+        const response = await axios.get(`${apiUrl}/api/twitch/streamers-by-tags/${searchTag}`);
         const streamers = response.data;
 
         const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
@@ -64,12 +64,12 @@ const handleSearch = async (searchTag = tag) => {
         console.log(twitchAccessToken);
 
         let streams = (await Promise.all(streamers.map(async (streamer) => {
-    const streamResponse = await axios.get(`${apiUrl}/api/twitch/stream/${streamer.twitchId}`, {
-        headers: {
-            Authorization: `Bearer ${twitchAccessToken}`
-        }
-    });
-    return streamResponse.data;
+            const streamResponse = await axios.get(`${apiUrl}/api/twitch/stream/${streamer.twitchId}`, {
+                headers: {
+                    Authorization: `Bearer ${twitchAccessToken}`
+                }
+            });
+            return streamResponse.data;
         }))).filter(stream => stream.length > 0);
 
         // Flatten the array
@@ -102,11 +102,28 @@ const handleSearch = async (searchTag = tag) => {
             }
         }
 
-                setStreamers(streams);
-                console.log(streams);
-            } catch (err) {
-                console.error('Error fetching streamers by tag:', err);
+        // Get follower count for each stream
+        for (const stream of streams) {
+            if (!stream.followerCount) {
+                try {
+                    const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                        headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                    });
+                    const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
+                    const followerCount = followerData ? followerData.followerCount : 0;
+                    stream.followerCount = followerCount;
+                } catch (err) {
+                    console.error('Error fetching follower count for stream:', stream.user_id, err);
+                    stream.followerCount = 0;
+                }
             }
+        }
+
+        setStreamers(streams);
+        console.log(streams);
+    } catch (err) {
+        console.error('Error fetching streamers by tag:', err);
+    }
 };
 
 // Calculate the total number of pages

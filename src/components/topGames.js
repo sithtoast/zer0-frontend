@@ -86,7 +86,8 @@ const fetchStreams = useCallback(async (categoryId, cursor) => {
                     const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
                         headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
                     });
-                    const followerCount = followerCountResponse.data[0] ? followerCountResponse.data[0].followerCount : 0;
+                    const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
+                    const followerCount = followerData ? followerData.followerCount : 0;
                     stream.followerCount = followerCount;
                 } catch (err) {
                     console.error('Error fetching follower count for stream:', stream.user_id, err);

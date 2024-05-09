@@ -28,7 +28,8 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
     
         const filteredStreams = allStreamsWithFollowerCounts.filter(stream => {
             const meetsViewerCount = stream.viewer_count >= minViewerCount && stream.viewer_count <= maxViewerCount;
-            const meetsFollowerCount = !nearAffiliate || (stream.followerCount >= 45 && stream.followerCount < 50);
+            const meetsFollowerCount = (nearAffiliate && stream.followerCount >= 45 && stream.followerCount < 50) || 
+                                        (!nearAffiliate && stream.user_info.broadcaster_type !== 'affiliate');                       
             const joinDate = new Date(stream.user_info.created_at);
             const meetsJoinDate = 
                 (!lessThanSixMonths || joinDate >= sixMonthsAgo) &&
@@ -48,7 +49,9 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
         if (typeof setFilteredStreams === 'function') {
             setFilteredStreams(filteredStreams);
         }
-    }, [minViewerCount, maxViewerCount, startedWithinHour, matureContent, nonMatureContent, nearAffiliate, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod, isAffiliate, isNotAffiliate, allStreamsWithFollowerCounts]);    return (
+    }, [minViewerCount, maxViewerCount, startedWithinHour, matureContent, nonMatureContent, nearAffiliate, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod, isAffiliate, isNotAffiliate, allStreamsWithFollowerCounts]);    
+    
+    return (
         <div id="filter" className="filter-box">
                     {/* Add filter inputs here */}
                     <div className="mb-3">
@@ -71,16 +74,14 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
                     </div>
                    <div className="mb-3 form-check-group">
                         <div className="mb-3 form-check">
-                            <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => setNearAffiliate(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
+                        <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => { setNearAffiliate(e.target.checked); if(e.target.checked) setIsNotAffiliate(true); }} />                            <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
                         </div>
                         <div className="mb-3 form-check">
                             <input type="checkbox" className="form-check-input" id="isAffiliate" checked={isAffiliate} onChange={e => setIsAffiliate(e.target.checked)} />
                             <label className="form-check-label" htmlFor="isAffiliate">Affiliate<img className="affiliate-icon ml-2" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} /></label>
                         </div>
                         <div className="mb-3 form-check">
-                            <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="isNotAffiliate">Not Affiliate</label>
+                        <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} disabled={nearAffiliate} />                            <label className="form-check-label" htmlFor="isNotAffiliate">Not Affiliate</label>
                         </div>
                    </div>
                     <div className="mb-3 form-check-group">
