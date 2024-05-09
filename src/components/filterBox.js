@@ -1,7 +1,7 @@
 // FilterBox.js
 import React, { useEffect, useState } from 'react';
 import ReactSlider from 'react-slider';
-import Affiliate from '../assets/affiliate.png';
+import AffiliateIcon from '../assets/affiliate.png';
 
 const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCounts, setFilteredStreams }) => {
     const [minViewerCount, setMinViewerCount] = useState(0);
