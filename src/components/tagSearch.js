@@ -1,5 +1,3 @@
-/* global Twitch */
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash';
@@ -21,6 +19,7 @@ const TagSearch = () => {
     const [selectedStream, setSelectedStream] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredStreams, setFilteredStreams] = useState([]);
+    const [streams, setStreams] = useState([]);
 
 
 
@@ -201,7 +200,11 @@ const handleFilterChange = (filtered) => {
                         setFilteredStreams={handleFilterChange} 
                     />
                 
-                <StreamEmbed stream={selectedStream} closeStream={() => setSelectedStream(null)} />
+                <StreamEmbed 
+                            stream={selectedStream} 
+                            streams={streams} 
+                            closeStream={() => setSelectedStream(null)} 
+                        />
                 <div className="results" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                 {currentItems.map((stream, index) => (
                         

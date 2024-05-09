@@ -1,5 +1,3 @@
-/* global Twitch */
-
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
@@ -248,6 +246,7 @@ useEffect(() => {
 
     setStreams(currentPageStreamsWithFollowerCounts);
     setPages(Math.ceil(filteredStreams.length / 30));
+    console.log(streams);
 
 }, [filteredStreams, currentPage]);
 
@@ -323,7 +322,11 @@ return (
                         setFilteredStreams={setFilteredStreams} 
                     />
                     <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
-                    <StreamEmbed stream={selectedStream} closeStream={() => setSelectedStream(null)} />
+                    <StreamEmbed 
+                            stream={selectedStream} 
+                            streams={streams} 
+                            closeStream={() => setSelectedStream(null)} 
+                        />
                     <div className="row">
                     {loading ? (
                         [...Array(30)].map((_, i) => (

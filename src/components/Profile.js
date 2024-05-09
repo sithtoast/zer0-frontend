@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 import Navbar from './Navbar'; 
 import Footer from './Footer';
 
