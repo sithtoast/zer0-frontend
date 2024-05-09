@@ -76,8 +76,7 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
                         </div>
                         <div className="mb-3 form-check">
                             <input type="checkbox" className="form-check-input" id="isAffiliate" checked={isAffiliate} onChange={e => setIsAffiliate(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="isAffiliate">Affiliate</label>
-                            <img className="affiliate-icon ml-2" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
+                            <label className="form-check-label" htmlFor="isAffiliate">Affiliate<img className="affiliate-icon ml-2" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} /></label>
                         </div>
                         <div className="mb-3 form-check">
                             <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} />
