@@ -6,6 +6,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import StreamCard from './streamCard';
 import FilterBox from './filterBox';
+import StreamEmbed from './streamEmbed';
 
 
 const apiUrl = process.env.REACT_APP_API_URL;
