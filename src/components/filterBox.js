@@ -6,7 +6,7 @@ import AffiliateIcon from '../assets/affiliate.png';
 const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCounts, setFilteredStreams }) => {
     const [minViewerCount, setMinViewerCount] = useState(0);
     const [maxViewerCount, setMaxViewerCount] = useState(10);
-    const [startedWithinHour, setStartedWithinHour] = useState(false); // Default to not filtering by start time
+    const [startedWithinHour, setStartedWithinHour] = useState(false);
     const [matureContent, setMatureContent] = useState(true);
     const [nonMatureContent, setNonMatureContent] = useState(true);
     const [nearAffiliate, setNearAffiliate] = useState(false);
@@ -14,8 +14,8 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
     const [fiveToNineYears, setFiveToNineYears] = useState(false);
     const [overTenYears, setOverTenYears] = useState(false);
     const [specificPeriod, setSpecificPeriod] = useState(false);
-    const [isAffiliate, setIsAffiliate] = useState(true);
-    const [isNotAffiliate, setIsNotAffiliate] = useState(true);
+    const [isAffiliate, setIsAffiliate] = useState(false);
+    const [isNotAffiliate, setIsNotAffiliate] = useState(false);
 
     useEffect(() => {
         const now = new Date();
@@ -24,97 +24,140 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
         const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
         const specificStartDate = new Date('2007-03-01');
         const specificEndDate = new Date('2011-06-14');
-        
-    
+
         const filteredStreams = allStreamsWithFollowerCounts.filter(stream => {
             const meetsViewerCount = stream.viewer_count >= minViewerCount && stream.viewer_count <= maxViewerCount;
-            const meetsFollowerCount = (nearAffiliate && stream.followerCount >= 45 && stream.followerCount < 50) || 
-                                        (!nearAffiliate && stream.user_info.broadcaster_type !== 'affiliate');                       
+
+            const meetsFollowerCount = 
+                (!nearAffiliate || (stream.followerCount >= 45 && stream.followerCount < 50)) &&
+                (!isAffiliate || stream.user_info.broadcaster_type === 'affiliate') &&
+                (!isNotAffiliate || stream.user_info.broadcaster_type !== 'affiliate');
+            
             const joinDate = new Date(stream.user_info.created_at);
             const meetsJoinDate = 
-                (!lessThanSixMonths || joinDate >= sixMonthsAgo) &&
-                (!fiveToNineYears || (joinDate <= fiveYearsAgo && joinDate > tenYearsAgo)) &&
-                (!overTenYears || joinDate <= tenYearsAgo) &&
-                (!specificPeriod || (joinDate >= specificStartDate && joinDate <= specificEndDate));
+                (!lessThanSixMonths || (lessThanSixMonths && joinDate >= sixMonthsAgo)) &&
+                (!fiveToNineYears || (fiveToNineYears && joinDate <= fiveYearsAgo && joinDate > tenYearsAgo)) &&
+                (!overTenYears || (overTenYears && joinDate <= tenYearsAgo)) &&
+                (!specificPeriod || (specificPeriod && joinDate >= specificStartDate && joinDate <= specificEndDate));
+            
             const meetsMaturity = (matureContent && stream.is_mature) || (nonMatureContent && !stream.is_mature);
             const startedTime = new Date(stream.started_at);
-            const meetsStartedWithinHour = !startedWithinHour || (new Date() - startedTime) <= 60 * 60 * 1000;
-            const meetsAffiliateStatus = 
-                (isAffiliate && stream.user_info.broadcaster_type === 'affiliate') ||
-                (isNotAffiliate && stream.user_info.broadcaster_type !== 'affiliate');
-    
-            return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour && meetsAffiliateStatus;
+            const meetsStartedWithinHour = !startedWithinHour || (now - startedTime) <= 60 * 60 * 1000;
+
+            return meetsViewerCount && meetsFollowerCount && meetsJoinDate && meetsMaturity && meetsStartedWithinHour;
         });
 
-        if (typeof setFilteredStreams === 'function') {
-            setFilteredStreams(filteredStreams);
-        }
-    }, [minViewerCount, maxViewerCount, startedWithinHour, matureContent, nonMatureContent, nearAffiliate, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod, isAffiliate, isNotAffiliate, allStreamsWithFollowerCounts]);    
-    
+        setFilteredStreams(filteredStreams);
+    }, [
+        minViewerCount, maxViewerCount, startedWithinHour, matureContent, nonMatureContent,
+        nearAffiliate, lessThanSixMonths, fiveToNineYears, overTenYears, specificPeriod,
+        isAffiliate, isNotAffiliate, allStreamsWithFollowerCounts, setFilteredStreams
+    ]);
+
     return (
         <div id="filter" className="filter-box">
-                    {/* Add filter inputs here */}
-                    <div className="mb-3">
-                        <label htmlFor="viewerCount" className="form-label">Viewer Count:</label>
-                        <ReactSlider
-                            className="react-slider"
-                            thumbClassName="thumb"
-                            trackClassName="track"
-                            min={0}
-                            max={3}
-                            value={[minViewerCount, maxViewerCount]}
-                            onChange={([min, max]) => {
-                                setMinViewerCount(min);
-                                setMaxViewerCount(max);
-                            }}
-                            pearling
-                            minDistance={0}
-                        />
-                        <p>Selected range: {minViewerCount} - {maxViewerCount}</p>
-                    </div>
-                   <div className="mb-3 form-check-group">
-                        <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="nearAffiliate" checked={nearAffiliate} onChange={e => { setNearAffiliate(e.target.checked); if(e.target.checked) setIsNotAffiliate(true); }} />                            <label className="form-check-label" htmlFor="nearAffiliate"><p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p></label>
-                        </div>
-                        <div className="mb-3 form-check">
-                            <input type="checkbox" className="form-check-input" id="isAffiliate" checked={isAffiliate} onChange={e => setIsAffiliate(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="isAffiliate">Affiliate<img className="affiliate-icon ml-2" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} /></label>
-                        </div>
-                        <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="isNotAffiliate" checked={isNotAffiliate} onChange={e => setIsNotAffiliate(e.target.checked)} disabled={nearAffiliate} />                            <label className="form-check-label" htmlFor="isNotAffiliate">Not Affiliate</label>
-                        </div>
-                   </div>
-                    <div className="mb-3 form-check-group">
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="lessThanSixMonths" checked={lessThanSixMonths} onChange={e => setLessThanSixMonths(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="lessThanSixMonths"><p className="card-text newbie-message" title="This user's account is less than 6 months old.">Twitch Newbie</p></label>
-                        </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="fiveToNineYears" checked={fiveToNineYears} onChange={e => { setFiveToNineYears(e.target.checked); setSelectedStream(null); }} />
-                            <label className="form-check-label" htmlFor="fiveToNineYears"><p className="card-text old-friend-message" title="This user has been on Twitch for a long time. (5-9 yrs)">Old Friend</p></label>
-                        </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="overTenYears" checked={overTenYears} onChange={e => setOverTenYears(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="overTenYears"><p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p></label>
-                        </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="specificPeriod" checked={specificPeriod} onChange={e => setSpecificPeriod(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="specificPeriod"><p className="card-text justins-friend-message" title="This user's account was made in the Justin.tv days.">Justin's Friend</p></label>
-                        </div>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="matureContent" checked={matureContent} onChange={e => setMatureContent(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="matureContent">Mature Content</label>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="nonMatureContent" checked={nonMatureContent} onChange={e => setNonMatureContent(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="nonMatureContent">Non-Mature Content</label>
-                    </div>
-                    <div className="mb-3 form-check">
-                        <input type="checkbox" className="form-check-input" id="startedWithinHour" checked={startedWithinHour} onChange={e => setStartedWithinHour(e.target.checked)} />
-                        <label className="form-check-label" htmlFor="startedWithinHour"><p className="card-text just-started-message" title="This user has just started streaming.">Just Started</p></label>
-                    </div>
+            <div className="mb-3">
+                <label htmlFor="viewerCount" className="form-label">Viewer Count:</label>
+                <ReactSlider
+                    className="react-slider"
+                    thumbClassName="thumb"
+                    trackClassName="track"
+                    min={0}
+                    max={10}
+                    value={[minViewerCount, maxViewerCount]}
+                    onChange={([min, max]) => {
+                        setMinViewerCount(min);
+                        setMaxViewerCount(max);
+                    }}
+                    pearling
+                    minDistance={1}
+                />
+                <p>Selected range: {minViewerCount} - {maxViewerCount}</p>
+            </div>
+            <div className="mb-3 form-check-group">
+                <div className="mb-3 form-check">
+                    <input 
+                        type="checkbox" 
+                        className="form-check-input" 
+                        id="nearAffiliate" 
+                        checked={nearAffiliate} 
+                        onChange={e => { 
+                            setNearAffiliate(e.target.checked); 
+                            if (e.target.checked) setIsNotAffiliate(false); 
+                        }} 
+                    />
+                    <label className="form-check-label" htmlFor="nearAffiliate">
+                        <p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p>
+                    </label>
                 </div>
+                <div className="mb-3 form-check">
+                    <input 
+                        type="checkbox" 
+                        className="form-check-input" 
+                        id="isAffiliate" 
+                        checked={isAffiliate} 
+                        onChange={e => { 
+                            setIsAffiliate(e.target.checked); 
+                            if (e.target.checked) setIsNotAffiliate(false);
+                        }} 
+                    />
+                    <label className="form-check-label" htmlFor="isAffiliate">
+                        Affiliate<img className="affiliate-icon ml-2" src={AffiliateIcon} alt="Affiliate" style={{ width: 25, height: 20 }} />
+                    </label>
+                </div>
+                <div className="mb-3 form-check">
+                    <input 
+                        type="checkbox" 
+                        className="form-check-input" 
+                        id="isNotAffiliate" 
+                        checked={isNotAffiliate} 
+                        onChange={e => setIsNotAffiliate(e.target.checked)} 
+                        disabled={nearAffiliate || isAffiliate} 
+                    />
+                    <label className="form-check-label" htmlFor="isNotAffiliate">
+                        Not Affiliate
+                    </label>
+                </div>
+            </div>
+            <div className="mb-3 form-check-group">
+                <div className="form-check">
+                    <input className="form-check-input" type="checkbox" id="lessThanSixMonths" checked={lessThanSixMonths} onChange={e => setLessThanSixMonths(e.target.checked)} />
+                    <label className="form-check-label" htmlFor="lessThanSixMonths">
+                        <p className="card-text newbie-message" title="This user's account is less than 6 months old.">Twitch Newbie</p>
+                    </label>
+                </div>
+                <div className="form-check">
+                    <input className="form-check-input" type="checkbox" id="fiveToNineYears" checked={fiveToNineYears} onChange={e => { setFiveToNineYears(e.target.checked); setSelectedStream(null); }} />
+                    <label className="form-check-label" htmlFor="fiveToNineYears">
+                        <p className="card-text old-friend-message" title="This user has been on Twitch for a long time. (5-9 yrs)">Old Friend</p>
+                    </label>
+                </div>
+                <div className="form-check">
+                    <input className="form-check-input" type="checkbox" id="overTenYears" checked={overTenYears} onChange={e => setOverTenYears(e.target.checked)} />
+                    <label className="form-check-label" htmlFor="overTenYears">
+                        <p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p></label>
+                </div>
+                <div className="form-check">
+                    <input className="form-check-input" type="checkbox" id="specificPeriod" checked={specificPeriod} onChange={e => setSpecificPeriod(e.target.checked)} />
+                    <label className="form-check-label" htmlFor="specificPeriod">
+                        <p className="card-text justins-friend-message" title="This user's account was made in the Justin.tv days.">Justin's Friend</p></label>
+                </div>
+            </div>
+            <div className="mb-3 form-check">
+                <input type="checkbox" className="form-check-input" id="matureContent" checked={matureContent} onChange={e => setMatureContent(e.target.checked)} />
+                <label className="form-check-label" htmlFor="matureContent">Mature Content</label>
+            </div>
+            <div className="mb-3 form-check">
+                <input type="checkbox" className="form-check-input" id="nonMatureContent" checked={nonMatureContent} onChange={e => setNonMatureContent(e.target.checked)} />
+                <label className="form-check-label" htmlFor="nonMatureContent">Non-Mature Content</label>
+            </div>
+            <div className="mb-3 form-check">
+                <input type="checkbox" className="form-check-input" id="startedWithinHour" checked={startedWithinHour} onChange={e => setStartedWithinHour(e.target.checked)} />
+                <label className="form-check-label" htmlFor="startedWithinHour">
+                    <p className="card-text just-started-message" title="This user has just started streaming.">Just Started</p>
+                </label>
+            </div>
+        </div>
     );
 };
 
