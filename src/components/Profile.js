@@ -10,22 +10,6 @@ const Profile = () => {
 	const [profileData, setProfileData] = useState({});
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
-	
-const handleUnlink = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        const userId = profileData.user?.userId;  // Ensure you're getting the right userId
-        const response = await axios.post(`${apiUrl}/api/users/unlink/twitch/${userId}`, {}, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        alert(`${response.data.message} Please visit https://www.twitch.tv/settings/connections to fully unlink your account.`);
-        // Force refresh the profile to reflect the changes
-        window.location.href = 'https://www.twitch.tv/settings/connections';
-    } catch (error) {
-        console.error('Failed to unlink Twitch account:', error);
-        alert('Failed to unlink Twitch account');
-    }
-};
 
 useEffect(() => {
     const fetchProfileData = async () => {
@@ -58,13 +42,6 @@ useEffect(() => {
 		console.log("Redirecting to Twitch linking flow...");
 		window.location.href = `${apiUrl}/auth/twitch`;
 	};
-	
-	const linkSteamAccount = () => {
-		console.log("Redirecting to Steam linking flow...");
-		window.location.href = `${apiUrl}/auth/steam`;
-	};
-
-	const steamButtonImage = '../assets/steam_login.png';
 
 return (
 	<div>
@@ -84,7 +61,6 @@ return (
         <p><strong>Display Name:</strong> {profileData.twitch.displayName}</p>
         <p><strong>Twitch ID:</strong> {profileData.twitch.twitchId}</p>
         <img src={profileData.twitch.profileImageUrl} alt="Twitch Avatar" />
-        <button onClick={handleUnlink} className="btn btn-warning">Unlink Twitch Account</button>
     </div>
 ) : (
     <button onClick={linkTwitchAccount} style={{ marginTop: '20px', fontSize: '16px', padding: '10px 20px', cursor: 'pointer' }}>

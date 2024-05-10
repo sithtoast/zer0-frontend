@@ -29,6 +29,7 @@ const TopGames = () => {
     const [fetchedStreams, setFetchedStreams] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
     const fetchStreams = useCallback(async (categoryId, cursor) => {
         setLoading(true);
@@ -213,6 +214,11 @@ const TopGames = () => {
         setSearchResults(response.data);
     };
 
+    const toggleOverlay = (stream) => {
+        setSelectedStream(stream);
+        setIsOverlayVisible(!!stream);
+    };
+
     useEffect(() => {
         fetchCategories();
         fetchFavorites();
@@ -235,6 +241,7 @@ const TopGames = () => {
 
     return (
         <div>
+            {selectedStream && <div className="overlay"></div>}
             <Navbar />
             <div className="top-category-container">
                 <div className="row d-flex">
@@ -333,7 +340,7 @@ const TopGames = () => {
                                         key={stream.id}
                                         stream={stream} 
                                         selectedStream={selectedStream} 
-                                        setSelectedStream={setSelectedStream} 
+                                        closeStream={() => toggleOverlay(null)}
                                     />
                                 )) : <p className="stream-details">No streams available.</p>}
                             </div>

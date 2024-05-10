@@ -1,7 +1,6 @@
 // StreamEmbed.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -114,14 +113,17 @@ const handleRaid = async () => {
 };
     
 return (
-    <div id="twitch-embed">
-        <div id="twitch-embed-stream"></div>
-        {stream && <button onClick={closeStream}>Close Stream</button>}
-        {stream && (
-            <button onClick={handleRaid} style={{ backgroundColor: isRaiding ? 'red' : 'green' }}>
-                {isRaiding ? 'Cancel Raid' : 'Start Raid'}
-            </button>
-        )}
+    <div>
+        <div className="overlay"></div>
+        <div id="twitch-embed">
+            <div id="twitch-embed-stream"></div>
+            {stream && <button onClick={closeStream}>Close Stream</button>}
+            {stream && (
+                <button onClick={handleRaid} style={{ backgroundColor: isRaiding ? 'red' : 'green' }}>
+                    {isRaiding ? 'Cancel Raid' : 'Start Raid'}
+                </button>
+            )}
+        </div>
     </div>
 );
 };

@@ -1,7 +1,4 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import React from 'react';
 import 'react-toastify/dist/ReactToastify.css';  // Import default CSS for react-toastify
 import Navbar from './Navbar';  // Import Navbar component
 import Footer from './Footer';
@@ -19,7 +16,6 @@ return (
 <div>
 <Navbar />
 <div className="login-container">
-        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
         <div className="row justify-content-center">
             <div className="col-md-6">
                 <h1 className="text-center mb-4">Welcome to zer0.tv!</h1>

@@ -16,7 +16,6 @@ const FavoritesPage = (categoryId) => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [openCategories, setOpenCategories] = useState({});
-	const [isRaiding, setIsRaiding] = useState(false);
 	const [showNoStreamsMessage, setShowNoStreamsMessage] = useState(false);
     const [streams, setStreams] = useState([]);
 	

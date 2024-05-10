@@ -12,7 +12,6 @@ const apiUrl = process.env.REACT_APP_API_URL;
 
 const TagSearch = () => {
     const [tag, setTag] = useState('');
-    const [streamers, setStreamers] = useState([]);
     const [suggestedTags, setSuggestedTags] = useState([]);
     const [topTags, setTopTags] = useState([]);
     const [selectedStream, setSelectedStream] = useState(null);
@@ -157,7 +156,7 @@ const TagSearch = () => {
         <div>
             <Navbar />  
             <div className='tag-search-container' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
+                <div style={{ marginRight: '20px' }}>
                     <h3>Search Streamers by Tag</h3>
                     <input type="text" value={tag} onChange={handleInputChange} />
                     <button onClick={() => handleSearch(tag)}>Search</button>
