@@ -85,7 +85,8 @@ const fetchStreams = async () => {
                     }
                 });
                 // Add user info to streams
-                const userInfoData = userInfoResponse.data.data;
+                const userInfoData = userInfoResponse.data;
+                console.log('User info:', userInfoData);
                 for (let j = 0; j < batch.length; j++) {
                     const stream = batch[j];
                     const userInfo = userInfoData.find(user => user.id === stream.user_id);

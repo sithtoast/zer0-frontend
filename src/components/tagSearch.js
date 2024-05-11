@@ -48,24 +48,45 @@ const TagSearch = () => {
         try {
             const response = await axios.get(`${apiUrl}/api/twitch/streamers-by-tags/${searchTag}`);
             const streamers = response.data;
-
+    
             const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
                 withCredentials: true, 
                 headers: { 'Content-Type': 'application/json' }
             });
             const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-
-            let streams = (await Promise.all(streamers.map(async (streamer) => {
-                const streamResponse = await axios.get(`${apiUrl}/api/twitch/stream/${streamer.twitchId}`, {
-                    headers: {
-                        Authorization: `Bearer ${twitchAccessToken}`
+    
+            // Split the streamers into chunks of 100
+            const chunks = [];
+            for (let i = 0; i < streamers.length; i += 100) {
+                chunks.push(streamers.slice(i, i + 100));
+            }
+    
+            let streams = [];
+    
+            for (let chunk of chunks) {
+                try {
+                    const twitchIds = chunk.map(streamer => streamer.twitchId);
+                    const streamResponse = await axios.post(`${apiUrl}/api/twitch/stream`, {
+                        twitchIds: twitchIds
+                    }, {
+                        headers: {
+                            Authorization: `Bearer ${twitchAccessToken}`
+                        }
+                    });
+    
+                    if (streamResponse.data && streamResponse.data.length > 0) {
+                        console.log('Stream response:', streamResponse.data);
+                        streams.push(...streamResponse.data);
+                        console.log('Streams:', streams);
                     }
-                });
-                return streamResponse.data;
-            }))).filter(stream => stream.length > 0);
-
+                } catch (err) {
+                    console.error('Error fetching streams:', err);
+                }
+            }
+    
+            console.log('Streams:', streams);
             streams = streams.flat().filter(stream => stream.viewer_count <= 10);
-
+    
             const batchSize = 100;
             for (let i = 0; i < streams.length; i += batchSize) {
                 const batch = streams.slice(i, i + batchSize);
@@ -76,7 +97,7 @@ const TagSearch = () => {
                             'Authorization': `Bearer ${twitchAccessToken}`
                         }
                     });
-                    const userInfoData = userInfoResponse.data.data;
+                    const userInfoData = userInfoResponse.data;
                     for (let j = 0; j < batch.length; j++) {
                         const stream = batch[j];
                         const userInfo = userInfoData.find(user => user.id === stream.user_id);
@@ -88,7 +109,7 @@ const TagSearch = () => {
                     console.error('Error fetching user data:', err);
                 }
             }
-
+    
             for (const stream of streams) {
                 if (!stream.followerCount) {
                     try {
@@ -103,7 +124,7 @@ const TagSearch = () => {
                     }
                 }
             }
-
+    
             setStreams(streams);
             setFilteredStreams(streams);
             setCurrentPage(1);

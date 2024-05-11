@@ -61,7 +61,7 @@ const TopGames = () => {
                             'Authorization': `Bearer ${twitchAccessToken}`
                         }
                     });
-                    const userInfoData = userInfoResponse.data.data;
+                    const userInfoData = userInfoResponse.data;
                     for (let j = 0; j < batch.length; j++) {
                         const stream = batch[j];
                         const userInfo = userInfoData.find(user => user.id === stream.user_id);
