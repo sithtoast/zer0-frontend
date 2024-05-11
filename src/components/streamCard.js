@@ -114,7 +114,7 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
                 />
                 <div className="card-body">
                 <OverlayTrigger
-                    placement="left"
+                    placement="top"
                     overlay={
                         <Tooltip id={`tooltip-${stream.user_name}`} className="large-tooltip">
                             <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
