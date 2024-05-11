@@ -17,8 +17,6 @@ function StreamEmbed({ stream, streams, closeStream }) {
     const [totalWatchTimeSeconds, setTotalWatchTimeSeconds] = useState(0);
 
     const streamData = streams;
-    console.log(streamData);
-    console.log(stream);
 
     const fetchProfileData = async () => {
         try {
@@ -28,7 +26,6 @@ function StreamEmbed({ stream, streams, closeStream }) {
                     'Content-Type': 'application/json'
                 }
             });
-            console.log(response.data);
             setProfileData(response.data);
             setUserId(response.data.user.userId); // Update userId
             setLoading(false);
@@ -56,7 +53,6 @@ function StreamEmbed({ stream, streams, closeStream }) {
         if (stream) {
             const streamerData = streamData.find(data => data.user_login === stream);
             if (streamerData) {
-                console.log(streamerData.followerCount);
                 setFollowerCount(streamerData.followerCount);
             }
         }
@@ -114,14 +110,6 @@ function StreamEmbed({ stream, streams, closeStream }) {
     const userName = stream; // 'stream' is the username of the clicked stream
     const streamInfo = streams.find(s => s.user_name === userName);
 
-    if (streamInfo) {
-        const broadcasterId = streamInfo.user_id;
-        console.log('Broadcaster ID:', broadcasterId);
-        // Now you can use broadcasterId in your startRaid and cancelRaid functions
-    } else {
-        console.log('User not found in streams data');
-    }
-
     const startRaid = async () => {
         try {
             const profileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
@@ -137,7 +125,6 @@ function StreamEmbed({ stream, streams, closeStream }) {
                 const response = await axios.post(`${apiUrl}/api/twitch/start-raid`, { fromBroadcasterId, toBroadcasterId }, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
-                console.log(response.data);
                 return response;
             } catch (err) {
                 console.error('Error starting raid:', err);
@@ -157,13 +144,11 @@ function StreamEmbed({ stream, streams, closeStream }) {
         });
         const broadcasterId = profileResponse.data.twitch.twitchId;
         const accessToken = profileResponse.data.twitch.accessToken;
-        console.log('Access Token:', accessToken);
 
         try {
             const response = await axios.post(`${apiUrl}/api/twitch/cancel-raid`, { broadcasterId }, {
                 headers: { 'Authorization': `Bearer ${accessToken}` }
             });
-            console.log(response.data);
         } catch (err) {
             console.error('Error cancelling raid:', err);
         }
@@ -198,7 +183,6 @@ function StreamEmbed({ stream, streams, closeStream }) {
                 }, {
                     withCredentials: true
                 });
-                console.log('Watch time updated successfully');
             } catch (error) {
                 console.error('Error updating watch time:', error);
             }
