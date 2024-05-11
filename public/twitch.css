@@ -572,3 +572,18 @@ nav a:hover, nav a:focus {
 .d-flex {
     display: flex;
 }
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
+    z-index: 1; /* Displayed below the stream */
+}
+
+#twitch-embed {
+    position: relative;
+    z-index: 2; /* Displayed above the overlay */
+}

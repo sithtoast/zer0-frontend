@@ -67,6 +67,29 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
         }
     };
 
+    const calculateTimeDifference = (startTime) => {
+        const now = new Date();
+        const start = new Date(startTime);
+        const diffMs = now - start;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+        let timeDifference = '';
+        if (diffDays > 0) {
+            timeDifference += diffDays + ' day(s) ';
+        }
+        if (diffHours > 0) {
+            timeDifference += diffHours + ' hour(s) ';
+        }
+        if (diffMinutes > 0) {
+            timeDifference += diffMinutes + ' minute(s) ';
+        }
+        timeDifference += 'ago';
+    
+        return timeDifference;
+    };
+
     useEffect(() => {
         fetchFavorites();
     }, []); 
@@ -126,7 +149,7 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
                     </span>
                 </p>
                 <p className="card-text">Language: {stream.language}</p>
-                <p className="card-text">Started at: {new Date(stream.started_at).toLocaleString()}</p>
+                <p className="card-text">Started: {calculateTimeDifference(stream.started_at)}</p>
                 <div className="tag-cloud">
                 {stream.tags && stream.tags.map((tag, index) => (
                     <span key={index} className="tag">{tag}</span>

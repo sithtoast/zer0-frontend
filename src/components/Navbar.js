@@ -1,57 +1,82 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Navbar = () => {
-	const navigate = useNavigate();
+    const navigate = useNavigate();
   
-	const [profileData, setProfileData] = useState({});
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState('');
+    const [profileData, setProfileData] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
   
-	useEffect(() => {
-	  const fetchProfileData = async () => {
-		  try {
-			  const response = await axios.get(`${apiUrl}/api/users/profile`, {
-				  withCredentials: true, // This allows the request to send cookies
-				  headers: {
-					  'Content-Type': 'application/json'
-				  },
-				  credentials: 'include'
-			  });
-			  console.log(response.data);
-			  setProfileData(response.data);
-			  setLoading(false);
-		  } catch (err) {
-			  setError('Failed to fetch profile data');
-			  setLoading(false);
-			  console.error('There was an error!', err);
-		  }
-	  };
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/api/users/profile`, {
+                    withCredentials: true, // This allows the request to send cookies
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                console.log(response.data);
+                setProfileData(response.data);
+                setLoading(false);
+            } catch (err) {
+                setError('Failed to fetch profile data');
+                setLoading(false);
+                console.error('There was an error!', err);
+            }
+        };
   
-	  fetchProfileData();
-  }, []);
-  
-	const isAuthenticated = () => {
-	  return profileData.user; // Check if the user data exists
-	};
-  
-	const handleLogout = async () => {
-	  try {
-		await axios.post(`${apiUrl}/api/users/logout`, {}, {
-		  withCredentials: true, // This allows the request to send cookies
-		  headers: {
-			  'Content-Type': 'application/json'
-		  }
+        fetchProfileData();
+    }, []);
+
+	const refreshToken = () => {
+		axios.post(`${apiUrl}/api/users/token`, {}, {
+			withCredentials: true,
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		.then(response => {
+			setProfileData(prevState => ({ ...prevState, token: response.data.token }));
+			setTokenRefreshTimeout(response.data.token);
+		})
+		.catch(err => {
+			console.error('Error refreshing token:', err);
 		});
-		setProfileData({});
-		navigate('/');
-	  } catch (err) {
-		console.error('Failed to logout:', err);
-	  }
 	};
+
+    const setTokenRefreshTimeout = (token) => {
+        const decodedToken = jwtDecode(token);
+        const expirationTime = decodedToken.exp;
+        const delay = expirationTime * 1000 - Date.now() - 60000; // Refresh 1 minute before token expiration
+
+        setTimeout(refreshToken, delay);
+    };
+  
+    const isAuthenticated = () => {
+        return profileData.user; // Check if the user data exists
+    };
+  
+    const handleLogout = async () => {
+        try {
+            await axios.post(`${apiUrl}/api/users/logout`, {}, {
+                withCredentials: true, // This allows the request to send cookies
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            setProfileData({});
+            navigate('/');
+        } catch (err) {
+            console.error('Failed to logout:', err);
+        }
+    };
 
 return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">

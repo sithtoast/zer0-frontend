@@ -113,18 +113,18 @@ const handleRaid = async () => {
 };
     
 return (
-    <div>
-        <div className="overlay"></div>
-        <div id="twitch-embed">
-            <div id="twitch-embed-stream"></div>
-            {stream && <button onClick={closeStream}>Close Stream</button>}
-            {stream && (
-                <button onClick={handleRaid} style={{ backgroundColor: isRaiding ? 'red' : 'green' }}>
-                    {isRaiding ? 'Cancel Raid' : 'Start Raid'}
-                </button>
-            )}
-        </div>
+<div>
+    {stream && <div className="overlay"></div>}
+    <div id="twitch-embed">
+        <div id="twitch-embed-stream"></div>
+        {stream && <button onClick={closeStream}>Close Stream</button>}
+        {stream && (
+            <button onClick={handleRaid} style={{ backgroundColor: isRaiding ? 'red' : 'green' }}>
+                {isRaiding ? 'Cancel Raid' : 'Start Raid'}
+            </button>
+        )}
     </div>
+</div>
 );
 };
 
