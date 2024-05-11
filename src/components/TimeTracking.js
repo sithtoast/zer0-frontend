@@ -8,7 +8,7 @@ function TimeTracking({ stream, streams }) {
     useEffect(() => {
         if (stream) {
             const intervalId = setInterval(() => {
-                const streamerData = streams.find(data => data.user_id === stream);
+                const streamerData = streams.find(data => data.user_name === stream);
                 console.log("Streamer Data:", streamerData);
                 if (streamerData) {
                     const now = new Date();

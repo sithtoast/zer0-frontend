@@ -5,7 +5,9 @@ function Followers({ stream, streams }) {
 
     useEffect(() => {
         if (stream && streams) {
-            const streamerData = streams.find(data => data.user_id === stream);
+            console.log(stream);
+            console.log(streams);
+            const streamerData = streams.find(data => data.user_name === stream);
             console.log("Streamer Data:", streamerData);
             if (streamerData) {
                 setFollowerCount(streamerData.followerCount || 0); // Use correct property and handle undefined
