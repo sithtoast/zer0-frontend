@@ -227,11 +227,42 @@ nav a:hover, nav a:focus {
 
 .card {
     display: flex;
-    flex-direction: column; /* Stack the content vertically */
+    flex-direction: column;
+    background-color: #202225; /* Twitch Darker Grey */
+    border: 1px solid #6441a4; /* Twitch Purple */
+    border-radius: 5px;
+    color: #adadb8; /* Twitch Light Grey */
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    border-color: #9146ff; /* Twitch Light Purple */
 }
 
 .card-body {
-    flex-grow: 1; /* Allow the body to grow to fill the space */
+    flex-grow: 1;
+    padding: 15px;
+    background-color: #0e0e10; /* Twitch Dark Grey */
+    color: #fff; /* White text */
+}
+
+.card-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card img {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.card .card-title {
+    color: #fff; /* White text */
+}
+
+.card-text {
+    color: #adadb8; /* Twitch Light Grey */
 }
 
 .login-container, .signup-container {
@@ -271,12 +302,6 @@ nav a:hover, nav a:focus {
 .small-image {
     width: 50px; /* or any other value that suits your needs */
     height: 50px; /* or any other value that suits your needs */
-}
-
-.card-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .maturity-icon {
