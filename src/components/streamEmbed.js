@@ -1,22 +1,17 @@
-// streamEmbed.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Followers from './Followers';
+import TimeTracking from './TimeTracking';
+import Raid from './Raid';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 function StreamEmbed({ stream, streams, closeStream }) {
-    const [isRaiding, setIsRaiding] = useState(false);
-    const [followerCount, setFollowerCount] = useState(0);
-    const [elapsedTime, setElapsedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-    const [watchTime, setWatchTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-    const [startTime, setStartTime] = useState(null);
     const [userId, setUserId] = useState(null);
     const [profileData, setProfileData] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [totalWatchTimeSeconds, setTotalWatchTimeSeconds] = useState(0);
-
-    const streamData = streams;
 
     const fetchProfileData = async () => {
         try {
@@ -37,26 +32,25 @@ function StreamEmbed({ stream, streams, closeStream }) {
     };
 
     useEffect(() => {
-        if (stream) { // Check if stream is provided
-            const embed = new window.Twitch.Embed("twitch-embed-stream", {
-                width: "100%",
-                height: 480,
-                channel: stream,
-                layout: "video-with-chat",
-                parent: ["zer0.tv"]
-            });
-        }
-
-        setStartTime(new Date());
-        fetchProfileData(); // Fetch profile data
-
         if (stream) {
-            const streamerData = streamData.find(data => data.user_login === stream);
-            if (streamerData) {
-                setFollowerCount(streamerData.followerCount);
-            }
+            console.log("Initializing Twitch Embed for stream:", stream);
+            setTimeout(() => {
+                const element = document.getElementById('twitch-embed-stream');
+                console.log("Twitch Embed Element:", element);
+                if (element) {
+                    const embed = new window.Twitch.Embed("twitch-embed-stream", {
+                        width: "100%",
+                        height: 480,
+                        channel: stream,
+                        layout: "video-with-chat",
+                        parent: ["zer0.tv"]
+                    });
+                }
+            }, 1000); // Adding a delay to ensure the element is rendered
         }
-
+    
+        fetchProfileData(); // Fetch profile data
+    
         // Return a cleanup function that removes the Twitch embed
         return () => {
             const twitchEmbedElement = document.getElementById('twitch-embed-stream');
@@ -67,112 +61,7 @@ function StreamEmbed({ stream, streams, closeStream }) {
             }
         };
     }, [stream]);
-
-    useEffect(() => {
-        let intervalId;
-        if (userId) {
-            intervalId = setInterval(() => {
-                setTotalWatchTimeSeconds(prev => prev + 1);
-            }, 1000);
-        }
-
-        return () => clearInterval(intervalId);
-    }, [userId]);
-
-    useEffect(() => {
-        const hours = String(Math.floor(totalWatchTimeSeconds / 3600)).padStart(2, '0');
-        const minutes = String(Math.floor((totalWatchTimeSeconds % 3600) / 60)).padStart(2, '0');
-        const seconds = String(totalWatchTimeSeconds % 60).padStart(2, '0');
-
-        setWatchTime({ hours, minutes, seconds });
-    }, [totalWatchTimeSeconds]);
-
-    useEffect(() => {
-        if (stream) {
-            const intervalId = setInterval(() => {
-                const streamerData = streamData.find(data => data.user_login === stream);
-                if (streamerData) {
-                    const now = new Date();
-                    const start = new Date(streamerData.started_at);
-                    const elapsedSeconds = Math.floor((now - start) / 1000);
-                    const hours = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
-                    const minutes = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
-                    const seconds = String(elapsedSeconds % 60).padStart(2, '0');
-
-                    setElapsedTime({ hours, minutes, seconds });
-                }
-            }, 1000);
-
-            return () => clearInterval(intervalId);
-        }
-    }, [stream, streamData]);
-
-    const userName = stream; // 'stream' is the username of the clicked stream
-    const streamInfo = streams.find(s => s.user_name === userName);
-
-    const startRaid = async () => {
-        try {
-            const profileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                withCredentials: true, // This allows the request to send cookies
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            const fromBroadcasterId = profileResponse.data.twitch.twitchId;
-            const accessToken = profileResponse.data.twitch.accessToken;
-            const toBroadcasterId = streamInfo.user_id;
-
-            try {
-                const response = await axios.post(`${apiUrl}/api/twitch/start-raid`, { fromBroadcasterId, toBroadcasterId }, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                return response;
-            } catch (err) {
-                console.error('Error starting raid:', err);
-                if (err.response && err.response.status === 400) {
-                    alert("Channel not accepting raids at this time.");
-                }
-            }
-        } catch (err) {
-            console.error('Error getting profile:', err);
-        }
-    };
-
-    const cancelRaid = async () => {
-        const profileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-            withCredentials: true, // This allows the request to send cookies
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const broadcasterId = profileResponse.data.twitch.twitchId;
-        const accessToken = profileResponse.data.twitch.accessToken;
-
-        try {
-            const response = await axios.post(`${apiUrl}/api/twitch/cancel-raid`, { broadcasterId }, {
-                headers: { 'Authorization': `Bearer ${accessToken}` }
-            });
-        } catch (err) {
-            console.error('Error cancelling raid:', err);
-        }
-    };
-
-    const handleRaid = async () => {
-        if (!isRaiding) {
-            try {
-                const response = await startRaid();
-                if (response.status !== 400) {
-                    setIsRaiding(true);
-                }
-            } catch (err) {
-                console.error('Error starting raid:', err);
-            }
-        } else {
-            try {
-                await cancelRaid();
-                setIsRaiding(false);
-            } catch (err) {
-                console.error('Error cancelling raid:', err);
-            }
-        }
-    };
+    
 
     const handleCloseStream = async () => {
         if (userId && totalWatchTimeSeconds > 0) {
@@ -190,6 +79,13 @@ function StreamEmbed({ stream, streams, closeStream }) {
         closeStream();
     };
 
+    const userName = stream;
+    const streamInfo = streams.find(s => s.user_name === userName);
+
+    if (loading) {
+        return <p>Loading...</p>;
+    }
+
     return (
         <div>
             {stream && <div className="overlay"></div>}
@@ -199,14 +95,11 @@ function StreamEmbed({ stream, streams, closeStream }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div>
                             <button onClick={handleCloseStream}>Close Stream</button>
-                            <button onClick={handleRaid} style={{ backgroundColor: isRaiding ? 'red' : 'green' }}>
-                                {isRaiding ? 'Cancel Raid' : 'Start Raid'}
-                            </button>
+                            <Raid stream={stream} streamInfo={streamInfo} userId={userId} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <p style={{ padding: '0 10px' }}>F: {followerCount}</p>
-                            <p style={{ padding: '0 10px' }}>E: {elapsedTime.hours}:{elapsedTime.minutes}:{elapsedTime.seconds}</p>
-                            <p style={{ padding: '0 10px' }}>W: {watchTime.hours}:{watchTime.minutes}:{watchTime.seconds}</p>
+                            <Followers stream={stream} streams={streams} />
+                            <TimeTracking stream={stream} streams={streams} />
                         </div>
                     </div>
                 )}
