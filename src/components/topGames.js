@@ -29,6 +29,9 @@ const TopGames = () => {
     const [fetchedStreams, setFetchedStreams] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [streamCount, setStreamCount] = useState(500);
+    const [customCount, setCustomCount] = useState(0);
+    const [advancedMode, setAdvancedMode] = useState(false);
 
     const fetchStreams = useCallback(async (categoryId, cursor) => {
         setLoading(true);
@@ -44,11 +47,12 @@ const TopGames = () => {
                     'Authorization': `Bearer ${twitchAccessToken}`
                 },
                 params: {
-                    first: 500,
+                    first: streamCount, // Use the streamCount state variable
                     after: cursor
                 }
             });
-
+            console.log(`Grabbing streams for category ${categoryId} with ${streamCount} streams`);
+            console.log(response.data);
             let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 10);
 
             const batchSize = 100;
@@ -101,7 +105,7 @@ const TopGames = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [streamCount]);
 
     const fetchCategories = async () => {
         setLoading(true);
@@ -183,13 +187,16 @@ const TopGames = () => {
         }
     };
     
-    const handleClickCategory = (categoryId) => {
+    const handleClickCategory = (categoryId, streamCount = null) => {
         setCurrentPage(1);
         setStreams([]);
         setCurrentCursor(null);
         setSelectedCategoryId(categoryId);
-        fetchStreams(categoryId, null);
         setCurrentGameName(categories.find(category => category.id === categoryId)?.name);
+        if (streamCount) {
+            setStreamCount(streamCount);
+            fetchStreams(categoryId, null);
+        }
     };
 
     const handlePageChange = (pageNumber) => {
@@ -243,6 +250,12 @@ const TopGames = () => {
                             <div>Please link your Twitch account to continue</div>
                         ) : (
                             <>
+{/*                                 <div className="d-flex justify-content-center">
+                                    <label className="mt-3" style={{backgroundColor: '#6441A4', color: '#fff'}}>
+                                        <input type="checkbox" checked={advancedMode} onChange={e => setAdvancedMode(e.target.checked)} style={{marginRight: '10px'}} />
+                                        Advanced Mode
+                                    </label>
+                                </div> */}
                                 <h1 className="category-search-box-container">Search</h1>
                                 <form onSubmit={handleSearch}>
                                     <input
@@ -259,36 +272,56 @@ const TopGames = () => {
                                         <h1 className="category-search-container">Search Results</h1>
                                         <ul className="list-group">
                                             {searchResults.map(category => (
-                                                <li key={category.id} className="list-group-item search-list d-flex justify-content-between align-items-center">
-                                                    <img src={category.boxArtUrl} alt={category.name} />
-                                                    <span onClick={() => {
-                                                        handleClickCategory(category.id);
-                                                        setCategoryClicked(true);
-                                                    }}>
-                                                        {category.name}
-                                                    </span>
-                                                    <button onClick={(e) => toggleFavorite(category, e)}>
-                                                        {favorites.has(category.id) ? '★' : '☆'}
-                                                    </button>
+                                                <li key={category.id} className="list-group-item search-list d-flex justify-content-between align-items-center flex-column">
+                                                    <div className="d-flex justify-content-between align-items-center w-100">
+                                                        <img src={category.boxArtUrl} alt={category.name} />
+                                                        <span onClick={() => {
+                                                            handleClickCategory(category.id);
+                                                            setCategoryClicked(true);
+                                                        }}>
+                                                            {category.name}
+                                                        </span>
+                                                        <button onClick={(e) => toggleFavorite(category, e)}>
+                                                            {favorites.has(category.id) ? '★' : '☆'}
+                                                        </button>
+                                                    </div>
+                                                    {advancedMode && (
+                                                        <div className="mt-2 w-100 d-flex justify-content-between">
+                                                            <button onClick={() => handleClickCategory(category.id, 1000)}>1K</button>
+                                                            <button onClick={() => handleClickCategory(category.id, 1500)}>1.5K</button>
+                                                            <input type="number" value={customCount} onChange={e => setCustomCount(e.target.value)} />
+                                                            <button onClick={() => handleClickCategory(category.id, customCount)}>Custom Streams</button>
+                                                        </div>
+                                                    )}
                                                 </li>
                                             ))}
                                         </ul>
                                     </>
                                 )}
                                 <h1 className="top-category-container">Top Categories</h1>
-                                <ul className="list-group">
+                                    <ul className="list-group">
                                     {categories.map(category => (
-                                        <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                            <img src={category.boxArtUrl} alt={category.name} />
-                                            <span onClick={() => {
-                                                handleClickCategory(category.id);
-                                                setCategoryClicked(true);
-                                            }}>
-                                                {category.name}
-                                            </span>
-                                            <button onClick={(e) => toggleFavorite(category, e)}>
-                                                {favorites.has(category.id) ? '★' : '☆'}
-                                            </button>
+                                        <li key={category.id} className="list-group-item d-flex flex-column align-items-start">
+                                            <div className="d-flex justify-content-between align-items-center w-100">
+                                                <img src={category.boxArtUrl} alt={category.name} />
+                                                <span onClick={() => {
+                                                    handleClickCategory(category.id);
+                                                    setCategoryClicked(true);
+                                                }}>
+                                                    {category.name}
+                                                </span>
+                                                <button onClick={(e) => toggleFavorite(category, e)}>
+                                                    {favorites.has(category.id) ? '★' : '☆'}
+                                                </button>
+                                            </div>
+                                            {advancedMode && (
+                                                <div className="mt-2 w-100 d-flex justify-content-between">
+                                                    <button onClick={() => handleClickCategory(category.id, 1000)}>1K</button>
+                                                    <button onClick={() => handleClickCategory(category.id, 1500)}>1.5K</button>
+                                                    <input type="number" value={customCount} onChange={e => setCustomCount(e.target.value)} />
+                                                    <button onClick={() => handleClickCategory(category.id, customCount)}>Custom Streams</button>
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
