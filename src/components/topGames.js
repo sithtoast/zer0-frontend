@@ -44,7 +44,7 @@ const TopGames = () => {
                     'Authorization': `Bearer ${twitchAccessToken}`
                 },
                 params: {
-                    first: 1500,
+                    first: 500,
                     after: cursor
                 }
             });
