@@ -11,8 +11,22 @@ const Navbar = () => {
     const [profileData, setProfileData] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [sessionData, setSessionData] = useState(null);
   
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/api/users/session`, {
+                    withCredentials: true,
+                });
+                setSessionData(response.data);
+                //console.log('User data:', response.data.user.user);
+            } catch (error) {
+                //console.error('Error fetching session data:', error);
+            }
+        };
+        fetchData();
+        
         const fetchProfileData = async () => {
             try {
                 const response = await axios.get(`${apiUrl}/api/users/profile`, {
@@ -32,7 +46,9 @@ const Navbar = () => {
             }
         };
   
-        fetchProfileData();
+        if (sessionData && sessionData.user) {
+            fetchProfileData(); // Fetch profile data
+        }
     }, []);
 
 	const refreshToken = () => {
@@ -57,10 +73,6 @@ const Navbar = () => {
         const delay = expirationTime * 1000 - Date.now() - 60000; // Refresh 1 minute before token expiration
 
         setTimeout(refreshToken, delay);
-    };
-  
-    const isAuthenticated = () => {
-        return profileData.user; // Check if the user data exists
     };
   
     const handleLogout = async () => {
@@ -90,12 +102,16 @@ return (
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/top-games">Search</NavLink>
                     </li>
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/favorites">Your Top 8</NavLink>
-                    </li>
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/followed-streamers">Followed Streamers</NavLink>
-                    </li>
+                    {sessionData && sessionData.user ? (
+                        <>
+                            <li className="nav-item">
+                                <NavLink className="nav-link" to="/favorites">Your Top 8</NavLink>
+                            </li>
+                            <li className="nav-item">
+                                <NavLink className="nav-link" to="/followed-streamers">Followed Streamers</NavLink>
+                            </li>
+                        </>
+                    ) : null}
 					<li className="nav-item">
 						<NavLink className="nav-link" to="/tag-search">Tag Search</NavLink>
 					</li>
@@ -104,23 +120,21 @@ return (
 					</li>
                 </ul>
                 <ul className="navbar-nav ms-auto align-items-center">
-                    {!isAuthenticated() && (
+                    {!sessionData || !sessionData.user ? (
                         <React.Fragment>
                             <li className="nav-item">
                                 <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}><i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>Register/Login with Twitch</button>
                             </li>
                         </React.Fragment>
-                    )}
-                    {isAuthenticated() && (
+                    ) : (
                         <React.Fragment>
-								<li className="nav-item d-none d-lg-block">
-									<NavLink className="nav-link" to="/profile">
-										
-										{profileData.twitch?.profileImageUrl && (
-											<img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginLeft: '10px'}} />
-										)}
-									</NavLink>
-								</li>
+                            <li className="nav-item d-none d-lg-block">
+                                <NavLink className="nav-link" to="/profile">
+                                    {profileData.twitch?.profileImageUrl && (
+                                        <img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginLeft: '10px'}} />
+                                    )}
+                                </NavLink>
+                            </li>
                             {!profileData.twitch?.twitchId && (
                                 <li className="nav-item">
                                     <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>Link Twitch Account</button>

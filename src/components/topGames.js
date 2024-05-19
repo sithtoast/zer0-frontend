@@ -6,6 +6,7 @@ import Footer from './Footer';
 import StreamCard from './streamCard';
 import FilterBox from './filterBox';
 import StreamEmbed from './streamEmbed';
+import Modal from 'react-bootstrap/Modal';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -29,44 +30,33 @@ const TopGames = () => {
     const [fetchedStreams, setFetchedStreams] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [sessionData, setSessionData] = useState(null);
+
+    const [showModal, setShowModal] = useState(false);
+
+    const handleClose = () => setShowModal(false);
 
     const fetchStreams = useCallback(async (categoryId, cursor) => {
         setLoading(true);
         try {
-            console.time('Fetching user profile');
-            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                withCredentials: true,
-                headers: { 'Content-Type': 'application/json' }
-            });
-            console.timeEnd('Fetching user profile');
-            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
 
-            console.time('Fetching streams')
             const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
-                headers:{
-                    'Authorization': `Bearer ${twitchAccessToken}`
-                },
                 params: {
                     first: 500,
                     after: cursor
                 }
             });
-            console.timeEnd('Fetching streams');
 
 
             let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 10);
+            console.log('Filtered streams:', filteredStreams);
 
-            console.time('Fetching user data')
             const batchSize = 100;
             for (let i = 0; i < filteredStreams.length; i += batchSize) {
                 const batch = filteredStreams.slice(i, i + batchSize);
                 const userIds = batch.map(stream => stream.user_id);
                 try {
-                    const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
-                        headers: {
-                            'Authorization': `Bearer ${twitchAccessToken}`
-                        }
-                    });
+                    const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds });
                     const userInfoData = userInfoResponse.data;
                     for (let j = 0; j < batch.length; j++) {
                         const stream = batch[j];
@@ -79,7 +69,6 @@ const TopGames = () => {
                     console.error('Error fetching user data:', err);
                 }
             }
-            console.timeEnd('Fetching user data');
 
             const retryAxios = async (maxRetries, fn, ...args) => {
                 for (let i = 0; i < maxRetries; i++) {
@@ -91,8 +80,30 @@ const TopGames = () => {
                 }
             };
 
+            let twitchAccessToken = '';
+
+            try {
+                const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+                    withCredentials: true,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            
+                if (userProfileResponse.data && userProfileResponse.data.twitch && userProfileResponse.data.twitch.accessToken) {
+                    twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+                }
+            } catch (err) {
+                if (err.response && err.response.status === 500) {
+                    console.error('Received 500 error from /api/users/profile, setting all followerCounts to 0');
+                    for (const stream of streams) {
+                        stream.followerCount = 0;
+                    }
+                    setFetchedStreams(filteredStreams);
+                    setAllStreamsWithFollowerCounts(filteredStreams);
+                    return; // Exit the function early
+                }
+            }
+
             let newStreams = [];
-            console.time('Fetching follower count');
             let followerCountPromises = filteredStreams.map(stream => {
                 return retryAxios(3, axios.post, `${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
                     headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
@@ -109,7 +120,6 @@ const TopGames = () => {
             });
 
             newStreams = await Promise.all(followerCountPromises);
-            console.timeEnd('Fetching follower count');
             setAllStreamsWithFollowerCounts(newStreams);
             setFetchedStreams(filteredStreams);
         } catch (err) {
@@ -123,23 +133,8 @@ const TopGames = () => {
     const fetchCategories = async () => {
         setLoading(true);
         try {
-            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                withCredentials: true, 
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
 
-            setUserProfileResponse(userProfileResponse.data);
-
-            if (!twitchAccessToken) {
-                setError('Please link your Twitch account to continue');
-                setLoading(false);
-                return;
-            }
-
-            const response = await axios.get(`${apiUrl}/api/twitch/top-categories`, {
-                headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-            });
+            const response = await axios.get(`${apiUrl}/api/twitch/top-categories`);
             setCategories(response.data);
         } catch (err) {
             if (err.response && err.response.status === 401) {
@@ -217,22 +212,30 @@ const TopGames = () => {
     const handleSearch = async (e) => {
         e.preventDefault();
 
-        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-            withCredentials: true,
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-
         const response = await axios.get(`${apiUrl}/api/twitch/search/categories`, {
-            headers: { 'Authorization': `Bearer ${twitchAccessToken}` },
             params: { name: searchQuery }
         });
         setSearchResults(response.data);
     };
 
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/api/users/session`, {
+                    withCredentials: true,
+                });
+                setSessionData(response.data);
+                //console.log('User data:', response.data.user.user);
+            } catch (error) {
+               //console.error('Error fetching session data:', error);
+            }
+        };
+        fetchData();
+
         fetchCategories();
-        fetchFavorites();
+        if (sessionData && sessionData.user) {
+            fetchFavorites();
+        }
     }, []);
 
     useEffect(() => {
@@ -250,140 +253,182 @@ const TopGames = () => {
         setPages(Math.ceil(filteredStreams.length / 30));
     }, [filteredStreams, currentPage]);
 
-    return (
-        <div>
-            <Navbar />
-            <div className="top-category-container">
-                <div className="row d-flex">
-                    <div className="col-md-4 categories flex-column">
-                        {!userProfileResponse || !userProfileResponse.twitch || !userProfileResponse.twitch.twitchId ? (
-                            <div>Please link your Twitch account to continue</div>
-                        ) : (
-                            <>
-                                <h1 className="category-search-box-container">Search</h1>
-                                <form onSubmit={handleSearch}>
-                                    <input
-                                        type="text"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Search categories"
-                                        autoComplete="off"
-                                    />
-                                    <button type="submit">Search</button>
-                                </form>
-                                {searchResults.length > 0 && (
-                                    <>
-                                        <h1 className="category-search-container">Search Results</h1>
-                                        <ul className="list-group">
-                                            {searchResults.map(category => (
-                                                <li key={category.id} className="list-group-item search-list d-flex justify-content-between align-items-center">
-                                                    <img src={category.boxArtUrl} alt={category.name} />
-                                                    <span onClick={() => {
-                                                        handleClickCategory(category.id);
-                                                        setCategoryClicked(true);
-                                                    }}>
-                                                        {category.name}
-                                                    </span>
-                                                    <button onClick={(e) => toggleFavorite(category, e)}>
-                                                        {favorites.has(category.id) ? '★' : '☆'}
-                                                    </button>
-                                                </li>
-                                            ))}
+return (
+    <div>
+        <Navbar />
+        <div className="top-category-container">
+            <div className="row d-flex">
+                <div className="col-md-4 categories flex-column">
+                    <h1 className="category-search-box-container">Search</h1>
+                    <form onSubmit={handleSearch}>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search categories"
+                            autoComplete="off"
+                        />
+                        <button type="submit">Search</button>
+                    </form>
+                    {searchResults.length > 0 && (
+                        <>
+                            <h1 className="category-search-container">Search Results</h1>
+                            <ul className="list-group">
+                                {searchResults.map(category => (
+                                    <li key={category.id} className="list-group-item search-list d-flex justify-content-between align-items-center">
+                                        <img src={category.boxArtUrl} alt={category.name} />
+                                        <span onClick={() => {
+                                            handleClickCategory(category.id);
+                                            setCategoryClicked(true);
+                                        }}>
+                                            {category.name}
+                                        </span>
+                                        <button onClick={(e) => {
+                                            if (sessionData && sessionData.user) {
+                                                toggleFavorite(category, e)
+                                            } else {
+                                                setShowModal(true);
+                                            }
+                                        }}>
+                                            {favorites.has(category.id) ? '★' : '☆'}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                            {showModal && 
+                                <Modal show={showModal} onHide={handleClose}>
+                                    <Modal.Header closeButton>
+                                        <Modal.Title>Login for more features!</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>Login with your Twitch account for more features like:
+                                        <ul>
+                                            <li>Favorite games</li>
+                                            <li>Favorite streamers</li>
+                                            <li>View your watch history</li>
+                                            <li>Raid streamers right from Zer0.tv</li>
                                         </ul>
-                                    </>
-                                )}
-                                <h1 className="top-category-container">Top Categories</h1>
-                                <ul className="list-group">
-                                    {categories.map(category => (
-                                        <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                            <img src={category.boxArtUrl} alt={category.name} />
-                                            <span onClick={() => {
-                                                handleClickCategory(category.id);
-                                                setCategoryClicked(true);
-                                            }}>
-                                                {category.name}
-                                            </span>
-                                            <button onClick={(e) => toggleFavorite(category, e)}>
-                                                {favorites.has(category.id) ? '★' : '☆'}
-                                            </button>
-                                        </li>
-                                    ))}
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                        <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}><i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>Register/Login with Twitch</button>
+                                    </Modal.Footer>
+                                </Modal>
+                            }
+                        </>
+                    )}
+                    <h1 className="top-category-container">Top Categories</h1>
+                    <ul className="list-group">
+                        {categories.map(category => (
+                            <li key={category.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                <img src={category.boxArtUrl} alt={category.name} />
+                                <span onClick={() => {
+                                    handleClickCategory(category.id);
+                                    setCategoryClicked(true);
+                                }}>
+                                    {category.name}
+                                </span>
+                                <button onClick={(e) => {
+                                            if (sessionData && sessionData.user) {
+                                                toggleFavorite(category, e)
+                                            } else {
+                                                setShowModal(true);
+                                            }
+                                        }}>
+                                            {favorites.has(category.id) ? '★' : '☆'}
+                                        </button>
+                            </li>
+                        ))}
+                    </ul>
+                    {showModal && 
+                        <Modal show={showModal} onHide={handleClose}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Login for more features!</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>Login with your Twitch account for more features like:
+                                <ul>
+                                    <li>Favorite games</li>
+                                    <li>Favorite streamers</li>
+                                    <li>View your watch history</li>
+                                    <li>Raid streamers right from Zer0.tv</li>
                                 </ul>
-                            </>
-                        )}
-                    </div>
-                    {categoryClicked && (
-                        <div className="col-md-8 streams flex-column" style={{minHeight: '500px', flexGrow: 2}}> 
-                            <FilterBox 
-                                selectedStream={selectedStream} 
-                                setSelectedStream={setSelectedStream} 
-                                allStreamsWithFollowerCounts={allStreamsWithFollowerCounts} 
-                                setFilteredStreams={setFilteredStreams} 
-                            />
-                            <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
-                            <StreamEmbed 
-                                stream={selectedStream} 
-                                streams={streams} 
-                                closeStream={() => setSelectedStream(null)} 
-                            />
-                            <div className="row">
-                                {loading ? (
-                                    [...Array(30)].map((_, i) => (
-                                        <div key={i} className="col-md-4 mb-4">
-                                            <div className="card loading-card" aria-hidden="true">
-                                                <div className="card-body">
-                                                    <h5 className="card-title">
-                                                        <span className="placeholder col-7"></span>
-                                                    </h5>
-                                                    <div className="placeholder-glow">
-                                                        <span className="placeholder col-7"></span>
-                                                        <span className="placeholder col-4"></span>
-                                                        <span className="placeholder col-6"></span>
-                                                        <span className="placeholder col-8"></span>
-                                                    </div>
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}><i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>Register/Login with Twitch</button>
+                            </Modal.Footer>
+                        </Modal>
+                    }
+                </div>
+                {categoryClicked && (
+                    <div className="col-md-8 streams flex-column" style={{minHeight: '500px', flexGrow: 2}}> 
+                        <FilterBox 
+                            selectedStream={selectedStream} 
+                            setSelectedStream={setSelectedStream} 
+                            allStreamsWithFollowerCounts={allStreamsWithFollowerCounts} 
+                            setFilteredStreams={setFilteredStreams} 
+                        />
+                        <h2 className="stream-details">Streams {currentGameName && `for ${currentGameName}`}</h2>
+                        <StreamEmbed 
+                            stream={selectedStream} 
+                            streams={streams} 
+                            closeStream={() => setSelectedStream(null)} 
+                        />
+                        <div className="row">
+                            {loading ? (
+                                [...Array(30)].map((_, i) => (
+                                    <div key={i} className="col-md-4 mb-4">
+                                        <div className="card loading-card" aria-hidden="true">
+                                            <div className="card-body">
+                                                <h5 className="card-title">
+                                                    <span className="placeholder col-7"></span>
+                                                </h5>
+                                                <div className="placeholder-glow">
+                                                    <span className="placeholder col-7"></span>
+                                                    <span className="placeholder col-4"></span>
+                                                    <span className="placeholder col-6"></span>
+                                                    <span className="placeholder col-8"></span>
                                                 </div>
                                             </div>
                                         </div>
-                                    ))
-                                ) : streams.length ? streams.map(stream => (
-                                    <StreamCard 
-                                        key={stream.id}
-                                        stream={stream} 
-                                        selectedStream={selectedStream} 
-                                        setSelectedStream={setSelectedStream} 
-                                    />
-                                )) : <p className="stream-details">No streams available.</p>}
-                            </div>
-                            <div className="pagination">
-                                <button 
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                >
-                                    Previous
-                                </button>
-                                {[...Array(pages).keys()].slice(Math.max(0, currentPage - 3), currentPage + 2).map(i =>
-                                    <button 
-                                        key={i} 
-                                        onClick={() => handlePageChange(i + 1)}
-                                        className={`page-item ${currentPage === (i + 1) ? 'current-page' : ''}`}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                )}
-                                <button 
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === pages}
-                                >
-                                    Next
-                                </button>
-                            </div>
+                                    </div>
+                                ))
+                            ) : streams.length ? streams.map(stream => (
+                                <StreamCard 
+                                    key={stream.id}
+                                    stream={stream} 
+                                    selectedStream={selectedStream} 
+                                    setSelectedStream={setSelectedStream} 
+                                />
+                            )) : <p className="stream-details">No streams available.</p>}
                         </div>
-                    )}
-                </div>
+                        <div className="pagination">
+                            <button 
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </button>
+                            {[...Array(pages).keys()].slice(Math.max(0, currentPage - 3), currentPage + 2).map(i =>
+                                <button 
+                                    key={i} 
+                                    onClick={() => handlePageChange(i + 1)}
+                                    className={`page-item ${currentPage === (i + 1) ? 'current-page' : ''}`}
+                                >
+                                    {i + 1}
+                                </button>
+                            )}
+                            <button 
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === pages}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
-            <Footer />
         </div>
-    );
+        <Footer />
+    </div>
+);
 };
 
 export default TopGames;
