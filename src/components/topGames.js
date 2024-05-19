@@ -33,12 +33,15 @@ const TopGames = () => {
     const fetchStreams = useCallback(async (categoryId, cursor) => {
         setLoading(true);
         try {
+            console.time('Fetching user profile');
             const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
                 withCredentials: true,
                 headers: { 'Content-Type': 'application/json' }
             });
+            console.timeEnd('Fetching user profile');
             const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
 
+            console.time('Fetching streams')
             const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
                 headers:{
                     'Authorization': `Bearer ${twitchAccessToken}`
@@ -48,9 +51,12 @@ const TopGames = () => {
                     after: cursor
                 }
             });
+            console.timeEnd('Fetching streams');
+
 
             let filteredStreams = response.data.streams.filter(stream => stream.viewer_count <= 10);
 
+            console.time('Fetching user data')
             const batchSize = 100;
             for (let i = 0; i < filteredStreams.length; i += batchSize) {
                 const batch = filteredStreams.slice(i, i + batchSize);
@@ -73,26 +79,37 @@ const TopGames = () => {
                     console.error('Error fetching user data:', err);
                 }
             }
+            console.timeEnd('Fetching user data');
 
-            let newStreams = [];
-
-            for (const stream of filteredStreams) {
-                if (!stream.followerCount) {
+            const retryAxios = async (maxRetries, fn, ...args) => {
+                for (let i = 0; i < maxRetries; i++) {
                     try {
-                        const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
-                            headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-                        });
-                        const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
-                        const followerCount = followerData ? followerData.followerCount : 0;
-                        stream.followerCount = followerCount;
-                    } catch (err) {
-                        console.error('Error fetching follower count for stream:', stream.user_id, err);
-                        stream.followerCount = 0;
+                        return await fn(...args);
+                    } catch (error) {
+                        if (i === maxRetries - 1) throw error;
                     }
                 }
-                newStreams.push(stream);
-            }
+            };
 
+            let newStreams = [];
+            console.time('Fetching follower count');
+            let followerCountPromises = filteredStreams.map(stream => {
+                return retryAxios(3, axios.post, `${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                }).then(followerCountResponse => {
+                    const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
+                    const followerCount = followerData ? followerData.followerCount : 0;
+                    stream.followerCount = followerCount;
+                    return stream;
+                }).catch(err => {
+                    console.error('Error fetching follower count for stream:', stream.user_id, err);
+                    stream.followerCount = 0;
+                    return stream;
+                });
+            });
+
+            newStreams = await Promise.all(followerCountPromises);
+            console.timeEnd('Fetching follower count');
             setAllStreamsWithFollowerCounts(newStreams);
             setFetchedStreams(filteredStreams);
         } catch (err) {
