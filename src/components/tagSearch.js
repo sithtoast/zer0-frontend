@@ -24,7 +24,7 @@ const TagSearch = () => {
     const fetchTopTags = useCallback(async () => {
         try {
             const response = await axios.get(`${apiUrl}/api/twitch/top-tags`);
-            setTopTags(response.data);
+            setTopTags(response.data.tags);
         } catch (err) {
             console.error('Error fetching top tags:', err);
         }

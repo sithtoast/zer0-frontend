@@ -22,15 +22,7 @@ const TopCategories = () => {
 
         const fetchTopClicked = async () => {
             try {
-                const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                    withCredentials: true,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-
-                const response = await axios.get(`${apiUrl}/api/favorites/top-clicked`, {
-                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-                });
+                const response = await axios.get(`${apiUrl}/api/favorites/top-clicked`)
                 setTopClicked(response.data);
             } catch (error) {
                 console.error('Failed to fetch top clicked categories:', error);
