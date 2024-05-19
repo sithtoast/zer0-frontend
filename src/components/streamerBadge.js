@@ -11,6 +11,7 @@ const StreamerBadge = ({ stream }) => {
     const oldFriend = yearsRegistered >= 5 && yearsRegistered < 10;
     const twitchVeteran = yearsRegistered >= 10 && new Date(stream.user_info.created_at) > new Date('2011-06-14');
     const justinsFriend = new Date(stream.user_info.created_at) >= new Date('2007-03-01') && new Date(stream.user_info.created_at) <= new Date('2011-06-14');
+    const noFollowers = stream.followerCount === 0;
 
 return (
     <div className="card-content" style={{ marginTop: '20px' }}>
@@ -38,6 +39,9 @@ return (
             }
             {twitchVeteran &&
                 <p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p>
+            }
+            {noFollowers &&
+                <p className="card-text no-followers-message" title="This user has no followers.">Be my #1</p>
             }
         </div>
     </div>

@@ -612,3 +612,12 @@ nav a:hover, nav a:focus {
     position: relative;
     z-index: 2; /* Displayed above the overlay */
 }
+
+.no-follower-message {
+    padding: 5px 10px;
+    color: #fff;
+    background: #d000ff;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 10px #ff0000, 0 0 40px #ff0000, 0 0 80px #ff0000;
+}
