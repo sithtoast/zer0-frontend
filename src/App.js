@@ -7,6 +7,7 @@ import TopEight from './components/favorites';
 import FollowedStreamers from './components/followedStreamers';
 import TagSearch from './components/tagSearch';
 import TopCategories from './components/TopCategories';
+import LandingPage from './components/landingPage';
 
 function App() {
     return (
@@ -16,7 +17,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/top-games" element={<TopGames />} />
-                    <Route path="/" element={<TopGames />} />
+                    <Route path="/" element={<LandingPage />} />
                     <Route path="/favorites" element={<TopEight />} />
                     <Route path="/followed-streamers" element={<FollowedStreamers />} />
                     <Route path="/tag-search" element={<TagSearch />} />
