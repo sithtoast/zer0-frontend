@@ -13,10 +13,6 @@ useEffect(() => {
     const twitchSecret = process.env.REACT_APP_TWITCH_SECRET;
 
     const getOAuthToken = async () => {
-        console.log('Getting OAuth token');
-        console.log(twitchClientID);
-        console.log(twitchSecret);
-        console.log(state.user);
         try {
             const response = await axios.post('https://id.twitch.tv/oauth2/token', null, {
                 params: {

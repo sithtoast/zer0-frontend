@@ -180,12 +180,13 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
                     <Modal.Title>Login for more features!</Modal.Title>
                   </Modal.Header>
                   <Modal.Body>Login with your Twitch account for more features like:
-                    <ul>
-                        <li>Favorite games</li>
-                        <li>Favorite streamers</li>
-                        <li>View your watch history</li>
-                        <li>Raid streamers right from Zer0.tv</li>
-                    </ul>
+                  <ul>
+                                <li>Favorite games</li>
+                                <li>Favorite streamers</li>
+                                <li>View your watch time (later)</li>
+                                <li>Easily find streamers who are near affiliate.</li>
+                                <li>Raid streamers right from Zer0.tv</li>
+                                </ul>
                   </Modal.Body>
                   <Modal.Footer>
                   <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}><i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>Register/Login with Twitch</button>

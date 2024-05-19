@@ -621,3 +621,8 @@ nav a:hover, nav a:focus {
     text-align: center;
     box-shadow: 0 0 10px #ff0000, 0 0 40px #ff0000, 0 0 80px #ff0000;
 }
+
+.disabled-look {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
