@@ -2,6 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import ReactSlider from 'react-slider';
 import AffiliateIcon from '../assets/affiliate.png';
+import Modal from 'react-bootstrap/Modal';
+import axios from 'axios';
+
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCounts, setFilteredStreams }) => {
     const [minViewerCount, setMinViewerCount] = useState(0);
@@ -16,8 +20,24 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
     const [specificPeriod, setSpecificPeriod] = useState(false);
     const [isAffiliate, setIsAffiliate] = useState(false);
     const [isNotAffiliate, setIsNotAffiliate] = useState(false);
+    const [sessionData, setSessionData] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
+
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/api/users/session`, {
+                    withCredentials: true,
+                });
+                setSessionData(response.data);
+                //console.log('User data:', response.data.user.user);
+            } catch (error) {
+                //console.error('Error fetching session data:', error);
+            }
+        };
+        fetchData();
+
         const now = new Date();
         const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
         const fiveYearsAgo = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
@@ -75,21 +95,50 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
                 <p>Selected range: {minViewerCount} - {maxViewerCount}</p>
             </div>
             <div className="mb-3 form-check-group">
-                <div className="mb-3 form-check">
-                    <input 
+            <div className="mb-3 form-check">
+                        <input 
                         type="checkbox" 
-                        className="form-check-input" 
+                        className={`form-check-input ${!(sessionData && sessionData.user) ? 'disabled-look' : ''}`} 
                         id="nearAffiliate" 
                         checked={nearAffiliate} 
+                        onClick={() => {
+                            if (!(sessionData && sessionData.user)) {
+                                setShowModal(true);
+                            }
+                        }}
                         onChange={e => { 
-                            setNearAffiliate(e.target.checked); 
-                            if (e.target.checked) setIsNotAffiliate(false); 
+                            if (sessionData && sessionData.user) {
+                                setNearAffiliate(e.target.checked); 
+                                if (e.target.checked) setIsNotAffiliate(false); 
+                            } else {
+                                setShowModal(true);
+                            }
                         }} 
                     />
                     <label className="form-check-label" htmlFor="nearAffiliate">
                         <p className="card-text affiliate-message" title="This user is <5 followers to meeting affiliate requirement.">Near Affiliate</p>
                     </label>
-                </div>
+                    </div>
+
+                    {showModal && 
+                        <Modal show={showModal} onHide={() => setShowModal(false)}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Login for more features!</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>Login with your Twitch account for more features like:
+                                <ul>
+                                <li>Favorite games</li>
+                                <li>Favorite streamers</li>
+                                <li>View your watch time (later)</li>
+                                <li>Easily find streamers who are near affiliate.</li>
+                                <li>Raid streamers right from Zer0.tv</li>
+                                </ul>
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}><i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>Register/Login with Twitch</button>
+                            </Modal.Footer>
+                        </Modal>
+                    }
                 <div className="mb-3 form-check">
                     <input 
                         type="checkbox" 
