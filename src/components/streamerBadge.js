@@ -1,9 +1,17 @@
 // StreamerBadge.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import MatureIcon from '../assets/ratedm.png';  // Assuming you've imported images
 import EveryoneIcon from '../assets/ratede.png';
+import axios from 'axios';
+
+const apiUrl = process.env.REACT_APP_API_URL;
+
+
+
 
 const StreamerBadge = ({ stream }) => {
+    const [sessionData, setSessionData] = useState(null);
+
     const isNewbie = (new Date() - new Date(stream.user_info.created_at)) / (1000 * 60 * 60 * 24 * 30) < 6;
     const isNearAffiliate = stream.followerCount >= 45 && stream.followerCount < 50;
     const justStarted = (new Date() - new Date(stream.started_at)) / (1000 * 60 * 60) < 1;
@@ -12,6 +20,21 @@ const StreamerBadge = ({ stream }) => {
     const twitchVeteran = yearsRegistered >= 10 && new Date(stream.user_info.created_at) > new Date('2011-06-14');
     const justinsFriend = new Date(stream.user_info.created_at) >= new Date('2007-03-01') && new Date(stream.user_info.created_at) <= new Date('2011-06-14');
     const noFollowers = stream.followerCount === 0;
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/api/users/session`, {
+                    withCredentials: true,
+                });
+                setSessionData(response.data);
+                //console.log('User data:', response.data.user.user);
+            } catch (error) {
+                //console.error('Error fetching session data:', error);
+            }
+        };
+        fetchData();
+    }, []);
 
 return (
     <div className="card-content" style={{ marginTop: '20px' }}>
@@ -40,7 +63,7 @@ return (
             {twitchVeteran &&
                 <p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p>
             }
-            {noFollowers &&
+            {sessionData && sessionData.user && noFollowers &&
                 <p className="card-text no-followers-message" title="This user has no followers.">Be my #1</p>
             }
         </div>

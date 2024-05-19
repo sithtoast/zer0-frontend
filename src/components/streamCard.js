@@ -5,6 +5,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import StreamerBadge from './streamerBadge';
 import AffiliateIcon from '../assets/affiliate.png';
 import axios from 'axios';
+import Modal from 'react-bootstrap/Modal';
 
 
 
@@ -15,6 +16,10 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
     const [favorites, setFavorites] = useState(new Set());
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [sessionData, setSessionData] = useState(null);
+
+    const handleClose = () => setShowModal(false);
     
     const fetchFavorites = async () => {
         setLoading(true);
@@ -91,8 +96,23 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
     };
 
     useEffect(() => {
-        fetchFavorites();
-    }, []); 
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/api/users/session`, {
+                    withCredentials: true,
+                });
+                setSessionData(response.data);
+                //console.log('User data:', response.data.user.user);
+            } catch (error) {
+                //console.error('Error fetching session data:', error);
+            }
+        };
+        fetchData();
+
+        if (sessionData && sessionData.user) {
+            fetchFavorites();
+        }
+    }, []);
 
     return (
         <div 
@@ -120,7 +140,7 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
                             <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
                             <strong>{stream.user_name}</strong><br />
                             Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                            Followers: {stream.followerCount}<br />
+                            {sessionData && sessionData.user ? `Followers: ${stream.followerCount}` : null}<br />
                             Created at: {new Date(stream.user_info.created_at).toLocaleString()}
                         </Tooltip>
                     }
@@ -140,14 +160,38 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
                 </OverlayTrigger>
                 <p className='card-text'>{stream.title}</p>
                 <p className="card-text">
-                    Game: {stream.game_name}
-                    <span 
-                        style={{ cursor: 'pointer', fontSize: '1rem', marginLeft: '0.5rem' }} 
-                        onClick={(event) => toggleFavorite({ id: stream.game_id, name: stream.game_name }, event)}
-                    >
-                        {favorites.has(stream.game_id) ? '★' : '☆'}
-                    </span>
-                </p>
+                Game: {stream.game_name}
+            <span 
+                style={{ cursor: 'pointer', fontSize: '1rem', marginLeft: '0.5rem' }} 
+                onClick={(event) => {
+                    if (sessionData && sessionData.user) {
+                        toggleFavorite({ id: stream.game_id, name: stream.game_name }, event)
+                    } else {
+                        setShowModal(true);
+                    }
+                }}
+            >
+                {favorites.has(stream.game_id) ? '★' : '☆'}
+            </span>
+            </p>
+            {showModal && 
+                  <Modal show={showModal} onHide={handleClose}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Login for more features!</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>Login with your Twitch account for more features like:
+                    <ul>
+                        <li>Favorite games</li>
+                        <li>Favorite streamers</li>
+                        <li>View your watch history</li>
+                        <li>Raid streamers right from Zer0.tv</li>
+                    </ul>
+                  </Modal.Body>
+                  <Modal.Footer>
+                  <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}><i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>Register/Login with Twitch</button>
+                  </Modal.Footer>
+                </Modal>
+            }
                 <p className="card-text">Language: {stream.language}</p>
                 <p className="card-text">Started: {calculateTimeDifference(stream.started_at)}</p>
                 <div className="tag-cloud">

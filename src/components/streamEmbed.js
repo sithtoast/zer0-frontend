@@ -6,12 +6,14 @@ import Raid from './Raid';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
+
 function StreamEmbed({ stream, streams, closeStream }) {
     const [userId, setUserId] = useState(null);
     const [profileData, setProfileData] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [totalWatchTimeSeconds, setTotalWatchTimeSeconds] = useState(0);
+    const [sessionData, setSessionData] = useState(null);
 
     const fetchProfileData = async () => {
         try {
@@ -32,6 +34,20 @@ function StreamEmbed({ stream, streams, closeStream }) {
     };
 
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/api/users/session`, {
+                    withCredentials: true,
+                });
+                setSessionData(response.data);
+                //console.log('User data:', response.data.user.user);
+            } catch (error) {
+                //console.error('Error fetching session data:', error);
+            }
+        };
+        fetchData();
+
+
         if (stream) {
             console.log("Initializing Twitch Embed for stream:", stream);
             setTimeout(() => {
@@ -49,8 +65,12 @@ function StreamEmbed({ stream, streams, closeStream }) {
             }, 1000); // Adding a delay to ensure the element is rendered
         }
     
-        fetchProfileData(); // Fetch profile data
-    
+        if (sessionData && sessionData.user) {
+            fetchProfileData(); // Fetch profile data
+        } else {
+            setLoading(false);
+        }
+
         // Return a cleanup function that removes the Twitch embed
         return () => {
             const twitchEmbedElement = document.getElementById('twitch-embed-stream');
@@ -85,6 +105,7 @@ function StreamEmbed({ stream, streams, closeStream }) {
     if (loading) {
         return <p>Loading...</p>;
     }
+    
 
     return (
         <div>
@@ -95,10 +116,14 @@ function StreamEmbed({ stream, streams, closeStream }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div>
                             <button onClick={handleCloseStream}>Close Stream</button>
+                            {sessionData && sessionData.user && (
                             <Raid stream={stream} streamInfo={streamInfo} userId={userId} />
+                            )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        {sessionData && sessionData.user && (
                             <Followers stream={stream} streams={streams} />
+                        )}
                             <TimeTracking stream={stream} streams={streams} />
                         </div>
                     </div>
