@@ -1,8 +1,8 @@
+// TimeTracking.js
 import React, { useEffect, useState } from 'react';
 
-function TimeTracking({ stream, streams }) {
+function TimeTracking({ stream, streams, totalWatchTimeSeconds, setTotalWatchTimeSeconds }) {
     const [elapsedTime, setElapsedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-    const [totalWatchTimeSeconds, setTotalWatchTimeSeconds] = useState(0);
     const [watchTime, setWatchTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
     useEffect(() => {
@@ -20,7 +20,7 @@ function TimeTracking({ stream, streams }) {
 
                     setElapsedTime({ hours, minutes, seconds });
                 } else {
-                    setElapsedTime({ hours: '00', minutes: '00', seconds: '00' }); // Reset elapsed time if streamerData is not found
+                    setElapsedTime({ hours: '00', minutes: '00', seconds: '00' });
                 }
             }, 1000);
 
@@ -37,7 +37,7 @@ function TimeTracking({ stream, streams }) {
         }
 
         return () => clearInterval(intervalId);
-    }, [stream]);
+    }, [stream, setTotalWatchTimeSeconds]);
 
     useEffect(() => {
         const hours = String(Math.floor(totalWatchTimeSeconds / 3600)).padStart(2, '0');

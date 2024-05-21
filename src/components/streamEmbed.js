@@ -3,9 +3,9 @@ import axios from 'axios';
 import Followers from './Followers';
 import TimeTracking from './TimeTracking';
 import Raid from './Raid';
+import { set } from 'lodash';
 
 const apiUrl = process.env.REACT_APP_API_URL;
-
 
 function StreamEmbed({ stream, streams, closeStream }) {
     const [userId, setUserId] = useState(null);
@@ -40,13 +40,11 @@ function StreamEmbed({ stream, streams, closeStream }) {
                     withCredentials: true,
                 });
                 setSessionData(response.data);
-                //console.log('User data:', response.data.user.user);
             } catch (error) {
-                //console.error('Error fetching session data:', error);
+                console.error('Error fetching session data:', error);
             }
         };
         fetchData();
-
 
         if (stream) {
             console.log("Initializing Twitch Embed for stream:", stream);
@@ -64,14 +62,14 @@ function StreamEmbed({ stream, streams, closeStream }) {
                 }
             }, 1000); // Adding a delay to ensure the element is rendered
         }
-    
+
         if (sessionData && sessionData.user) {
             fetchProfileData(); // Fetch profile data
         } else {
+            setUserId(-1);
             setLoading(false);
         }
 
-        // Return a cleanup function that removes the Twitch embed
         return () => {
             const twitchEmbedElement = document.getElementById('twitch-embed-stream');
             if (twitchEmbedElement) {
@@ -81,31 +79,34 @@ function StreamEmbed({ stream, streams, closeStream }) {
             }
         };
     }, [stream]);
-    
-
-    const handleCloseStream = async () => {
-        if (userId && totalWatchTimeSeconds > 0) {
-            try {
-                await axios.put(`${apiUrl}/api/watchtime/update-twitch-watch-time`, {
-                    userId: userId,
-                    watchTime: totalWatchTimeSeconds
-                }, {
-                    withCredentials: true
-                });
-            } catch (error) {
-                console.error('Error updating watch time:', error);
-            }
-        }
-        closeStream();
-    };
 
     const userName = stream;
     const streamInfo = streams.find(s => s.user_name === userName);
+    const streamUserId = streamInfo && streamInfo.user_id;
+    const streamCategoryId = streamInfo && streamInfo.game_id;
+
+    const handleCloseStream = async () => {
+        console.log('totalWatchTimeSeconds:', totalWatchTimeSeconds);
+        console.log('userId:', userId);
+        console.log('streamUserId:', streamUserId);
+        console.log('streamCategoryId:', streamCategoryId);
+
+        try {
+            const response = await axios.put(`${apiUrl}/api/watchtime/update/twitch/${streamCategoryId}/${streamUserId}`, {
+                userId: userId,
+                watchTime: totalWatchTimeSeconds,
+            });
+            console.log('Response:', response.data);
+        } catch (error) {
+            console.error('Error updating watch time:', error.response ? error.response.data : error.message);
+        }
+        setTotalWatchTimeSeconds(0);
+        closeStream();
+    };
 
     if (loading) {
         return <p>Loading...</p>;
     }
-    
 
     return (
         <div>
@@ -117,14 +118,19 @@ function StreamEmbed({ stream, streams, closeStream }) {
                         <div>
                             <button onClick={handleCloseStream}>Close Stream</button>
                             {sessionData && sessionData.user && (
-                            <Raid stream={stream} streamInfo={streamInfo} userId={userId} />
+                                <Raid stream={stream} streamInfo={streamInfo} userId={userId} />
                             )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        {sessionData && sessionData.user && (
-                            <Followers stream={stream} streams={streams} />
-                        )}
-                            <TimeTracking stream={stream} streams={streams} />
+                            {sessionData && sessionData.user && (
+                                <Followers stream={stream} streams={streams} />
+                            )}
+                            <TimeTracking
+                                stream={stream}
+                                streams={streams}
+                                totalWatchTimeSeconds={totalWatchTimeSeconds}
+                                setTotalWatchTimeSeconds={setTotalWatchTimeSeconds}
+                            />
                         </div>
                     </div>
                 )}
