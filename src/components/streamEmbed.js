@@ -135,12 +135,12 @@ function StreamEmbed({ stream, streams, closeStream }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div>
                             <button onClick={handleCloseStream}>Close Stream</button>
-                            {sessionData && sessionData.user && (
+                            {sessionData && sessionData.user.userId !== 0 && (
                                 <Raid stream={stream} streamInfo={streams.find(s => s.user_name === stream)} userId={localUserId} />
                             )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            {sessionData && sessionData.user && (
+                            {sessionData && sessionData.user.userId !== 0 && (
                                 <Followers stream={stream} streams={streams} />
                             )}
                             <TimeTracking
