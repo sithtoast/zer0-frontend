@@ -1,4 +1,6 @@
-const StreamControls = React.memo(({ isRaiding, handleRaid, handleCloseStream, followerCount, elapsedTime, watchTime }) => (
+import React from 'react';
+
+const StreamControls = React.memo(({ stream, isRaiding, handleRaid, handleCloseStream, followerCount, elapsedTime, watchTime }) => (
     <div>
         {stream && <div className="overlay"></div>}
         <div id="twitch-embed">
@@ -21,3 +23,5 @@ const StreamControls = React.memo(({ isRaiding, handleRaid, handleCloseStream, f
         </div>
     </div>
 ));
+
+export default StreamControls;

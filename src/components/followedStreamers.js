@@ -30,84 +30,84 @@ const FollowedStreams = () => {
         setLoading(false);
     };
     
-useEffect(() => {
-const fetchStreams = async () => {
-    setLoading(true);
-    try {
-        const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-            withCredentials: true, // This allows the request to send cookies
-            headers: { 'Content-Type': 'application/json' }
-        });
-        setUserProfileResponse(userProfileResponse.data);
-        // Check if Twitch account is linked
-        if (!userProfileResponse.data.twitch) {
-            setError('Please link your Twitch account to continue');
-            setLoading(false);
-            return;  // Skip the rest of the function
-        }
+    useEffect(() => {
+    const fetchStreams = async () => {
+        setLoading(true);
+        try {
+            const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+                withCredentials: true, // This allows the request to send cookies
+                headers: { 'Content-Type': 'application/json' }
+            });
+            setUserProfileResponse(userProfileResponse.data);
+            // Check if Twitch account is linked
+            if (!userProfileResponse.data.twitch) {
+                setError('Please link your Twitch account to continue');
+                setLoading(false);
+                return;  // Skip the rest of the function
+            }
 
-        const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
+            const twitchAccessToken = userProfileResponse.data.twitch.accessToken;
 
-        const response = await axios.get(`${apiUrl}/api/twitch/followed-streams`, {
-            withCredentials: true, // This allows the request to send cookies
-            headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-        });
-        console.log(response.data);
+            const response = await axios.get(`${apiUrl}/api/twitch/followed-streams`, {
+                withCredentials: true, // This allows the request to send cookies
+                headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+            });
+            console.log(response.data);
 
-        // Fetch follower counts one at a time
-        const newStreams = [];
-        for (const stream of response.data) {
-            if (!stream.followerCount) {
+            // Fetch follower counts one at a time
+            const newStreams = [];
+            for (const stream of response.data) {
+                if (!stream.followerCount) {
+                    try {
+                        const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                            headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                        });
+                        const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
+                        const followerCount = followerData ? followerData.followerCount : 0;
+                        stream.followerCount = followerCount;
+                    } catch (err) {
+                        console.error('Error fetching follower count for stream:', stream.user_id, err);
+                        stream.followerCount = 0;
+                    }
+                }
+                newStreams.push(stream);
+            }
+
+            // Fetch user info in batches
+            const batchSize = 100; // Adjust this to a smaller number if needed
+            for (let i = 0; i < newStreams.length; i += batchSize) {
+                const batch = newStreams.slice(i, Math.min(i + batchSize, newStreams.length));
+                const userIds = batch.map(stream => stream.user_id);
                 try {
-                    const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
-                        headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                    const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
+                        headers: {
+                            'Authorization': `Bearer ${twitchAccessToken}`
+                        }
                     });
-                    const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
-                    const followerCount = followerData ? followerData.followerCount : 0;
-                    stream.followerCount = followerCount;
+                    // Add user info to streams
+                    const userInfoData = userInfoResponse.data;
+                    console.log('User info:', userInfoData);
+                    for (let j = 0; j < batch.length; j++) {
+                        const stream = batch[j];
+                        const userInfo = userInfoData.find(user => user.id === stream.user_id);
+                        if (userInfo) {
+                            stream.user_info = userInfo;
+                        }
+                    }
                 } catch (err) {
-                    console.error('Error fetching follower count for stream:', stream.user_id, err);
-                    stream.followerCount = 0;
+                    console.error('Error fetching user data:', err);
                 }
             }
-            newStreams.push(stream);
+
+            setStreams(newStreams);
+
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to fetch followed streams');
+            setLoading(false);
+            console.error('Error:', err);
         }
-
-        // Fetch user info in batches
-        const batchSize = 100; // Adjust this to a smaller number if needed
-        for (let i = 0; i < newStreams.length; i += batchSize) {
-            const batch = newStreams.slice(i, Math.min(i + batchSize, newStreams.length));
-            const userIds = batch.map(stream => stream.user_id);
-            try {
-                const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds }, {
-                    headers: {
-                        'Authorization': `Bearer ${twitchAccessToken}`
-                    }
-                });
-                // Add user info to streams
-                const userInfoData = userInfoResponse.data;
-                console.log('User info:', userInfoData);
-                for (let j = 0; j < batch.length; j++) {
-                    const stream = batch[j];
-                    const userInfo = userInfoData.find(user => user.id === stream.user_id);
-                    if (userInfo) {
-                        stream.user_info = userInfo;
-                    }
-                }
-            } catch (err) {
-                console.error('Error fetching user data:', err);
-            }
-        }
-
-        setStreams(newStreams);
-
-        setLoading(false);
-    } catch (err) {
-        setError('Failed to fetch followed streams');
-        setLoading(false);
-        console.error('Error:', err);
-    }
-};
+    };
 
 fetchStreams();
 fetchFavorites();

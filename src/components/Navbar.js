@@ -1,71 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import isEqual from 'lodash/isEqual';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Navbar = () => {
     const navigate = useNavigate();
   
-    const [profileData, setProfileData] = useState({});
+    const [profileData, setProfileData] = useState(null); // Initialize to null
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [sessionData, setSessionData] = useState(null);
+    const previousSessionData = useRef(null);
   
+    const fetchProfileData = useCallback(async () => {
+        try {
+            const response = await axios.get(`${apiUrl}/api/users/profile`, {
+                withCredentials: true, // This allows the request to send cookies
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+            console.log('Profile data:', response.data);
+            setProfileData(response.data);
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to fetch profile data');
+            setLoading(false);
+            console.error('There was an error!', err);
+        }
+    }, []);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(`${apiUrl}/api/users/session`, {
                     withCredentials: true,
                 });
-                setSessionData(response.data);
-                //console.log('User data:', response.data.user.user);
+                
+                if (!isEqual(response.data, previousSessionData.current)) {
+                    setSessionData(response.data);
+                    previousSessionData.current = response.data;
+                    console.log('Session data updated:', response.data.user.user);
+                } else {
+                    console.log('Session data unchanged');
+                }
             } catch (error) {
                 //console.error('Error fetching session data:', error);
             }
         };
         fetchData();
         
-        const fetchProfileData = async () => {
-            try {
-                const response = await axios.get(`${apiUrl}/api/users/profile`, {
-                    withCredentials: true, // This allows the request to send cookies
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                });
-                console.log(response.data);
-                setProfileData(response.data);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to fetch profile data');
-                setLoading(false);
-                console.error('There was an error!', err);
-            }
-        };
-  
+    }, []);
+
+    useEffect(() => {
         if (sessionData && sessionData.user) {
             fetchProfileData(); // Fetch profile data
         }
-    }, []);
+    }, [sessionData, fetchProfileData]);
 
-	const refreshToken = () => {
-		axios.post(`${apiUrl}/api/users/token`, {}, {
-			withCredentials: true,
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
-		.then(response => {
-			setProfileData(prevState => ({ ...prevState, token: response.data.token }));
-			setTokenRefreshTimeout(response.data.token);
-		})
-		.catch(err => {
-			console.error('Error refreshing token:', err);
-		});
-	};
+    const refreshToken = () => {
+        axios.post(`${apiUrl}/api/users/token`, {}, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            setProfileData(prevState => ({ ...prevState, token: response.data.token }));
+            setTokenRefreshTimeout(response.data.token);
+        })
+        .catch(err => {
+            console.error('Error refreshing token:', err);
+        });
+    };
 
     const setTokenRefreshTimeout = (token) => {
         const decodedToken = jwtDecode(token);
@@ -83,7 +94,7 @@ const Navbar = () => {
                     'Content-Type': 'application/json'
                 }
             });
-            setProfileData({});
+            setProfileData(null);
             navigate('/');
         } catch (err) {
             console.error('Failed to logout:', err);
@@ -102,7 +113,7 @@ return (
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/top-games">Search</NavLink>
                     </li>
-                    {sessionData && sessionData.user ? (
+                    {sessionData && sessionData.user && sessionData.user.userId !== 0 ? (
                         <>
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/favorites">Your Top 8</NavLink>
@@ -112,12 +123,12 @@ return (
                             </li>
                         </>
                     ) : null}
-					<li className="nav-item">
-						<NavLink className="nav-link" to="/tag-search">Tag Search</NavLink>
-					</li>
-					<li className="nav-item">
-						<NavLink className="nav-link" to="/top-categories">Top on zer0</NavLink>
-					</li>
+                    <li className="nav-item">
+                        <NavLink className="nav-link" to="/tag-search">Tag Search</NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink className="nav-link" to="/top-categories">Top on zer0</NavLink>
+                    </li>
                 </ul>
                 <ul className="navbar-nav ms-auto align-items-center">
                     {!sessionData || !sessionData.user ? (
@@ -130,19 +141,23 @@ return (
                         <React.Fragment>
                             <li className="nav-item d-none d-lg-block">
                                 <NavLink className="nav-link" to="/profile">
-                                    {profileData.twitch?.profileImageUrl && (
+                                    {profileData?.twitch?.profileImageUrl ? (
                                         <img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginLeft: '10px'}} />
+                                    ) : (
+                                        <span>Anonymous</span>
                                     )}
                                 </NavLink>
                             </li>
-                            {!profileData.twitch?.twitchId && (
+                            {!profileData?.twitch?.twitchId && (
                                 <li className="nav-item">
                                     <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>Link Twitch Account</button>
                                 </li>
                             )}
-                            <li className="nav-item">
-                                <button onClick={handleLogout}>Logout</button>
-                            </li>
+                            {sessionData.user.userId !== 0 && (
+                                <li className="nav-item">
+                                    <button onClick={handleLogout}>Logout</button>
+                                </li>
+                            )}
                         </React.Fragment>
                     )}
                 </ul>

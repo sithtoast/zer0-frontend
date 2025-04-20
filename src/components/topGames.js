@@ -1,5 +1,4 @@
-// topGames.js
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -7,6 +6,7 @@ import StreamCard from './streamCard';
 import FilterBox from './filterBox';
 import StreamEmbed from './streamEmbed';
 import Modal from 'react-bootstrap/Modal';
+import debounce from 'lodash/debounce';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -26,19 +26,34 @@ const TopGames = () => {
     const [nextCursor] = useState(null);
     const [selectedStream, setSelectedStream] = useState(null);
     const [userProfileResponse, setUserProfileResponse] = useState(null);
-    const [categoryClicked, setCategoryClicked] = useState(false);
-    const [fetchedStreams, setFetchedStreams] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [sessionData, setSessionData] = useState(null);
+    const [fetchedStreams, setFetchedStreams] = useState([]);
 
     const [showModal, setShowModal] = useState(false);
 
     const handleClose = () => setShowModal(false);
 
+    // Ref to track if fetchStreams is in progress
+    const isFetchingStreams = useRef(false);
+
     const fetchStreams = useCallback(async (categoryId, cursor) => {
+        // Prevent multiple calls
+        if (isFetchingStreams.current) {
+            console.log("fetchStreams: already in progress, returning");
+            return;
+        }
+        isFetchingStreams.current = true;
+
         setLoading(true);
         try {
+            // Consolidate state updates
+            setCurrentPage(1);
+            setStreams([]);
+            setCurrentCursor(null);
+            setSelectedCategoryId(categoryId);
+            setCurrentGameName(categories.find(category => category.id === categoryId)?.name);
 
             const response = await axios.get(`${apiUrl}/api/twitch/streams/${categoryId}`, {
                 params: {
@@ -104,22 +119,29 @@ const TopGames = () => {
             }
 
             let newStreams = [];
-            let followerCountPromises = filteredStreams.map(stream => {
-                return retryAxios(3, axios.post, `${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
-                    headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-                }).then(followerCountResponse => {
-                    const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
-                    const followerCount = followerData ? followerData.followerCount : 0;
-                    stream.followerCount = followerCount;
-                    return stream;
-                }).catch(err => {
-                    console.error('Error fetching follower count for stream:', stream.user_id, err);
-                    stream.followerCount = 0;
-                    return stream;
+            let followerCountPromises = [];
+            if (!(sessionData && sessionData.user && sessionData.user.userId === 0)) {
+                followerCountPromises = filteredStreams.map(stream => {
+                    return retryAxios(3, axios.post, `${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
+                        headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
+                    }).then(followerCountResponse => {
+                        const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
+                        const followerCount = followerData ? followerData.followerCount : 0;
+                        stream.followerCount = followerCount;
+                        return stream;
+                    }).catch(err => {
+                        console.error('Error fetching follower count for stream:', stream.user_id, err);
+                        stream.followerCount = 0;
+                        return stream;
+                    });
                 });
-            });
-
-            newStreams = await Promise.all(followerCountPromises);
+                newStreams = await Promise.all(followerCountPromises);
+            } else {
+                // If anon, set followerCount to null
+                filteredStreams.forEach(stream => stream.followerCount = null);
+                newStreams = filteredStreams; // Set newStreams to filteredStreams
+            }
+            
             setAllStreamsWithFollowerCounts(newStreams);
             setFetchedStreams(filteredStreams);
         } catch (err) {
@@ -127,8 +149,9 @@ const TopGames = () => {
             console.error('Error fetching streams:', err);
         } finally {
             setLoading(false);
+            isFetchingStreams.current = false;
         }
-    }, []);
+    }, [categories, setCurrentPage, setStreams, setCurrentCursor, setSelectedCategoryId, setCurrentGameName, setError]);
 
     const fetchCategories = async () => {
         setLoading(true);
@@ -161,8 +184,25 @@ const TopGames = () => {
         setLoading(false);
     };
 
+    // Ref to track if toggleFavorite is in progress
+    const isTogglingFavorite = useRef(false);
+    // Ref to count toggleFavorite calls
+    const toggleFavoriteCount = useRef(0);
+
     const toggleFavorite = async (category, event) => {
         event.stopPropagation();
+
+        // Increment the counter
+        toggleFavoriteCount.current++;
+        console.log(`toggleFavorite called ${toggleFavoriteCount.current} times`);
+
+        // Prevent multiple calls
+        if (isTogglingFavorite.current) {
+            console.log("toggleFavorite: already in progress, returning");
+            return;
+        }
+        isTogglingFavorite.current = true;
+
         if (!category?.id) {
             console.error("Missing required parameters", {categoryId: category?.id});
             setError("Missing required parameters");
@@ -192,16 +232,41 @@ const TopGames = () => {
         } catch (err) {
             console.error(`Failed to ${action} favorite:`, err.response ? err.response.data : err);
             setError(`Failed to ${action} favorite: ${err.response ? err.response.data.message : "Unknown error"}`);
+        } finally {
+            isTogglingFavorite.current = false; // Reset the flag
         }
     };
     
+    // Remove debounce
+    const debouncedFetchStreams = useCallback((categoryId, cursor) => {
+        fetchStreams(categoryId, cursor);
+    }, [fetchStreams]);
+    
+    // Ref to track if handleClickCategory is in progress
+    const isClickingCategory = useRef(false);
+    // Ref to count handleClickCategory calls
+    const handleClickCategoryCount = useRef(0);
+
     const handleClickCategory = (categoryId) => {
-        setCurrentPage(1);
-        setStreams([]);
-        setCurrentCursor(null);
-        setSelectedCategoryId(categoryId);
-        fetchStreams(categoryId, null);
-        setCurrentGameName(categories.find(category => category.id === categoryId)?.name);
+        // Increment the counter
+        handleClickCategoryCount.current++;
+        console.log(`handleClickCategory called ${handleClickCategoryCount.current} times`);
+
+        // Prevent multiple calls
+        if (isClickingCategory.current) {
+            console.log("handleClickCategory: already in progress, returning");
+            return;
+        }
+        isClickingCategory.current = true;
+
+        console.log(`Category clicked: ${categoryId}`);
+
+        debouncedFetchStreams(categoryId, null);
+
+        // Allow the function to be called again after a short delay
+        setTimeout(() => {
+            isClickingCategory.current = false;
+        }, 500);
     };
 
     const handlePageChange = (pageNumber) => {
@@ -279,7 +344,6 @@ return (
                                         <img src={category.boxArtUrl} alt={category.name} />
                                         <span onClick={() => {
                                             handleClickCategory(category.id);
-                                            setCategoryClicked(true);
                                         }}>
                                             {category.name}
                                         </span>
@@ -322,7 +386,6 @@ return (
                                 <img src={category.boxArtUrl} alt={category.name} />
                                 <span onClick={() => {
                                     handleClickCategory(category.id);
-                                    setCategoryClicked(true);
                                 }}>
                                     {category.name}
                                 </span>
@@ -358,7 +421,7 @@ return (
                         </Modal>
                     }
                 </div>
-                {categoryClicked && (
+                {selectedCategoryId && (
                     <div className="col-md-8 streams flex-column" style={{minHeight: '500px', flexGrow: 2}}> 
                         <FilterBox 
                             selectedStream={selectedStream} 

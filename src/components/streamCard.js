@@ -140,7 +140,7 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
                             <img src={stream.user_info.profile_image_url} alt={`${stream.user_name}'s profile`} className="small-image" /><br />
                             <strong>{stream.user_name}</strong><br />
                             Status: {stream.user_info.broadcaster_type === '' ? 'Regular User' : stream.user_info.broadcaster_type === 'affiliate' ? 'Affiliate' : stream.user_info.broadcaster_type}<br />
-                            {sessionData && sessionData.user ? `Followers: ${stream.followerCount}` : null}<br />
+                            {sessionData && sessionData.user && sessionData.user.userId !== 0 ? `Followers: ${stream.followerCount}` : null}<br />
                             Created at: {new Date(stream.user_info.created_at).toLocaleString()}
                         </Tooltip>
                     }

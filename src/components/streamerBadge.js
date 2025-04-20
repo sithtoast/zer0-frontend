@@ -63,7 +63,7 @@ return (
             {twitchVeteran &&
                 <p className="card-text twitch-veteran-message" title="This user has been on Twitch for a very long time. (10+ yrs)">Twitch Veteran</p>
             }
-            {sessionData && sessionData.user && noFollowers &&
+            {sessionData && sessionData.user && noFollowers && sessionData.user.userId !== 0 &&
                 <p className="card-text no-followers-message" title="This user has no followers.">Be my #1</p>
             }
         </div>

@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-function TimeTracking({ stream, streams }) {
+function TimeTracking({ stream, streams, setTotalWatchTimeSeconds, totalWatchTimeSeconds }) {
     const [elapsedTime, setElapsedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-    const [totalWatchTimeSeconds, setTotalWatchTimeSeconds] = useState(0);
     const [watchTime, setWatchTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
     useEffect(() => {
         if (stream) {
             const intervalId = setInterval(() => {
                 const streamerData = streams.find(data => data.user_name === stream);
-                console.log("Streamer Data:", streamerData);
                 if (streamerData) {
                     const now = new Date();
                     const start = new Date(streamerData.started_at);
@@ -32,12 +30,19 @@ function TimeTracking({ stream, streams }) {
         let intervalId;
         if (stream) {
             intervalId = setInterval(() => {
-                setTotalWatchTimeSeconds(prev => prev + 1);
+                setTotalWatchTimeSeconds(prev => {
+                    const newTime = prev + 1;
+
+                    // Log current streamer and watch time in seconds elapsed
+                    console.log(`Current Streamer: ${stream}, Watch Time (seconds): ${newTime}`);
+
+                    return newTime;
+                });
             }, 1000);
         }
 
         return () => clearInterval(intervalId);
-    }, [stream]);
+    }, [stream, setTotalWatchTimeSeconds]);
 
     useEffect(() => {
         const hours = String(Math.floor(totalWatchTimeSeconds / 3600)).padStart(2, '0');
@@ -45,7 +50,7 @@ function TimeTracking({ stream, streams }) {
         const seconds = String(totalWatchTimeSeconds % 60).padStart(2, '0');
 
         setWatchTime({ hours, minutes, seconds });
-    }, [totalWatchTimeSeconds]);
+    }, [totalWatchTimeSeconds]); 
 
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
