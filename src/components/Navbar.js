@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import isEqual from 'lodash/isEqual';
+import { Modal } from 'react-bootstrap';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -14,6 +15,8 @@ const Navbar = () => {
     const [error, setError] = useState('');
     const [sessionData, setSessionData] = useState(null);
     const previousSessionData = useRef(null);
+    const [showModal, setShowModal] = useState(false);
+    const handleClose = () => setShowModal(false);
   
     const fetchProfileData = useCallback(async () => {
         try {
@@ -140,13 +143,15 @@ return (
                     ) : (
                         <React.Fragment>
                             <li className="nav-item d-none d-lg-block">
-                                <NavLink className="nav-link" to="/profile">
-                                    {profileData?.twitch?.profileImageUrl ? (
+                                {profileData?.twitch?.profileImageUrl ? (
+                                    <NavLink className="nav-link" to="/profile">
                                         <img src={profileData.twitch.profileImageUrl} alt="Profile" style={{width: '25px', height: '25px', borderRadius: '50%', marginLeft: '10px'}} />
-                                    ) : (
-                                        <span>Anonymous</span>
-                                    )}
-                                </NavLink>
+                                    </NavLink>
+                                ) : (
+                                    <span className="nav-link" style={{cursor: 'pointer'}} onClick={() => setShowModal(true)}>
+                                        Anonymous
+                                    </span>
+                                )}
                             </li>
                             {!profileData?.twitch?.twitchId && (
                                 <li className="nav-item">
@@ -163,6 +168,28 @@ return (
                 </ul>
             </div>
         </div>
+        <Modal show={showModal} onHide={handleClose}>
+            <Modal.Header closeButton>
+                <Modal.Title>Login for more features!</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                Login with your Twitch account for more features like:
+                <ul>
+                    <li>Profile page</li>
+                    <li>Favorite games</li>
+                    <li>Favorite streamers</li>
+                    <li>View your watch history</li>
+                    <li>Raid streamers right from Zer0.tv</li>
+                </ul>
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={() => window.location.href=`${apiUrl}/auth/twitch`}>
+                    <i className="fab fa-twitch" style={{ paddingRight: '10px' }}></i>
+                    Register/Login with Twitch
+                </button>
+            </Modal.Footer>
+        </Modal>
+
     </nav>
 );
 };

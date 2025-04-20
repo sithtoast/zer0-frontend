@@ -53,6 +53,7 @@ return (
             <>
                 <p><strong>Email:</strong> {profileData.user.email}</p>
                 <p><strong>UserID:</strong> {profileData.user.userId}</p>
+                <p><strong>Overall Watchtime:</strong> {profileData.user.totalWatchTime}</p>
             </>
         )}
         {profileData.twitch ? (

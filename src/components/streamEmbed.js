@@ -86,38 +86,40 @@ function StreamEmbed({ stream, streams, closeStream }) {
     
 
     const handleCloseStream = async () => {
-        const streamInfo = streams.find(s => s.user_name === stream); // Ensure streamInfo is defined here
-        const twitchId = streamInfo ? streamInfo.user_id : null; // Extract twitchId (user_id) from streamInfo
+        const streamInfo = streams.find(s => s.user_name === stream);
+        const twitchId = streamInfo ? streamInfo.user_id : null;
+        const categoryId = streamInfo ? streamInfo.game_id : null;
+        const categoryName = streamInfo ? streamInfo.game_name : null;
     
         if (twitchId && totalWatchTimeSeconds > 0) {
-            console.log(`Streamer Twitch ID: ${twitchId}, Elapsed Watch Time (seconds): ${totalWatchTimeSeconds}`);
+            console.log(`Updating watch time - Streamer: ${twitchId}, Category: ${categoryId}, Watch Time: ${totalWatchTimeSeconds}s`);
             try {
-                // Update the streamer's watch time
-                await axios.post(`${apiUrl}/api/twitch/streamer/update`, {
-                    twitchId: twitchId,
-                    watchTime: totalWatchTimeSeconds
+                // Single API call to update both streamer stats and user watch history
+                const response = await axios.post(`${apiUrl}/api/twitch/streamer/update`, {
+                    twitchId,
+                    watchTime: totalWatchTimeSeconds,
+                    categoryId,
+                    categoryName
                 }, {
                     withCredentials: true
                 });
-                console.log('Streamer updated successfully');
-    
-                // Update the logged-in user's watch time
-                await axios.post(`${apiUrl}/api/users/update-watchtime`, {
-                    watchTime: totalWatchTimeSeconds
-                }, {
-                    withCredentials: true
-                });
-                console.log('User watch time updated successfully');
+                
+                console.log('Watch time updated successfully:', response.data);
+                
+                // You can use the response data to update local state if needed
+                if (response.data.totalWatchTime) {
+                    console.log(`Total watch time: ${response.data.totalWatchTime}`);
+                    console.log(`Category watch times:`, response.data.categoryWatchTimes);
+                }
             } catch (error) {
-                console.error('Error updating streamer or user watch time:', error);
+                console.error('Error updating watch time:', error);
             }
         } else {
-            console.log('No valid twitchId or watch time to update');
+            console.log('No valid twitchId, categoryId, or watch time to update');
         }
     
         // Reset totalWatchTimeSeconds
         setTotalWatchTimeSeconds(0);
-
         closeStream();
     };
 
