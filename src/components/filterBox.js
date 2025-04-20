@@ -98,7 +98,7 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
             <div className="mb-3 form-check">
                         <input 
                         type="checkbox" 
-                        className={`form-check-input ${!(sessionData && sessionData.user) ? 'disabled-look' : ''}`} 
+                        className={`form-check-input ${!(sessionData && sessionData.user.userId !== 0) ? 'disabled-look' : ''}`} 
                         id="nearAffiliate" 
                         checked={nearAffiliate} 
                         onClick={() => {
@@ -107,7 +107,7 @@ const FilterBox = ({ selectedStream, setSelectedStream, allStreamsWithFollowerCo
                             }
                         }}
                         onChange={e => { 
-                            if (sessionData && sessionData.user) {
+                            if (sessionData && sessionData.user.userId !== 0) {
                                 setNearAffiliate(e.target.checked); 
                                 if (e.target.checked) setIsNotAffiliate(false); 
                             } else {

@@ -109,7 +109,7 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
         };
         fetchData();
 
-        if (sessionData && sessionData.user) {
+        if (sessionData && sessionData.user.userId !== 0) {
             fetchFavorites();
         }
     }, []);
@@ -164,7 +164,7 @@ const StreamCard = ({ stream, selectedStream, setSelectedStream }) => {
             <span 
                 style={{ cursor: 'pointer', fontSize: '1rem', marginLeft: '0.5rem' }} 
                 onClick={(event) => {
-                    if (sessionData && sessionData.user) {
+                    if (sessionData && sessionData.user.userId !== 0) {
                         toggleFavorite({ id: stream.game_id, name: stream.game_name }, event)
                     } else {
                         setShowModal(true);

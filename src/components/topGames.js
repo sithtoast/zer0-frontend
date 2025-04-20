@@ -290,7 +290,7 @@ const TopGames = () => {
                     withCredentials: true,
                 });
                 setSessionData(response.data);
-                //console.log('User data:', response.data.user.user);
+                console.log('User data:', response.data.user);
             } catch (error) {
                //console.error('Error fetching session data:', error);
             }
@@ -348,7 +348,7 @@ return (
                                             {category.name}
                                         </span>
                                         <button onClick={(e) => {
-                                            if (sessionData && sessionData.user) {
+                                            if (sessionData && sessionData.user.userId !== 0) {
                                                 toggleFavorite(category, e)
                                             } else {
                                                 setShowModal(true);
@@ -390,7 +390,7 @@ return (
                                     {category.name}
                                 </span>
                                 <button onClick={(e) => {
-                                            if (sessionData && sessionData.user) {
+                                            if (sessionData && sessionData.user.userId !== 0) {
                                                 toggleFavorite(category, e)
                                             } else {
                                                 setShowModal(true);
