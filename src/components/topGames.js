@@ -7,6 +7,7 @@ import FilterBox from './filterBox';
 import StreamEmbed from './streamEmbed';
 import Modal from 'react-bootstrap/Modal';
 import debounce from 'lodash/debounce';
+//import './topGames.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -298,7 +299,7 @@ const TopGames = () => {
         fetchData();
 
         fetchCategories();
-        if (sessionData && sessionData.user) {
+        if (sessionData && sessionData.user && sessionData.user.userId !== 0) {
             fetchFavorites();
         }
     }, []);
