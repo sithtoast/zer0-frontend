@@ -154,6 +154,42 @@
     font-size: 0.9rem;
 }
 
+.achievement-progress {
+    margin-top: 15px;
+}
+
+.progress-text {
+    font-size: 14px;
+    color: var(--twitch-text);
+    margin-bottom: 5px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: var(--twitch-dark);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--twitch-primary);
+    transition: width 0.3s ease;
+}
+
+.progress-details {
+    font-size: 12px;
+    color: var(--twitch-gray);
+    margin-top: 5px;
+    text-align: center;
+}
+
+.achievement-card.locked .progress-bar {
+    background: var(--twitch-accent);
+    opacity: 0.7;
+}
+
 /* Connections Grid */
 .connections-grid {
     display: grid;

@@ -8,6 +8,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 
 const Profile = () => {
     const [profileData, setProfileData] = useState({});
+    const [achievements, setAchievements] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [watchTimeStats, setWatchTimeStats] = useState({
@@ -18,20 +19,34 @@ const Profile = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [profileResponse, streamersResponse, categoriesResponse] = await Promise.all([
-                    axios.get(`${apiUrl}/api/users/profile`, {
-                        withCredentials: true,
-                        headers: { 'Content-Type': 'application/json' }
-                    }),
-                    axios.get(`${apiUrl}/api/users/streamers/most-watched?limit=1`),
-                    axios.get(`${apiUrl}/api/users/categories/most-watched?limit=1`)
-                ]);
-
+                // First get the profile data
+                const profileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
+                    withCredentials: true,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+    
+                // Then get the rest of the data in parallel
+                const [streamersResponse, categoriesResponse, achievementsResponse] = 
+                    await Promise.all([
+                        axios.get(`${apiUrl}/api/users/streamers/most-watched?limit=1`),
+                        axios.get(`${apiUrl}/api/users/categories/most-watched?limit=1`),
+                        axios.get(`${apiUrl}/api/achievements/${profileResponse.data.user.userId}`)
+                    ]);
+    
                 setProfileData(profileResponse.data);
                 setWatchTimeStats({
                     topStreamer: streamersResponse.data[0],
                     topCategory: categoriesResponse.data[0]
                 });
+                setAchievements(achievementsResponse.data);
+                
+                // Check for new achievements
+                await axios.post(`${apiUrl}/api/achievements/check`, {
+                    userId: profileResponse.data.user.userId,
+                    followCount: profileResponse.data.twitch?.followCount,
+                    categoryCount: Object.keys(profileResponse.data.user?.categoryWatchTime || {}).length
+                });
+                
                 setLoading(false);
             } catch (err) {
                 setError('Failed to fetch profile data');
@@ -39,9 +54,113 @@ const Profile = () => {
                 console.error('There was an error!', err);
             }
         };
-
+    
         fetchData();
     }, []);
+
+    const calculateProgress = (achievement, title) => {
+        if (achievement?.unlocked) return 100;
+
+        let currentValue = 0;
+        let targetValue = getTargetProgress(title);
+
+        switch (title) {
+            case 'Category Expert':
+                currentValue = Object.keys(profileData.user?.categoryWatchTime || {}).length;
+                break;
+            case 'Time Keeper':
+                currentValue = profileData.user?.totalWatchTime || 0;
+                break;
+            case 'Community Builder':
+                currentValue = profileData.twitch?.followCount || 0;
+                break;
+            case 'First Stream':
+                currentValue = profileData.user?.totalWatchTime > 0 ? 1 : 0;
+                break;
+            default:
+                return 0;
+        }
+
+        return Math.min((currentValue / targetValue) * 100, 100);
+    };
+
+    const renderAchievement = (achievement, icon, title, description) => {
+        const progress = calculateProgress(achievement, title);
+        const targetValue = getTargetProgress(title);
+        let currentValue = 0;
+
+        switch (title) {
+            case 'Category Expert':
+                currentValue = Object.keys(profileData.user?.categoryWatchTime || {}).length;
+                break;
+            case 'Time Keeper':
+                currentValue = profileData.user?.totalWatchTime || 0;
+                break;
+            case 'Community Builder':
+                currentValue = profileData.twitch?.followCount || 0;
+                break;
+            default:
+                currentValue = achievement?.progress || 0;
+        }
+
+        return (
+            <div className={`achievement-card ${achievement?.unlocked ? 'unlocked' : 'locked'}`}>
+                <div className="achievement-icon">
+                    <i className={`fas fa-${icon}`}></i>
+                </div>
+                <h3>{title}</h3>
+                <p>{description}</p>
+                {achievement?.unlocked ? (
+                    <div className="achievement-unlock-date">
+                        Unlocked: {new Date(achievement.unlockedAt).toLocaleDateString()}
+                    </div>
+                ) : (
+                    <div className="achievement-progress">
+                        <div className="progress-text">
+                            Progress: {Math.round(progress)}%
+                        </div>
+                        <div className="progress-bar-container">
+                            <div 
+                                className="progress-bar" 
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                        <div className="progress-details">
+                            {currentValue} / {targetValue} {getProgressLabel(title)}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const getTargetProgress = (achievementTitle) => {
+        switch (achievementTitle) {
+            case 'Time Keeper':
+                return 86400; // 24 hours in seconds
+            case 'Category Expert':
+                return 50; // categories
+            case 'Community Builder':
+                return 100; // followers
+            default:
+                return 1;
+        }
+    };
+
+    const getProgressLabel = (achievementTitle) => {
+        switch (achievementTitle) {
+            case 'Time Keeper':
+                return 'seconds watched';
+            case 'Category Expert':
+                return 'categories';
+            case 'Community Builder':
+                return 'followers';
+            case 'First Stream':
+                return 'stream watched';
+            default:
+                return '';
+        }
+    };
 
     const formatWatchTime = (seconds) => {
         if (!seconds) return '0h 0m';
@@ -63,6 +182,7 @@ const Profile = () => {
     
     if (error) return <p className="error-message">Error: {error}</p>;
 
+    // ... rest of the component remains the same ...
     return (
         <div>
             <Navbar />
@@ -90,8 +210,8 @@ const Profile = () => {
                                 <span>Total Watch Time: {formatWatchTime(profileData.user?.totalWatchTime)}</span>
                             </div>
                             <div className="stat-item">
-                                <i className="fas fa-user"></i>
-                                <span>User ID: {profileData.user?.userId}</span>
+                                <i className="fas fa-trophy"></i>
+                                <span>Categories Watched: {Object.keys(profileData.user?.categoryWatchTime || {}).length}</span>
                             </div>
                         </div>
                     </div>
@@ -140,34 +260,30 @@ const Profile = () => {
                     <div className="profile-section achievements">
                         <h2>Achievements</h2>
                         <div className="achievements-grid">
-                            <div className="achievement-card locked">
-                                <div className="achievement-icon">
-                                    <i className="fas fa-trophy"></i>
-                                </div>
-                                <h3>First Stream</h3>
-                                <p>Watch your first stream</p>
-                            </div>
-                            <div className="achievement-card locked">
-                                <div className="achievement-icon">
-                                    <i className="fas fa-clock"></i>
-                                </div>
-                                <h3>Time Keeper</h3>
-                                <p>Watch 24 hours of streams</p>
-                            </div>
-                            <div className="achievement-card locked">
-                                <div className="achievement-icon">
-                                    <i className="fas fa-star"></i>
-                                </div>
-                                <h3>Category Expert</h3>
-                                <p>Watch 50 different categories</p>
-                            </div>
-                            <div className="achievement-card locked">
-                                <div className="achievement-icon">
-                                    <i className="fas fa-users"></i>
-                                </div>
-                                <h3>Community Builder</h3>
-                                <p>Follow 100 streamers</p>
-                            </div>
+                            {renderAchievement(
+                                achievements?.achievements.firstStream,
+                                'trophy',
+                                'First Stream',
+                                'Watch your first stream'
+                            )}
+                            {renderAchievement(
+                                achievements?.achievements.timeKeeper,
+                                'clock',
+                                'Time Keeper',
+                                'Watch 24 hours of streams'
+                            )}
+                            {renderAchievement(
+                                achievements?.achievements.categoryExpert,
+                                'star',
+                                'Category Expert',
+                                'Watch 50 different categories'
+                            )}
+                            {renderAchievement(
+                                achievements?.achievements.communityBuilder,
+                                'users',
+                                'Community Builder',
+                                'Follow 100 streamers'
+                            )}
                         </div>
                     </div>
 
