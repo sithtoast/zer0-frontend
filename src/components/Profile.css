@@ -58,6 +58,19 @@
     gap: 0.5rem;
 }
 
+/* Style for the new link */
+.profile-stat-link {
+    color: #a9a9ae; /* Match surrounding text color */
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.profile-stat-link:hover {
+    color: #efeff1; /* Lighter color on hover */
+    text-decoration: underline;
+}
+
+
 /* Content Sections */
 .profile-section {
     background: var(--twitch-dark-alt);

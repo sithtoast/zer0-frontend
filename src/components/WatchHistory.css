@@ -1,0 +1,259 @@
+.watch-history-container {
+    padding: 20px;
+    max-width: 1200px; /* Allow wider container for cards */
+    margin: 20px auto;
+    background-color: #18181b;
+    color: #efeff1;
+    border-radius: 8px;
+    border: 1px solid #39393d;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.watch-history-container h2 {
+    color: #efeff1;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.entry-count-info {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #a9a9ae;
+}
+
+/* Card Layout */
+.history-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid */
+    gap: 20px; /* Spacing between cards */
+    margin-bottom: 20px;
+}
+
+.history-card {
+    background-color: #2a2a2e; /* Card background */
+    border: 1px solid #39393d;
+    border-radius: 6px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.history-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(145, 71, 255, 0.2); /* Subtle purple glow on hover */
+}
+
+.card-streamer-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px; /* Space below streamer info */
+    border-bottom: 1px solid #39393d; /* Separator line */
+    padding-bottom: 10px;
+}
+
+.card-streamer-pfp {
+    width: 40px; /* Slightly larger pfp */
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    border: 1px solid #5c5c61;
+}
+
+.card-streamer-name {
+    font-weight: bold;
+    color: #efeff1;
+    font-size: 1.1em;
+}
+
+.card-details {
+    font-size: 0.9em;
+    color: #c7c7c9; /* Lighter grey for details */
+}
+
+.card-details p {
+    margin: 5px 0; /* Spacing between detail lines */
+}
+
+.card-details strong {
+    color: #a9a9ae; /* Slightly darker grey for labels */
+    margin-right: 5px;
+}
+
+
+/* Pagination controls remain the same */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #2a2a2e;
+    border-radius: 4px;
+}
+
+.pagination-controls button {
+    background-color: #9147ff;
+    color: #ffffff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background-color: #772ce8;
+}
+
+.pagination-controls button:disabled {
+    background-color: #39393d;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.pagination-controls span {
+    color: #efeff1;
+    font-weight: bold;
+}
+
+/* Loading and Error messages */
+.loading-message, .error-message {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1em;
+    color: #ff4d4d;
+}
+
+.loading-message {
+    color: #efeff1;
+}
+
+/* Filter Controls */
+.filter-controls {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 10px; /* Spacing between filter elements */
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #2a2a2e; /* Match card/header background */
+    border-radius: 6px;
+    border: 1px solid #39393d;
+}
+
+.filter-input {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #5c5c61;
+    background-color: #18181b; /* Dark input background */
+    color: #efeff1; /* Light text */
+    font-size: 0.9em;
+    flex-grow: 1; /* Allow inputs to grow */
+    min-width: 150px; /* Minimum width for inputs */
+}
+
+.filter-input::placeholder {
+    color: #a9a9ae;
+}
+
+.filter-reset-button {
+    padding: 8px 15px;
+    background-color: #5c5c61; /* Grey reset button */
+    color: #efeff1;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.filter-reset-button:hover {
+    background-color: #7a7a80;
+}
+
+/* Totals Section */
+.totals-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #232327; /* Slightly different background */
+    border-radius: 6px;
+    border: 1px solid #39393d;
+}
+
+.totals-section {
+    /* Styles for each individual totals box (e.g., Overall Streamers) */
+}
+
+.totals-section h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #bf94ff; /* Lighter purple for titles */
+    font-size: 1em;
+    text-align: center;
+    border-bottom: 1px solid #39393d;
+    padding-bottom: 5px;
+}
+
+.totals-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px; /* Limit height to make it scrollable */
+    overflow-y: auto; /* Add vertical scrollbar if needed */
+    /* Add some padding for scrollbar */
+    padding-right: 5px;
+}
+
+/* Optional: Style the scrollbar */
+.totals-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.totals-list::-webkit-scrollbar-track {
+    background: #2a2a2e; /* Match background */
+    border-radius: 3px;
+}
+
+.totals-list::-webkit-scrollbar-thumb {
+    background-color: #5c5c61; /* Scrollbar color */
+    border-radius: 3px;
+}
+
+
+.totals-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 0.9em;
+    border-bottom: 1px dashed #39393d; /* Dashed separator */
+}
+.totals-item:last-child {
+    border-bottom: none; /* No border for last item */
+}
+
+
+.totals-pfp {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.totals-name {
+    flex-grow: 1; /* Take up available space */
+    color: #efeff1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis for long names */
+    margin-right: 10px;
+}
+
+.totals-time {
+    color: #a9a9ae;
+    font-weight: bold;
+    white-space: nowrap;
+}

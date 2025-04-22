@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar'; 
 import Footer from './Footer';
+import { Link } from 'react-router-dom';
 import './Profile.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -210,8 +211,13 @@ const Profile = () => {
                                 <span>Total Watch Time: {formatWatchTime(profileData.user?.totalWatchTime)}</span>
                             </div>
                             <div className="stat-item">
-                                <i className="fas fa-trophy"></i>
+                                <i className="fas fa-list-ul"></i> {/* Changed icon for Categories Watched */}
                                 <span>Categories Watched: {Object.keys(profileData.user?.categoryWatchTime || {}).length}</span>
+                            </div>
+                            {/* Add Watch History Link Here */}
+                            <div className="stat-item">
+                                <i className="fas fa-history"></i> {/* Icon for history */}
+                                <Link to="/history" className="profile-stat-link">View Watch History</Link>
                             </div>
                         </div>
                     </div>
