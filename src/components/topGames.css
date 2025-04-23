@@ -1,73 +1,340 @@
-.container {
-	display: flex;
-	justify-content: space-between;
-	min-height: 80vh; /* Ensures that the container takes up at least 80% of the viewport height */
+/* filepath: /Users/william/Dev/zer0-frontend/src/components/topGames.css */
+:root {
+    /* Define or import your color variables here if not globally defined */
+    /* Example: */
+    /* --twitch-dark: #18181b; */
+    /* --twitch-dark-alt: #1f1f23; */
+    /* --twitch-primary: #9147ff; */
+    /* --twitch-text: #efeff1; */
+    /* --twitch-text-alt: #adadb8; */
+    /* --twitch-gray: #8d8d9a; */
+    /* --twitch-light-gray: #3e3e40; */
 }
 
-.categories, .streams {
-	flex-grow: 1;  /* Each section takes equal width */
-	margin: 0 10px; /* Adds margin between categories and streams */
-	display: flex;
-	flex-direction: column; /* Aligns items vertically */
+.top-games-page {
+    max-width: 1400px; /* Slightly wider to accommodate sidebar + grid */
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--twitch-text);
+    display: flex;
+    gap: 2rem;
 }
 
-.categories {
-	flex-basis: 33.3333%; /* Roughly 1/3 of the space */
+/* Category Sidebar */
+.category-sidebar {
+    flex: 0 0 300px; /* Fixed width for the sidebar */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.streams {
-	flex-basis: 66.6666%;
-	border-left: 2px solid #ccc; /* Adds a subtle line between the categories and streams, visible even if no streams are displayed */
+.category-section {
+    background: var(--twitch-dark-alt);
+    border-radius: 1rem;
+    padding: 1.5rem;
 }
 
-.streams > h2 {
-	margin-top: 0; /* Removes top margin from the header for alignment */
+.category-section h2 {
+    margin-top: 0;
+    color: var(--twitch-primary);
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--twitch-dark);
+    padding-bottom: 0.5rem;
 }
 
-/* Styles for screens larger than 1200px */
-@media (min-width: 1200px) {
-    .categories {
-        width: 30%;
+/* Search Box */
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 0.5rem 0.75rem;
+    background: var(--twitch-dark);
+    border: 1px solid var(--twitch-light-gray);
+    border-radius: 0.25rem;
+    color: var(--twitch-text);
+    font-size: 0.9rem;
+}
+
+.search-button {
+    padding: 0.5rem 1rem;
+    background: var(--twitch-primary);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-button:hover {
+    background: var(--twitch-accent); /* Define --twitch-accent if needed */
+}
+
+/* Category List Styles */
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px; /* Limit height and make scrollable */
+    overflow-y: auto;
+}
+
+.category-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--twitch-dark);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.category-list-item:last-child {
+    border-bottom: none;
+}
+
+.category-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.category-list-item img {
+    width: 30px; /* Adjust size as needed */
+    height: 40px; /* Adjust size as needed */
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.category-name {
+    flex-grow: 1;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--twitch-text-alt);
+}
+
+.category-list-item:hover .category-name {
+    color: var(--twitch-text);
+}
+
+.favorite-button {
+    background: none;
+    border: none;
+    color: var(--twitch-gray);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+}
+
+.favorite-button.favorited {
+    color: gold; /* Or your preferred favorite color */
+}
+
+/* Main Content Area (Streams) */
+.streams-main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0; /* Prevent flex item overflow */
+}
+
+.streams-header {
+    background: var(--twitch-dark-alt);
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+}
+
+.streams-header h2 {
+    margin: 0;
+    color: var(--twitch-primary);
+}
+
+/* FilterBox - Assuming FilterBox has its own internal styling or needs updating */
+/* Add basic container style if needed */
+.filter-box-container {
+    background: var(--twitch-dark-alt);
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+}
+
+/* Stream Grid */
+.streams-grid {
+    display: grid;
+    /* Adjust minmax for desired card size */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Stream Card Placeholder (Loading State) */
+.stream-card-placeholder {
+    background: var(--twitch-dark);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--twitch-light-gray);
+    min-height: 250px; /* Adjust based on StreamCard height */
+}
+
+.stream-card-placeholder .placeholder {
+    background-color: var(--twitch-light-gray);
+}
+
+/* Pagination */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    margin-top: 1rem; /* Add space above pagination */
+}
+
+.pagination-controls button {
+    padding: 0.5rem 1rem;
+    background: var(--twitch-dark);
+    border: 1px solid var(--twitch-light-gray);
+    color: var(--twitch-text-alt);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.pagination-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-controls button:not(:disabled):hover {
+    background: var(--twitch-light-gray);
+    border-color: var(--twitch-gray);
+}
+
+.pagination-controls button.current-page {
+    background: var(--twitch-primary);
+    border-color: var(--twitch-primary);
+    color: white;
+    font-weight: bold;
+}
+
+/* Modal Styles (Basic - Adapt react-bootstrap modal styling if needed) */
+.modal-content { /* Target react-bootstrap's modal content */
+    background-color: var(--twitch-dark-alt);
+    color: var(--twitch-text);
+    border: 1px solid var(--twitch-light-gray);
+    border-radius: 1rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--twitch-dark);
+    color: var(--twitch-primary);
+}
+.modal-header .btn-close { /* Style the close button */
+     filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--twitch-dark);
+}
+
+.modal-footer button {
+    /* Style modal buttons like search button */
+    padding: 0.6rem 1.2rem;
+    background: var(--twitch-primary);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+ .modal-footer button:hover {
+     background: var(--twitch-accent);
+ }
+
+/* Loading/Error */
+.loading-container-inline { /* For inline loading messages */
+    text-align: center;
+    padding: 2rem;
+    color: var(--twitch-gray);
+}
+
+.error-message-inline { /* For inline error messages */
+    text-align: center;
+    padding: 1rem;
+    color: var(--twitch-danger); /* Define --twitch-danger */
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 1px solid var(--twitch-danger);
+    border-radius: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .top-games-page {
+        flex-direction: column;
     }
-    .streams {
-        width: 70%;
-    }
-}
-
-/* Styles for screens between 992px and 1199px */
-@media (min-width: 992px) and (max-width: 1199px) {
-    .categories {
-        width: 40%;
-    }
-    .streams {
-        width: 60%;
-    }
-}
-
-/* Styles for screens smaller than 992px */
-@media (max-width: 991px) {
-    .categories,
-    .streams {
+    .category-sidebar {
+        flex: 0 0 auto; /* Allow sidebar to take natural height */
         width: 100%;
     }
+    .category-list {
+        max-height: 300px; /* Adjust height for smaller screens */
+    }
 }
 
-.streams .card {
-	width: 100%; /* Full width of the column */
+@media (max-width: 576px) {
+    .top-games-page {
+        padding: 1rem;
+    }
+    .category-section, .streams-header, .filter-box-container {
+        padding: 1rem;
+    }
+    .streams-grid {
+        /* Single column on very small screens */
+        grid-template-columns: 1fr;
+    }
+    .pagination-controls button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
 }
 
-.col-md-4 {
-	flex: 0 0 33.333333%; /* for 3 cards per row */
-	max-width: 33.333333%; /* for 3 cards per row */
+/* Full Screen Loading Overlay */
+.loading-overlay {
+    position: fixed; /* Cover the entire viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Dimmed background */
+    display: flex;
+    flex-direction: column; /* Stack spinner and text */
+    align-items: center;
+    justify-content: center;
+    z-index: 1050; /* Ensure it's above other content (adjust if needed) */
+    color: var(--twitch-text); /* Text color for the message */
 }
 
-.current-page {
-    /* Styles for the current page button */
-    background-color: #007bff;
-    color: white;
+/* Re-use or adapt your existing spinner style */
+.loading-overlay .loading-spinner {
+    border: 5px solid var(--twitch-dark-alt); /* Slightly thicker border */
+    border-top: 5px solid var(--twitch-primary);
+    border-radius: 50%;
+    width: 50px; /* Larger spinner */
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem; /* Space between spinner and text */
 }
 
-.selected-stream {
-    /* Styles for the selected stream */
-    border: 2px solid #007bff;
+/* Keyframes for spinner animation (if not already defined globally) */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

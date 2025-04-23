@@ -1,0 +1,296 @@
+.rankings-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--twitch-text);
+}
+
+.rankings-section {
+    background: var(--twitch-dark-alt);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.rankings-section h2 {
+    margin-top: 0;
+    color: var(--twitch-primary);
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--twitch-dark);
+    padding-bottom: 0.5rem;
+}
+
+.rankings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.ranking-card {
+    background: var(--twitch-dark);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--twitch-light-gray);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.ranking-card:hover {
+   box-shadow: 0 0 10px rgba(145, 71, 255, 0.3); /* Subtle glow effect */
+}
+
+.ranking-card h3 {
+    margin: 0 0 1rem 0;
+    color: var(--twitch-text);
+    font-size: 1.2rem;
+}
+
+.ranking-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Updated ranking-list-item for block layout */
+.ranking-list-item {
+    display: block; /* Allow children to stack */
+    padding: 0; /* Padding moved to item-main-content */
+    border-bottom: 1px solid var(--twitch-light-gray);
+    cursor: default;
+    position: relative; /* For potential absolute positioning inside */
+}
+
+.ranking-list-item:last-child {
+    border-bottom: none;
+}
+
+/* New wrapper for the main clickable row content */
+.item-main-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0; /* Apply padding here */
+    cursor: pointer; /* Make this part clickable */
+    transition: background-color 0.2s ease;
+}
+
+/* Apply hover effect to the main content area */
+.ranking-list-item.clickable:hover .item-main-content {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Keep the border on the LI, remove background/padding */
+.ranking-list-item.selected {
+    border-left: 3px solid var(--twitch-primary);
+    /* background-color: transparent; */ /* Ensure no background on LI */
+    /* padding-left: 0; */ /* Ensure no padding on LI */
+}
+
+/* Adjust padding and add background to main content when selected */
+.ranking-list-item.selected .item-main-content {
+     padding-left: calc(0.75rem - 3px); /* Adjust left padding for border */
+     /* Optional: Add background to highlight the selected main row */
+     background-color: rgba(145, 71, 255, 0.05);
+}
+
+.item-rank {
+    color: var(--twitch-gray);
+    font-weight: bold;
+    min-width: 30px; /* Ensure alignment */
+    padding-left: 0; /* Reset padding if inherited */
+}
+
+.item-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-grow: 1; /* Keep this */
+    margin-left: 1rem;
+    margin-right: 1rem;
+    overflow: hidden;
+}
+
+.item-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.item-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-details {
+    font-size: 0.85rem;
+    color: var(--twitch-gray);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-value {
+    font-weight: bold;
+    color: var(--twitch-primary);
+    white-space: nowrap;
+    padding-right: 0.75rem; /* Add some padding on the right */
+}
+
+/* Expanded View (Top Viewers) */
+.expanded-view {
+    /* Add padding to align with content, accounting for the left border */
+    padding: 1rem 0.75rem 0.75rem calc(0.75rem - 3px);
+    /* Add margin-left to push it past the border */
+    margin-left: 3px;
+    border-top: 1px solid var(--twitch-light-gray);
+    /* Optional: Give it a slightly different background */
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.expanded-view h4 {
+    font-size: 0.9rem;
+    color: var(--twitch-gray);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-left: 0; /* Ensure no extra padding */
+}
+
+/* Use a simpler list for expanded view */
+.expanded-view .ranking-list {
+    /* Override any inherited list styles if necessary */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.expanded-list-item {
+     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0; /* Vertical padding only */
+    font-size: 0.9rem;
+    border-bottom: none; /* Override border from main list item */
+}
+
+.expanded-item-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow: hidden; /* Keep overflow hidden */
+    flex-grow: 1; /* Allow info to take space */
+    margin-right: 0.5rem; /* Add margin to separate from value */
+}
+
+.expanded-item-rank {
+     color: var(--twitch-gray);
+     min-width: 25px;
+}
+
+.expanded-item-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--twitch-text-alt);
+}
+
+.expanded-item-value {
+    font-size: 0.85rem;
+    color: var(--twitch-primary);
+    white-space: nowrap;
+    /* margin-left: 0.5rem; Removed */
+    flex-shrink: 0; /* Prevent value from shrinking */
+}
+
+
+/* Popular/Favorited Categories Buttons */
+.category-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.category-button {
+    background: var(--twitch-dark);
+    color: var(--twitch-text-alt);
+    border: 1px solid var(--twitch-light-gray);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s, border-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.category-button:hover {
+    background: var(--twitch-dark-alt);
+    border-color: var(--twitch-gray);
+}
+
+.category-button .badge {
+    background-color: var(--twitch-primary);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.2em 0.5em;
+    border-radius: 0.25rem;
+}
+
+/* Loading and Error States */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    color: var(--twitch-text);
+}
+
+.loading-spinner {
+    border: 4px solid var(--twitch-dark-alt);
+    border-top: 4px solid var(--twitch-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    color: var(--twitch-danger);
+    text-align: center;
+    padding: 2rem;
+    background: var(--twitch-dark-alt);
+    border-radius: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .rankings-grid {
+        grid-template-columns: 1fr; /* Stack cards on smaller screens */
+    }
+    .item-info {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+    }
+    .item-main-content {
+        /* Adjust padding slightly for smaller screens if needed */
+        /* padding: 0.6rem 0; */
+    }
+    .item-value {
+        padding-right: 0.5rem;
+    }
+    .expanded-view {
+        padding-left: calc(0.5rem - 3px);
+        padding-right: 0.5rem;
+    }
+}

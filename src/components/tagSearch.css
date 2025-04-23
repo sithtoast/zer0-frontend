@@ -1,0 +1,301 @@
+/* Import or define CSS variables */
+:root {
+    --twitch-primary: #9147ff;
+    --twitch-accent: #772ce8;
+    --twitch-dark: #18181b;
+    --twitch-dark-alt: #2a2a2e;
+    --twitch-light-gray: #39393d;
+    --twitch-gray: #a9a9ae;
+    --twitch-text: #efeff1;
+    --twitch-danger: #ff4d4d;
+}
+
+/* Apply base styles from Profile.css */
+.profile-page.tag-search-page {
+    max-width: 1400px; /* Slightly wider for two columns */
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--twitch-text);
+}
+
+.tag-search-page h1 {
+    color: var(--twitch-text); /* Match profile header color */
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Two-column layout container */
+.tag-search-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start; /* Align tops */
+}
+
+/* Sidebar (Left Column) */
+.tag-search-sidebar {
+    flex: 0 0 300px; /* Fixed width for sidebar */
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; /* Space between sections in sidebar */
+}
+
+/* Main Content (Right Column) */
+.tag-search-main {
+    flex: 1; /* Takes remaining space */
+    min-width: 0; /* Prevent overflow issues */
+}
+
+/* Apply section styles */
+.profile-section.tag-section {
+    background: var(--twitch-dark-alt);
+    border-radius: 1rem;
+    padding: 1.5rem; /* Slightly smaller padding for sidebar sections */
+    border: 1px solid var(--twitch-light-gray);
+}
+
+.tag-section h2,
+.tag-section h3 { /* Style titles within sections */
+    margin-top: 0;
+    color: var(--twitch-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--twitch-light-gray);
+    font-size: 1.2em;
+}
+
+/* Search Form Styling */
+.search-form-tags {
+    display: flex;
+    flex-direction: column; /* Stack input and button */
+    gap: 0.8rem;
+}
+
+.search-input-tags {
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--twitch-light-gray);
+    background-color: var(--twitch-dark);
+    color: var(--twitch-text);
+    font-size: 0.9em;
+    width: 100%; /* Full width within container */
+}
+
+.search-button-tags {
+    padding: 0.6rem 1rem;
+    background-color: var(--twitch-primary);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    width: 100%; /* Full width */
+}
+
+.search-button-tags:hover:not(:disabled) {
+    background-color: var(--twitch-accent);
+}
+.search-button-tags:disabled {
+    background-color: var(--twitch-light-gray);
+    cursor: not-allowed;
+}
+
+/* Suggested Tags List */
+.suggested-tags-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0 0;
+    max-height: 150px; /* Limit height */
+    overflow-y: auto;
+}
+
+.suggested-tags-list li {
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+    font-size: 0.9em;
+}
+
+.suggested-tags-list li:hover {
+    background-color: var(--twitch-light-gray);
+}
+
+/* Top Tags Grid */
+.top-tags-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-button {
+    background-color: var(--twitch-dark);
+    color: var(--twitch-text);
+    border: 1px solid var(--twitch-light-gray);
+    padding: 0.4rem 0.8rem;
+    border-radius: 1rem; /* Pill shape */
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tag-button:hover {
+    background-color: var(--twitch-light-gray);
+    border-color: var(--twitch-gray);
+}
+
+.tag-button .badge {
+    margin-left: 5px;
+    font-size: 0.8em;
+    color: var(--twitch-gray);
+}
+
+/* FilterBox Styling (Assuming FilterBox has its own internal structure) */
+/* Add a wrapper if needed, or style FilterBox directly if possible */
+.filter-box-wrapper { /* Add this wrapper in JS if needed */
+   /* Styles for the wrapper section */
+}
+
+/* Stream Embed Styling */
+.stream-embed-wrapper { /* Add this wrapper in JS if needed */
+    margin-bottom: 2rem; /* Space below embed */
+    /* Ensure StreamEmbed component fits well */
+}
+
+/* Streams Grid */
+.streams-grid-tags {
+    display: grid;
+    /* Adjust minmax for potentially wider main area */
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem; /* Space before pagination */
+}
+
+/* Style StreamCard to match profile cards (if not already done) */
+/* Assuming StreamCard uses .stream-card class */
+.stream-card {
+    background-color: var(--twitch-dark);
+    border: 1px solid var(--twitch-light-gray);
+    border-radius: 0.5rem;
+    overflow: hidden; /* Ensure content stays within bounds */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer;
+}
+.stream-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(145, 71, 255, 0.15);
+}
+/* Add more specific StreamCard styles here if needed */
+
+
+/* Pagination controls (Copy from WatchHistory.css) */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--twitch-dark);
+    border-radius: 0.5rem;
+    border: 1px solid var(--twitch-light-gray);
+}
+
+.pagination-controls button {
+    background-color: var(--twitch-primary);
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background-color: var(--twitch-accent);
+}
+
+.pagination-controls button:disabled {
+    background-color: var(--twitch-light-gray);
+    color: var(--twitch-gray);
+    cursor: not-allowed;
+}
+
+.pagination-controls span {
+    color: var(--twitch-text);
+    font-weight: bold;
+}
+
+
+/* Loading and Error messages (Adopt from Profile.css) */
+.loading-container-tags {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh; /* Adjust height */
+    color: var(--twitch-text);
+    padding: 2rem;
+    /* Place it within the main content area */
+}
+
+.loading-spinner-tags {
+    border: 4px solid var(--twitch-dark-alt);
+    border-top: 4px solid var(--twitch-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message-tags {
+    color: var(--twitch-danger);
+    text-align: center;
+    padding: 1.5rem; /* Adjust padding */
+    background: var(--twitch-dark-alt);
+    border: 1px solid var(--twitch-danger);
+    border-radius: 0.5rem;
+    margin-bottom: 2rem; /* Consistent margin */
+}
+
+.no-results-message {
+    text-align: center;
+    color: var(--twitch-gray); /* Use standard gray */
+    padding: 3rem 1rem; /* More padding */
+    font-style: italic;
+    background: var(--twitch-dark); /* Subtle background */
+    border-radius: 0.5rem;
+    border: 1px dashed var(--twitch-light-gray);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) { /* Adjust breakpoint as needed */
+    .tag-search-layout {
+        flex-direction: column;
+    }
+    .tag-search-sidebar {
+        flex: 1 1 auto; /* Allow sidebar to take full width */
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-page.tag-search-page {
+        padding: 1rem;
+    }
+    .profile-section.tag-section {
+        padding: 1rem;
+    }
+    .streams-grid-tags {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Adjust for smaller screens */
+    }
+    .pagination-controls {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+}

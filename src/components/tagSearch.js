@@ -1,4 +1,3 @@
-// tagSearch.js
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash';
@@ -7,151 +6,127 @@ import Footer from './Footer';
 import StreamCard from './streamCard';
 import FilterBox from './filterBox';
 import StreamEmbed from './streamEmbed';
+import './tagSearch.css'; // Ensure this is imported
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const TagSearch = () => {
     const [tag, setTag] = useState('');
+    const [searchedTag, setSearchedTag] = useState(''); // Store the tag that was actually searched
     const [suggestedTags, setSuggestedTags] = useState([]);
     const [topTags, setTopTags] = useState([]);
     const [selectedStream, setSelectedStream] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredStreams, setFilteredStreams] = useState([]);
     const [streams, setStreams] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const itemsPerPage = 30;
+    const itemsPerPage = 24; // Adjust as needed for grid layout
 
+    // --- Fetch Top Tags ---
     const fetchTopTags = useCallback(async () => {
         try {
             const response = await axios.get(`${apiUrl}/api/twitch/top-tags`);
-            setTopTags(response.data.tags);
+            setTopTags(response.data.tags || []);
         } catch (err) {
             console.error('Error fetching top tags:', err);
+            // Don't set global error, maybe a small indicator if needed
         }
     }, []);
 
-    const fetchTags = debounce(async (tag) => {
+    // --- Fetch Suggested Tags ---
+    const fetchTags = useCallback(debounce(async (searchQuery) => {
+        if (!searchQuery.trim()) {
+            setSuggestedTags([]);
+            return;
+        }
         try {
-            const response = await axios.get(`${apiUrl}/api/twitch/tags/${tag}`);
-            setSuggestedTags(response.data);
+            const response = await axios.get(`${apiUrl}/api/twitch/tags/${searchQuery}`);
+            setSuggestedTags(response.data || []);
         } catch (err) {
             console.error('Error fetching suggested tags:', err);
         }
-    }, 900);
+    }, 300), []); // Slightly faster debounce
 
+    // --- Handle Input Change ---
     const handleInputChange = (e) => {
-        setTag(e.target.value);
-        fetchTags(e.target.value);
+        const newTag = e.target.value;
+        setTag(newTag);
+        fetchTags(newTag);
     };
 
+    // --- Handle Search / Fetch Streams ---
     const handleSearch = useCallback(async (searchTag) => {
-        try {
-            const response = await axios.get(`${apiUrl}/api/twitch/streamers-by-tags/${searchTag}`);
-            const streamers = response.data;
-    
-            // Split the streamers into chunks of 100
-            const chunks = [];
-            for (let i = 0; i < streamers.length; i += 100) {
-                chunks.push(streamers.slice(i, i + 100));
-            }
-    
-            let streams = [];
-    
-            for (let chunk of chunks) {
-                try {
-                    const twitchIds = chunk.map(streamer => streamer.twitchId);
-                    const streamResponse = await axios.post(`${apiUrl}/api/twitch/stream`, {
-                        twitchIds: twitchIds
-                    });
-
-                    if (streamResponse.data && streamResponse.data.length > 0) {
-                        streams.push(...streamResponse.data);
-                    }
-                } catch (err) {
-                    console.error('Error fetching streams:', err);
-                }
-            }
-    
-            console.log('Streams:', streams);
-            streams = streams.flat().filter(stream => stream.viewer_count <= 10);
-            console.log('Filtered Streams:', streams);
-    
-            const batchSize = 100;
-            for (let i = 0; i < streams.length; i += batchSize) {
-                const batch = streams.slice(i, i + batchSize);
-                const userIds = batch.map(stream => stream.user_id);
-                try {
-                    const userInfoResponse = await axios.post(`${apiUrl}/api/twitch/users`, { userIds });
-                    const userInfoData = userInfoResponse.data;
-                    for (let j = 0; j < batch.length; j++) {
-                        const stream = batch[j];
-                        const userInfo = userInfoData.find(user => user.id === stream.user_id);
-                        if (userInfo) {
-                            stream.user_info = userInfo;
-                        }
-                    }
-                } catch (err) {
-                    console.error('Error fetching user data:', err);
-                }
-            }
-
-            let twitchAccessToken = null;
-
-            try {
-                const userProfileResponse = await axios.get(`${apiUrl}/api/users/profile`, {
-                    withCredentials: true,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (userProfileResponse.data && userProfileResponse.data.twitch && userProfileResponse.data.twitch.accessToken) {
-                    twitchAccessToken = userProfileResponse.data.twitch.accessToken;
-                }
-            } catch (err) {
-                if (err.response && err.response.status === 500) {
-                    console.error('Received 500 error from /api/users/profile, setting all followerCounts to 0');
-                    for (const stream of streams) {
-                        stream.followerCount = 0;
-                    }
-                    setStreams(streams);
-                    setFilteredStreams(streams);
-                    setCurrentPage(1);
-                    return; // Exit the function early
-                }
-            }
-    
-            for (const stream of streams) {
-                if (!stream.followerCount) {
-                    try {
-                        const followerCountResponse = await axios.post(`${apiUrl}/api/twitch/streams/follower-count`, { streamerIds: [stream.user_id] }, {
-                            headers: { 'Authorization': `Bearer ${twitchAccessToken}` }
-                        });
-                        const followerData = followerCountResponse.data.find(item => item.id === stream.user_id);
-                        stream.followerCount = followerData ? followerData.followerCount : 0;
-                    } catch (err) {
-                        console.error('Error fetching follower count for stream:', stream.user_id, err);
-                        stream.followerCount = 0;
-                    }
-                }
-            }
-    
-            setStreams(streams);
-            setFilteredStreams(streams);
-            setCurrentPage(1);
-        } catch (err) {
-            console.error('Error fetching streamers by tag:', err);
+        const trimmedTag = searchTag.trim();
+        if (!trimmedTag) {
+            setStreams([]);
+            setFilteredStreams([]);
+            setError('');
+            setSearchedTag('');
+            return;
         }
-    }, []);
+        setLoading(true);
+        setError('');
+        setStreams([]);
+        setFilteredStreams([]);
+        setSelectedStream(null);
+        setCurrentPage(1);
+        setSearchedTag(trimmedTag); // Store the searched tag
+        setSuggestedTags([]); // Clear suggestions on search
+        try {
+            // Simplified fetch logic (assuming backend handles complexity)
+            const response = await axios.get(`${apiUrl}/api/twitch/streamers-by-tags/${encodeURIComponent(trimmedTag)}`, {
+                 withCredentials: true // Needed for follower counts potentially
+            });
 
+            // Assuming the backend now returns streams with user_info and followerCount
+            // TEMPORARILY REMOVE/COMMENT OUT THE FILTER:
+            // const liveStreamsData = response.data.filter(stream => stream.viewer_count <= 10);
+            const liveStreamsData = response.data; // Use the raw response data for now
+
+            console.log('Raw API Response Data:', response.data); // Log raw data
+            console.log('Live Streams Data (without filter):', liveStreamsData); // Log data after potential assignment
+
+            if (!Array.isArray(liveStreamsData) || liveStreamsData.length === 0) { // Check if it's an array and not empty
+                console.log('API returned no streams or data is not an array.'); // Add specific log
+                // setLoading(false); // setLoading is handled in finally block
+                // No error, just no results - handled by render logic
+                // return; // Let it proceed to set empty arrays
+            }
+
+            setStreams(liveStreamsData || []); // Ensure setting an array even if null/undefined
+            setFilteredStreams(liveStreamsData || []); // Ensure setting an array
+
+        } catch (err) {
+            console.error('Error during tag search:', err);
+            setError(`Failed to search for tag "${trimmedTag}". Please try again.`);
+            setStreams([]);
+            setFilteredStreams([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []); // Removed dependencies, rely on passed `searchTag`
+
+    // --- Initial Fetch for Top Tags ---
     useEffect(() => {
         fetchTopTags();
     }, [fetchTopTags]);
 
-    useEffect(() => {
-        if (tag) {
-            handleSearch(tag);
-        }
-    }, [tag, handleSearch]);
+    // --- Handle Filter Change ---
+    const handleFilterChange = useCallback((filtered) => {
+        setFilteredStreams(filtered);
+        setCurrentPage(1);
+    }, []);
 
+    // --- Handle Tag Click ---
+    const handleTagClick = (clickedTag) => {
+        setTag(clickedTag);
+        setSuggestedTags([]);
+        handleSearch(clickedTag);
+    };
+
+    // --- Pagination Logic ---
     const totalPages = Math.ceil(filteredStreams.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -160,103 +135,146 @@ const TagSearch = () => {
     const handlePreviousClick = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
+            window.scrollTo(0, 0);
         }
     };
 
     const handleNextClick = () => {
         if (currentPage < totalPages) {
             setCurrentPage(currentPage + 1);
+            window.scrollTo(0, 0);
         }
     };
 
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
-
-    const handleFilterChange = useCallback((filtered) => {
-        setFilteredStreams(filtered);
-        setCurrentPage(1);
-    }, []);
-
-    const handleTagClick = (clickedTag) => {
-        setTag(clickedTag);
-    };
-
+    // --- Render Logic ---
     return (
-        <div>
-            <Navbar />  
-            <div className='tag-search-container' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div style={{ marginRight: '20px' }}>
-                    <h3>Search Streamers by Tag</h3>
-                    <input type="text" value={tag} onChange={handleInputChange} />
-                    <button onClick={() => handleSearch(tag)}>Search</button>
-                    <div className="top-tags" style={{ paddingTop: '20px' }}>
-                        <h3>Top Tags</h3>
-                        <div>
-                            {topTags.map((tag, index) => (
-                                <button key={index} className="tag-button" onClick={() => handleTagClick(tag.name)}>
-                                    {tag.name} <span className="badge">{tag.count}</span>
+        <> {/* Use Fragment instead of div */}
+            <Navbar />
+            <div className="profile-page tag-search-page">
+                <h1>Discover Streams by Tag</h1>
+
+                <div className="tag-search-layout">
+
+                    {/* --- Sidebar --- */}
+                    <aside className="tag-search-sidebar">
+                        {/* Search Section */}
+                        <div className="profile-section tag-section">
+                            <h2>Search Tag</h2>
+                            <form onSubmit={(e) => { e.preventDefault(); handleSearch(tag); }} className="search-form-tags">
+                                <input
+                                    type="text"
+                                    value={tag}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter a tag (e.g., Programming)"
+                                    className="search-input-tags"
+                                    aria-label="Search by tag"
+                                />
+                                <button type="submit" className="search-button-tags" disabled={loading}>
+                                    {loading ? 'Searching...' : 'Search'}
                                 </button>
-                            ))}
+                            </form>
+                            {suggestedTags.length > 0 && (
+                                <ul className="suggested-tags-list">
+                                    {suggestedTags.map((currentTag, index) => (
+                                        <li key={index} onClick={() => handleTagClick(currentTag.name)}>
+                                            {currentTag.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
-                    </div>
-                    <div className="tag-search-results">
-                        <ul>
-                            {suggestedTags
-                                .flatMap(tagItem => [tagItem])
-                                .filter(currentTag => currentTag.name.toLowerCase().includes(tag.toLowerCase()))
-                                .map((currentTag, index) => (
-                                    <li key={index} onClick={() => handleTagClick(currentTag.name)}>
-                                        {currentTag.name} <span className="badge">{currentTag.count}</span>
-                                    </li>
-                                ))
-                            }
-                        </ul>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                    <FilterBox 
-                        selectedStream={selectedStream} 
-                        setSelectedStream={setSelectedStream} 
-                        allStreamsWithFollowerCounts={streams} 
-                        setFilteredStreams={handleFilterChange} 
-                    />
-                    <StreamEmbed 
-                        stream={selectedStream} 
-                        streams={streams} 
-                        closeStream={() => setSelectedStream(null)} 
-                    />
-                    <div className="results" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                        {currentItems.map((stream, index) => (
-                            <StreamCard 
-                                key={stream.id}
-                                stream={stream} 
-                                selectedStream={selectedStream} 
-                                setSelectedStream={setSelectedStream} 
-                            />
-                        ))}
-                    </div>
-                    <div>
-                        <button onClick={handlePreviousClick} disabled={currentPage === 1}>
-                            Previous
-                        </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
-                            <button 
-                                key={pageNumber} 
-                                onClick={() => handlePageChange(pageNumber)}
-                                style={{ backgroundColor: pageNumber === currentPage ? '#9146FF' : '#E0B2FF', color: pageNumber === currentPage ? 'white' : 'black' }}
-                            >
-                                {pageNumber}
-                            </button>
-                        ))}
-                        <button onClick={handleNextClick} disabled={currentPage === totalPages}>
-                            Next
-                        </button>
-                    </div>
+
+                        {/* Top Tags Section */}
+                        <div className="profile-section tag-section">
+                            <h2>Top Tags</h2>
+                            {topTags.length > 0 ? (
+                                <div className="top-tags-grid">
+                                    {topTags.map((topTag, index) => (
+                                        <button key={index} className="tag-button" onClick={() => handleTagClick(topTag.name)}>
+                                            {topTag.name}
+                                            {/* <span className="badge">{topTag.count}</span> */}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p>Loading top tags...</p> // Or a small spinner
+                            )}
+                        </div>
+
+                         {/* Filter Box Section */}
+                         {streams.length > 0 && ( // Only show filters if there are base results
+                            <div className="profile-section tag-section filter-box-wrapper">
+                                <h2>Filter Results</h2>
+                                <FilterBox
+                                    allStreamsWithFollowerCounts={streams}
+                                    setFilteredStreams={handleFilterChange}
+                                />
+                            </div>
+                         )}
+                    </aside>
+
+                    {/* --- Main Content --- */}
+                    <main className="tag-search-main">
+                        {/* Error Message */}
+                        {error && <p className="error-message-tags">{error}</p>}
+
+                        {/* Stream Embed */}
+                        {selectedStream && (
+                            <div className="stream-embed-wrapper">
+                                {/* Optionally wrap embed in a section */}
+                                {/* <div className="profile-section tag-section"> */}
+                                    <StreamEmbed
+                                        stream={selectedStream}
+                                        streams={streams}
+                                        closeStream={() => setSelectedStream(null)}
+                                    />
+                                {/* </div> */}
+                            </div>
+                        )}
+
+                        {/* Results Area */}
+                        {loading ? (
+                            <div className="loading-container-tags">
+                                <div className="loading-spinner-tags"></div>
+                                <p>Searching for streams with tag "{searchedTag}"...</p>
+                            </div>
+                        ) : filteredStreams.length > 0 ? (
+                            <>
+                                {/* Results Grid */}
+                                <div className="streams-grid-tags">
+                                    {currentItems.map((stream) => (
+                                        <StreamCard
+                                            key={stream.id}
+                                            stream={stream}
+                                            setSelectedStream={setSelectedStream}
+                                            // Pass other necessary props if StreamCard needs them
+                                        />
+                                    ))}
+                                </div>
+
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <div className="pagination-controls">
+                                        <button onClick={handlePreviousClick} disabled={currentPage === 1 || loading}>
+                                            Previous
+                                        </button>
+                                        <span> Page {currentPage} of {totalPages} </span>
+                                        <button onClick={handleNextClick} disabled={currentPage === totalPages || loading}>
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+
+                                                ) : (
+                                                    // Show message only if not loading and a search was attempted
+                                                    !error && searchedTag && <p className="no-results-message">No live streams found matching the tag "{searchedTag}" and criteria (viewer count &lt;= 10).</p>
+                                                )}
+                    </main>
                 </div>
             </div>
             <Footer />
-        </div>
+        </>
     );
 };
 

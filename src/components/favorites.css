@@ -1,0 +1,186 @@
+.favorites-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--twitch-text);
+}
+
+/* Header for the whole page */
+.favorites-header {
+    padding-bottom: 1rem; /* Space below title */
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--twitch-light-gray);
+}
+
+.favorites-header h1 {
+    margin: 0;
+    color: var(--twitch-primary);
+}
+
+/* Section for each category */
+.favorite-category-section {
+    background: var(--twitch-dark-alt);
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    overflow: hidden; /* Contain border-radius */
+}
+
+/* Clickable header for each category */
+.category-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem; /* Adjust padding */
+    cursor: pointer;
+    background: var(--twitch-dark-alt); /* Ensure background */
+    border-bottom: 1px solid var(--twitch-light-gray); /* Separator when collapsed */
+    transition: background-color 0.2s ease;
+}
+
+.category-header:hover {
+    background-color: #2a2a2e; /* Slightly lighter on hover */
+}
+
+.category-header.open {
+     border-bottom-color: transparent; /* Remove border when open */
+}
+
+.favorite-star {
+    cursor: pointer;
+    color: var(--twitch-gray); /* Default color */
+    margin-right: 1rem; /* Increased spacing */
+    font-size: 1.2rem; /* Slightly larger star */
+    transition: color 0.2s ease;
+}
+
+.favorite-star.favorited {
+    color: gold;
+}
+
+.favorite-star:hover {
+    opacity: 0.8;
+}
+
+.category-name {
+    flex-grow: 1; /* Take available space */
+    font-size: 1.2rem; /* Match profile section titles */
+    font-weight: 600;
+    color: var(--twitch-text);
+}
+
+.toggle-indicator {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.toggle-indicator.open {
+    transform: rotate(0deg); /* Pointing down */
+}
+.toggle-indicator.closed {
+     transform: rotate(-90deg); /* Pointing right */
+}
+
+
+/* Content area inside the collapse */
+.category-content {
+    padding: 1.5rem; /* Padding for the stream grid */
+    background-color: var(--twitch-dark); /* Slightly different background */
+}
+
+/* Grid for stream cards */
+.streams-grid-fav { /* Use a specific class to avoid conflicts */
+    display: grid;
+    /* Adjust columns for favorites page - maybe fewer? */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; /* Consistent gap */
+}
+
+/* Loading Placeholders (similar to topGames) */
+.stream-card-placeholder-fav {
+    background-color: var(--twitch-dark); /* Match content background */
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid var(--twitch-light-gray);
+}
+
+.placeholder-thumbnail-fav {
+    height: 160px; /* Adjust height */
+    background-color: var(--twitch-light-gray);
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.placeholder-info-fav {
+    padding: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.placeholder-avatar-fav {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--twitch-light-gray);
+    animation: pulse 1.5s infinite ease-in-out;
+    flex-shrink: 0;
+}
+
+.placeholder-text-fav {
+    flex-grow: 1;
+}
+
+.placeholder-line-fav {
+    height: 10px;
+    background-color: var(--twitch-light-gray);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+.placeholder-line-fav.short { width: 40%; }
+.placeholder-line-fav.medium { width: 60%; }
+.placeholder-line-fav.long { width: 80%; }
+.placeholder-line-fav:last-child { margin-bottom: 0; }
+
+
+@keyframes pulse {
+  0% { background-color: var(--twitch-light-gray); }
+  50% { background-color: #4a4a4e; } /* Slightly lighter pulse */
+  100% { background-color: var(--twitch-light-gray); }
+}
+
+/* No streams/favorites message */
+.no-content-message {
+    text-align: center;
+    color: var(--twitch-text-alt);
+    padding: 2rem;
+}
+
+/* Loading state for the whole page */
+.loading-container-fav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh; /* Adjust height */
+    color: var(--twitch-text);
+}
+
+.loading-spinner-fav {
+    border: 4px solid var(--twitch-dark-alt);
+    border-top: 4px solid var(--twitch-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+/* Error message styling */
+.error-message-fav {
+    color: var(--twitch-danger);
+    text-align: center;
+    padding: 2rem;
+    background-color: rgba(240, 71, 71, 0.1);
+    border: 1px solid var(--twitch-danger);
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}

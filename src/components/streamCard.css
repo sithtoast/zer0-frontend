@@ -1,0 +1,193 @@
+/* filepath: /Users/william/Dev/zer0-frontend/src/components/streamCard.css */
+.stream-card {
+    background: var(--twitch-dark);
+    border-radius: 0.5rem;
+    border: 1px solid var(--twitch-light-gray);
+    overflow: hidden; /* Ensure content stays within rounded corners */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer;
+    height: 100%; /* Make card fill grid cell height */
+}
+
+.stream-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(145, 71, 255, 0.2); /* Enhanced glow on hover */
+}
+
+.stream-thumbnail-container {
+    position: relative;
+}
+
+.stream-thumbnail {
+    width: 100%;
+    display: block; /* Remove extra space below image */
+    aspect-ratio: 16 / 9; /* Maintain aspect ratio */
+    object-fit: cover;
+}
+
+.stream-live-indicator {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background-color: #eb0400; /* Twitch live red */
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.stream-viewer-count {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.stream-info {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Allow info section to fill remaining space */
+}
+
+.stream-header {
+    display: flex;
+    align-items: flex-start; /* Align items to the top */
+    /* Adjust gap if needed */
+    gap: 0.6rem; /* Slightly reduced gap */
+    margin-bottom: 0.75rem;
+}
+
+.streamer-avatar-link {
+     flex-shrink: 0; /* Prevent avatar from shrinking */
+}
+
+.streamer-avatar {
+    /* Reduce avatar size */
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.stream-text-content {
+    flex-grow: 1;
+    min-width: 0; /* Prevent text overflow issues */
+}
+
+.stream-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--twitch-text);
+    margin: 0 0 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; /* Ensure it takes full width for ellipsis */
+}
+
+.streamer-name {
+    font-size: 0.9rem;
+    color: var(--twitch-text-alt);
+    margin: 0 0 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.streamer-name:hover {
+    color: var(--twitch-primary);
+}
+
+.affiliate-icon-sc { /* Renamed to avoid conflicts */
+    width: 16px; /* Adjust size */
+    height: 16px;
+    vertical-align: middle;
+}
+
+.stream-game {
+    font-size: 0.85rem;
+    color: var(--twitch-gray);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; /* Ensure it takes full width for ellipsis */
+}
+ .stream-game:hover {
+    color: var(--twitch-primary);
+}
+
+.favorite-icon {
+    cursor: pointer;
+    font-size: 0.9rem; /* Adjust size */
+    margin-left: 0.5rem;
+    color: var(--twitch-gray);
+    transition: color 0.2s;
+}
+
+.favorite-icon.favorited {
+    color: gold;
+}
+ .favorite-icon:hover {
+    color: gold; /* Show gold on hover even if not favorited */
+}
+
+
+.stream-tags {
+    margin-top: auto; /* Push tags to the bottom */
+    padding-top: 0.75rem; /* Space above tags */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.stream-tag {
+    background-color: var(--twitch-light-gray);
+    color: var(--twitch-text-alt);
+    padding: 0.2rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+/* Tooltip Styles (Ensure react-bootstrap tooltips are styled) */
+.tooltip-inner {
+    background-color: var(--twitch-dark) !important;
+    color: var(--twitch-text) !important;
+    border: 1px solid var(--twitch-light-gray);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    max-width: 250px !important; /* Adjust max width */
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before,
+.tooltip.bs-tooltip-auto[data-popper-placement^="top"] .tooltip-arrow::before {
+    border-top-color: var(--twitch-light-gray) !important;
+}
+.tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+.tooltip.bs-tooltip-auto[data-popper-placement^="bottom"] .tooltip-arrow::before {
+    border-bottom-color: var(--twitch-light-gray) !important;
+}
+/* Add similar rules for left/right arrows if needed */
+
+.tooltip-streamer-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Modal Styles (Already defined in topGames.css, ensure consistency) */
+/* You might not need to repeat modal styles if they are global */

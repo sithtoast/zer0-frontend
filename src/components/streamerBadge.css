@@ -1,0 +1,47 @@
+/* filepath: /Users/william/Dev/zer0-frontend/src/components/streamerBadge.css */
+.streamer-badge-container {
+    display: flex;
+    align-items: center; /* Vertically align icon and messages */
+    gap: 0.75rem; /* Space between icon and messages */
+    margin-top: 0.75rem; /* Space above the badge section */
+    flex-wrap: wrap; /* Allow wrapping if needed */
+}
+
+.maturity-icon img {
+    width: 30px; /* Adjust size as needed */
+    height: auto; /* Maintain aspect ratio */
+    display: block; /* Remove extra space */
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.badge-messages {
+    display: flex;
+    flex-wrap: wrap; /* Allow badges to wrap */
+    gap: 0.4rem; /* Space between badges */
+    flex-grow: 1; /* Allow messages to take remaining space */
+}
+
+/* Individual Badge Styles (Copied & adapted from twitch.css) */
+.badge-message { /* Common class for all badges */
+    padding: 0.2rem 0.6rem;
+    color: white;
+    border-radius: 1rem;
+    font-size: 0.7rem; /* Slightly smaller font */
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    white-space: nowrap; /* Prevent badges from breaking line */
+}
+
+.affiliate-message { background: #ffcc00; color: black; }
+.newbie-message { background: #add8e6; color: black; }
+.just-started-message { background: #32cd32; }
+.old-friend-message { background: #ba742e; }
+.justins-friend-message { background: #3e8dd7; }
+.twitch-veteran-message { background: #6A5ACD; }
+.no-followers-message { background: #d000ff; } /* Renamed class */
+
+/* Optional: Add hover effect for tooltips */
+.badge-message {
+    cursor: help; /* Indicate tooltip on hover */
+}

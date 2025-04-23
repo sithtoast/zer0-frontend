@@ -1,628 +1,297 @@
 /* TwitchDarkMode.css */
 /* Basic Color Scheme Definitions */
 :root {
-	--twitch-dark: #0e0e10;
-	--twitch-dark-alt: #1f1f23;
-	--twitch-text: #e0e0e0;
-	--twitch-primary: #9147ff;
-	--twitch-accent: #772ce8;
-	--twitch-gray: #b3b3b3;
-	--twitch-light-gray: #4f4f52;
-	--twitch-danger: #f04747;
+    --twitch-dark: #0e0e10;
+    --twitch-dark-alt: #1f1f23;
+    --twitch-text: #e0e0e0; /* Adjusted for better contrast */
+    --twitch-text-alt: #adadb8; /* Added for secondary text */
+    --twitch-primary: #9147ff;
+    --twitch-accent: #772ce8;
+    --twitch-gray: #8d8d9a; /* Adjusted gray */
+    --twitch-light-gray: #3e3e40; /* Adjusted light gray */
+    --twitch-danger: #f04747;
+    /* Add any other global colors if needed */
+    --twitch-success: #00f593;
+    --twitch-warning: #ffae00;
 }
 
 /* General Body and Background Styles */
 body {
-	background-color: var(--twitch-dark) !important;
-	color: var(--twitch-text);
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	margin: 0;
-	padding: 0;
-	transition: background-color 0.3s ease;
+    background-color: var(--twitch-dark) !important; /* Keep important if needed to override defaults */
+    color: var(--twitch-text);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5; /* Add default line-height */
 }
 
 /* Link Styles */
 a {
-	color: var(--twitch-primary);
-	text-decoration: none;
+    color: var(--twitch-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 a:hover, a:focus {
-	text-decoration: underline;
-	color: var(--twitch-accent);
+    /* text-decoration: underline; */ /* Optional: remove underline globally */
+    color: var(--twitch-accent);
 }
 
-/* Navigation Styles */
-nav {
-	background-color: var(--twitch-dark-alt);
-	border-bottom: 1px solid var(--twitch-light-gray);
-	padding: 10px 20px;
-}
-
-nav a {
-	margin-right: 15px;
-	font-weight: bold;
-}
-
-/* Header Styles */
-header {
-	background: var(--twitch-dark-alt);
-	color: var(--twitch-text);
-	padding: 20px;
-	text-align: center;
-}
-
-/* Button Styles */
+/* Basic Button Styles (Can be overridden by component styles) */
 button {
-	background-color: var(--twitch-primary);
-	color: white;
-	border: none;
-	padding: 10px 20px;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 16px;
+    background-color: var(--twitch-primary);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem; /* Adjusted padding */
+    border-radius: 0.25rem; /* Consistent border-radius */
+    cursor: pointer;
+    font-size: 0.9rem; /* Adjusted font size */
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+    display: inline-flex; /* Align icon/text if needed */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-button:hover {
-	background-color: var(--twitch-accent);
+button:hover:not(:disabled) { /* Add :not(:disabled) */
+    background-color: var(--twitch-accent);
 }
 
 button:disabled {
-	background-color: var(--twitch-light-gray);
+    background-color: var(--twitch-light-gray);
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
-/* Form Input Styles */
-input[type="text"], input[type="password"], input[type="email"], textarea {
-	width: 100%;
-	padding: 10px;
-	margin-top: 8px;
-	margin-bottom: 20px;
-	border: 1px solid var(--twitch-light-gray);
-	background-color: var(--twitch-dark);
-	color: var(--twitch-text);
+/* Basic Form Input Styles (Can be overridden) */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="search"], /* Added search type */
+textarea,
+select { /* Added select */
+    /* width: 100%; */ /* Remove fixed width, let container decide */
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 1rem; /* Consistent margin */
+    border: 1px solid var(--twitch-light-gray);
+    background-color: var(--twitch-dark);
+    color: var(--twitch-text);
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    box-sizing: border-box; /* Include padding/border in width */
 }
 
-input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
-	border-color: var(--twitch-primary);
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--twitch-primary);
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 0 2px rgba(145, 71, 255, 0.3); /* Add focus ring */
 }
+
+/* --- REMOVED SECTIONS --- */
+/* Removed Navigation Styles (Handled by Navbar.css) */
+/* Removed Header Styles (Handled by specific page/component CSS) */
+/* Removed .container styles (Use component-specific layouts) */
+/* Removed .tag-cloud, .tag (Handle tags within components if needed) */
+/* Removed .category-search-container (Handled by topGames.css) */
+/* Removed .stream-details (Handled by specific component CSS) */
+/* Removed .streams-list (Handled by topGames.css streams-grid) */
+/* Removed .stream-card and related styles (Handled by streamCard.css) */
+/* Removed .category-table, .categories, .streams layout styles */
+/* Removed .card, .card-body, .card-content, .card img, .card-title, .card-text (Replaced by custom component styles) */
+/* Removed .followed-container, .followed-row, .followed-row .col-md-12 (Replaced by component-specific layouts) */
+/* Removed .search-list (Style specific lists in components) */
+/* Removed .list-group-item (Style specific lists in components) */
+
+
+/* --- KEPT/MODIFIED SECTIONS (Review if still needed globally) --- */
 
 /* Error Text */
-.error-text {
-	color: var(--twitch-danger);
-	font-weight: bold;
+.error-text, .error-message { /* Combined */
+    color: var(--twitch-danger);
+    font-weight: bold; /* Keep bold? Maybe remove for just color */
+    /* Consider adding padding/margin if used as standalone block */
+    /* padding: 1rem; */
+    /* background-color: rgba(240, 71, 71, 0.1); */
+    /* border: 1px solid var(--twitch-danger); */
+    /* border-radius: 0.25rem; */
 }
 
-nav a:hover, nav a:focus {
-	text-decoration: underline;
-	color: var(--twitch-accent);
-}
-
-.selected {
-    border: 2px solid #f00;
-}
-
-/* Container Styles */
-.container {
-    background-color: var(--twitch-dark-alt);
-    color: var(--twitch-text);
-    padding: 20px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-	display: flex;
-    justify-content: space-between;
-}
-
-.container h1, .container h2, .container h3, .container h4, .container h5, .container h6 {
-    color: var(--twitch-primary);
-}
-
-.container a {
-    color: var(--twitch-primary);
-}
-
-.container a:hover, .container a:focus {
-    color: var(--twitch-accent);
-    text-decoration: underline;
-}
-
-.tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 1em;
-}
-
-.tag {
-	margin: 0.2em;
-	padding: 0.4em;
-	font-size: 0.8em;
-	background-color: var(--twitch-accent);
-	border-radius: 5px;
-	color: white;
-}
-
-/* Category Search Container Styles */
-.category-search-container {
-    background-color: var(--twitch-dark-alt);
-    color: var(--twitch-text);
-    padding: 20px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-}
-
-.category-search-container h1 {
-    color: var(--twitch-primary);
-}
-
-.category-search-container a {
-    color: var(--twitch-primary);
-}
-
-.category-search-container a:hover, .category-search-container a:focus {
-    color: var(--twitch-accent);
-    text-decoration: underline;
-}
-
-/* Stream Details Styles */
-.stream-details {
-    background-color: var(--twitch-dark-alt);
-    color: var(--twitch-text);
-    padding: 20px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-	flex: 1;
-}
-
-.stream-details h2 {
-    color: var(--twitch-primary);
-}
-
-.stream-details a {
-    color: var(--twitch-primary);
-}
-
-.stream-details a:hover, .stream-details a:focus {
-    color: var(--twitch-accent);
-    text-decoration: underline;
-}
-
-.streams-list {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    padding: 20px;
-}
-
-.stream-card {
-	background-color: var(--twitch-dark-alt);
-	color: var(--twitch-text);
-	border-radius: 4px;
-	padding: 20px;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	height: 350px;
-}
-
-.stream-card img {
-    width: 100%;
-    height: auto;
-}
-
-.stream-card .stream-info {
-    margin-top: 10px;
-}
-
-.category-table {
-	flex: 1;
-    margin-right: 20px;
-}
-
-.categories {
-    min-width: 350px; /* Adjust as needed */
-}
-
-.streams {
-    flex-grow: 1; /* Add this line */
-}
-
-.card {
-    display: flex;
-    flex-direction: column;
-    background-color: #202225; /* Twitch Darker Grey */
-    border: 1px solid #6441a4; /* Twitch Purple */
-    border-radius: 5px;
-    color: #adadb8; /* Twitch Light Grey */
-    margin-bottom: 20px;
-}
-
-.card:hover {
-    border-color: #9146ff; /* Twitch Light Purple */
-}
-
-.card-body {
-    flex-grow: 1;
-    padding: 15px;
-    background-color: #0e0e10; /* Twitch Dark Grey */
-    color: #fff; /* White text */
-}
-
-.card-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.card img {
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
-
-.card .card-title {
-    color: #fff; /* White text */
-}
-
-.card-text {
-    color: #adadb8; /* Twitch Light Grey */
-}
-
+/* Login/Signup Containers (Keep if these are separate pages/modals not styled elsewhere) */
 .login-container, .signup-container {
-    background-color: #9146FF;
-    color: #FFFFFF; /* White */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75); /* Black shadow */
+    background-color: var(--twitch-dark-alt); /* Match theme */
+    color: var(--twitch-text);
+    padding: 2rem; /* More padding */
+    border-radius: 1rem; /* Match other containers */
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
+    max-width: 450px; /* Limit width */
+    margin: 2rem auto; /* Center */
+}
+
+.login-container h1, .signup-container h1 { /* Add heading style */
+    color: var(--twitch-primary);
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 .login-container input, .signup-container input {
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
+    /* Inherits general input styles, ensure width is handled */
+    display: block;
+    width: 100%;
 }
 
 .login-container button, .signup-container button {
-    background-color: #FFFFFF; /* White */
-    color: #9146FF; /* Twitch Purple */
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    /* Inherits general button styles, ensure width is handled */
+    width: 100%; /* Make button full width */
+    margin-top: 1rem;
 }
 
-.login-container button:hover, .signup-container button:hover {
-    background-color: #000000; /* Black */
-    color: #FFFFFF; /* White */
+/* Tooltip Styles (Keep if react-bootstrap tooltips are used globally) */
+/* Ensure these don't conflict with component-specific tooltip styles if any */
+.tooltip-inner {
+    background-color: var(--twitch-dark) !important; /* Use important carefully */
+    color: var(--twitch-text) !important;
+    border: 1px solid var(--twitch-light-gray);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 0.25rem;
+    max-width: 300px !important; /* Adjust max width */
 }
 
-.large-tooltip .tooltip-inner {
-    max-width: 350px; /* or any other value that suits your needs */
+.tooltip.bs-tooltip-top .tooltip-arrow::before,
+.tooltip.bs-tooltip-auto[data-popper-placement^="top"] .tooltip-arrow::before {
+    border-top-color: var(--twitch-light-gray) !important;
+}
+.tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+.tooltip.bs-tooltip-auto[data-popper-placement^="bottom"] .tooltip-arrow::before {
+    border-bottom-color: var(--twitch-light-gray) !important;
+}
+.tooltip.bs-tooltip-start .tooltip-arrow::before,
+.tooltip.bs-tooltip-auto[data-popper-placement^="left"] .tooltip-arrow::before {
+     border-left-color: var(--twitch-light-gray) !important;
+}
+.tooltip.bs-tooltip-end .tooltip-arrow::before,
+.tooltip.bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
+     border-right-color: var(--twitch-light-gray) !important;
 }
 
-.small-image {
-    width: 50px; /* or any other value that suits your needs */
-    height: 50px; /* or any other value that suits your needs */
-}
-
-.maturity-icon {
-    flex: 1;
-}
-
-.badge-messages {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    flex: 2;
-}
-
-.newbie-message {
-    padding: 5px 10px;
-    color: black;
-    background: #add8e6;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 0 10px #add8e6, 0 0 40px #add8e6, 0 0 80px #add8e6;
-}
-
-.affiliate-message {
-    padding: 5px 10px;
-    color: black;
-    background: linear-gradient(160deg, #ffcc00, #ffcc00 50%, #d4af37);
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 0 10px #ffcc00, 0 0 40px #ffcc00, 0 0 80px #ffcc00;
-    animation: shine 2s ease-in-out infinite;
-}
-
-@keyframes shine {
-    0% { background-position: -200px; }
-    50% { background-position: 200px; }
-    100% { background-position: -200px; }
-}
-
-.affiliate-icon {
-    padding-left: 10px;
-}
-
-.profile-container {
-    width: 80%;
-    margin: auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.profile-container h1, .profile-container h2 {
-    color: #333;
-}
-
-.profile-container p {
-    color: #666;
-    line-height: 1.6;
-}
-
-.profile-container .btn {
-    margin-top: 20px;
-}
-
-.just-started-message {
-	padding: 5px 10px;
-	color: #fff;
-	background: #32cd32;
-	border-radius: 20px;
-	text-align: center;
-	box-shadow: 0 0 10px #32cd32, 0 0 40px #32cd32, 0 0 80px #32cd32;
-}
-
+/* Pagination Current Page (Keep if pagination controls are styled globally like this) */
 .current-page {
     background-color: var(--twitch-accent);
+    border-color: var(--twitch-accent); /* Add border color */
     color: white;
+    font-weight: bold;
+}
+.current-page:hover {
+     background-color: var(--twitch-accent); /* Prevent hover change */
 }
 
-.old-friend-message {
-	padding: 5px 10px;
-	color: #fff;
-	background: #ba742e;
-	border-radius: 20px;
-	text-align: center;
-	box-shadow: 0 0 10px #cd7f32, 0 0 40px #cd7f32, 0 0 80px #cd7f32;
-}
-
-.justins-friend-message {
-    padding: 5px 10px;
-    color: #fff;
-    background: #3e8dd7;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 0 10px #8B4513, 0 0 40px #8B4513, 0 0 80px #8B4513;
-}
-
-.twitch-veteran-message {
-    padding: 5px 10px;
-    color: #fff;
-    background: #6A5ACD;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 0 10px #6A5ACD, 0 0 40px #6A5ACD, 0 0 80px #6A5ACD;
-}
-
+/* Embed Container (Keep if used for Twitch embeds globally) */
 .embed-container {
-    display: flex;
-    justify-content: space-between;
-    z-index: 1000; /* Add this line */
-    position: relative; /* Add this line if the z-index doesn't work without it */
+    position: relative; /* Keep relative for potential absolute children */
+    /* display: flex; */ /* Remove flex if not always needed */
+    /* justify-content: space-between; */
+    margin-bottom: 1rem; /* Add some margin */
 }
+/* Remove iframe specific flex rules, handle layout where embed is used */
 
-.embed-container iframe:first-child {
-    flex: 2;
-}
-
-.embed-container iframe:last-child {
-    flex: 1;
-}
-
+/* Slider Styles (Keep if react-slider is used globally) */
 .react-slider {
     width: 100%;
     height: 25px;
-    background: var(--twitch-primary);
 }
-
-.react-slider .thumb {
-    width: 25px;
-    height: 25px;
-    background: var(--twitch-accent);
-    color: #fff;
-    line-height: 25px;
-    text-align: center;
-    border-radius: 50%;
-    cursor: grab;
-}
-
 .react-slider .track {
     top: 10px;
     bottom: 10px;
-    background: #999;
+    background: var(--twitch-light-gray); /* Use theme color */
+    border-radius: 999px;
+}
+.react-slider .track.track-1 { /* Style the active part */
+     background: var(--twitch-primary);
+}
+.react-slider .thumb {
+    width: 20px; /* Slightly smaller thumb */
+    height: 20px;
+    background: var(--twitch-accent);
+    color: #fff;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 50%;
+    cursor: grab;
+    top: 2.5px; /* Center thumb vertically */
+    outline: none; /* Remove outline */
+}
+.react-slider .thumb:active {
+    cursor: grabbing;
 }
 
+/* Filter Box (Keep if FilterBox component doesn't have its own CSS) */
+/* Recommend moving these styles to filterBox.css */
 .filter-box {
-    background-color: var(--twitch-primary); /* Light gray background */
-    border-radius: 5px; /* Rounded corners */
-    padding: 20px; /* Padding around the content */
-    margin-bottom: 20px; /* Margin at the bottom */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Shadow effect */
+    background-color: var(--twitch-dark-alt); /* Match theme */
+    border-radius: 1rem; /* Match theme */
+    padding: 1.5rem; /* Adjust padding */
+    margin-bottom: 1.5rem; /* Match theme */
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); */ /* Remove shadow? */
 }
-
-.filter-box .mb-3 {
-    margin-bottom: 15px !important; /* Increase bottom margin of elements */
-}
-
 .filter-box .form-label {
-    font-weight: bold; /* Make labels bold */
+    font-weight: 600; /* Slightly less bold */
+    color: var(--twitch-text-alt);
+    margin-bottom: 0.25rem;
+    display: block;
 }
-
-.filter-box .form-control {
-    border-radius: 0; /* Remove border radius from inputs */
-}
-
+/* Input/select styles inherited */
 .form-check {
-    margin-bottom: 10px; /* Add space between the elements */
+    margin-bottom: 0.75rem; /* Adjust spacing */
+    display: flex; /* Align label and input */
+    align-items: center;
 }
-
+.form-check-input { /* Style checkbox/radio */
+    margin-right: 0.5rem;
+}
+.form-check-label {
+    margin-bottom: 0; /* Reset bootstrap default */
+}
 .form-check-group {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Allow wrapping */
+    gap: 1rem; /* Add gap */
+    /* justify-content: space-between; */ /* Remove if gap is sufficient */
 }
 
-.streamer-card {
-	border: 1px solid #ccc;
-	padding: 10px;
-	margin-bottom: 10px;
-}
-
-.results {
-	flex: 1;
-	overflow: auto;
-	padding-left: 20px;
-}
-
-/* Container Styles */
-.tag-search-container {
-	background-color: var(--twitch-dark-alt);
-	color: var(--twitch-text);
-	padding: 20px;
-	border-radius: 4px;
-	margin-bottom: 20px;
-	display: flex;
-	justify-content: space-between;
-	width: 100%;
-}
-
-.tag-search-container h1, .tag-search-container h2, .tag-search-container h3, .tag-search-container h4, .tag-search-container h5, .tag-search-container h6 {
-	color: var(--twitch-primary);
-}
-
-.tag-search-container a {
-	color: var(--twitch-primary);
-}
-
-.tag-search-container a:hover, .tag-search-container a:focus {
-	color: var(--twitch-accent);
-	text-decoration: underline;
-}
-
-.top-tags > div {
-	display: grid;
-	grid-template-columns: repeat(5, 1fr);
-	gap: 10px;
-}
-
-.badge {
-	display: inline-block;
-	padding: .25em .4em;
-	font-size: 75%;
-	font-weight: 700;
-	line-height: 1;
-	text-align: center;
-	white-space: nowrap;
-	vertical-align: baseline;
-	border-radius: .25rem;
-	background-color: #007bff;
-	color: white;
-}
-
-/* Container Styles */
-.category-search-container {
-	background-color: var(--twitch-dark-alt);
-	color: var(--twitch-text);
-	padding: 20px;
-	border-radius: 4px;
-	margin-bottom: 20px;
-	display: flex;
-	justify-content: space-between;
-	width: 100%;
-}
-
-.top-category-container {
-	background-color: var(--twitch-dark-alt);
-	color: var(--twitch-text);
-	padding: 20px;
-	border-radius: 4px;
-	margin-bottom: 20px;
-	display: flex;
-    flex-direction: column;
-	justify-content: space-between;
-	width: 100%;
-}
-
-.list-group-item {
-    min-width: 500px;
-}
-
-.search-list {
-	background-color: var(--twitch-accent) !important;
-	color: var(--twitch-text) !important;
-}
-
-.followed-container {
-    width: 100%;
-    padding: 0 15px; /* Optional: Add some padding if you want some space around the cards */
-	color: var(--twitch-text);
-}
-
-.followed-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between; /* Optional: Add this if you want some space between the cards */
-}
-
-.followed-row .col-md-12 {
-    flex: 0 0 33.33%; /* This makes each card take up 1/3 of the row */
-    max-width: 33.33%; /* This makes sure the card doesn't grow larger than 1/3 of the row */
-    box-sizing: border-box; /* This makes sure the padding and border of the card are included in its width */
-    padding: 0 15px; /* Optional: Add some padding if you want some space around the cards */
-}
-
+/* Live Dot (Keep if used globally) */
 .live-dot {
-    height: 10px;
-    width: 10px;
-    background-color: red;
+    height: 8px; /* Smaller dot */
+    width: 8px;
+    background-color: #eb0400; /* Twitch red */
     border-radius: 50%;
     display: inline-block;
-    margin-right: 10px; /* Adjust this value as needed */
+    margin-right: 0.4rem; /* Adjust spacing */
+    vertical-align: middle; /* Align better with text */
 }
 
-.d-flex {
-    display: flex;
-}
-
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
-    z-index: 1; /* Displayed below the stream */
-}
-
-#twitch-embed {
-    position: relative;
-    z-index: 2; /* Displayed above the overlay */
-}
-
-.no-follower-message {
-    padding: 5px 10px;
-    color: #fff;
-    background: #d000ff;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 0 10px #ff0000, 0 0 40px #ff0000, 0 0 80px #ff0000;
-}
-
+/* Disabled Look (Utility class) */
 .disabled-look {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Badge (Basic Bootstrap-like badge, keep if used) */
+.badge {
+    display: inline-block;
+    padding: .3em .5em; /* Adjusted padding */
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25rem;
+    background-color: var(--twitch-primary); /* Use theme color */
+    color: white;
 }

@@ -1,0 +1,71 @@
+.followed-page {
+    max-width: 1200px; /* Consistent max-width */
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--twitch-text);
+}
+
+/* Header for the page */
+.followed-header {
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--twitch-light-gray);
+}
+
+.followed-header h1 {
+    margin: 0;
+    color: var(--twitch-primary);
+}
+
+/* Grid for stream cards */
+.streams-grid-followed {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Match favorites/topGames */
+    gap: 1.5rem; /* Consistent gap */
+    margin-top: 2rem; /* Add space below embed */
+}
+
+/* Loading state for the whole page */
+.loading-container-followed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh; /* Adjust height */
+    color: var(--twitch-text);
+}
+
+.loading-spinner-followed {
+    border: 4px solid var(--twitch-dark-alt);
+    border-top: 4px solid var(--twitch-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+/* Error message styling */
+.error-message-followed {
+    color: var(--twitch-danger);
+    text-align: center;
+    padding: 2rem;
+    background-color: rgba(240, 71, 71, 0.1);
+    border: 1px solid var(--twitch-danger);
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+/* No streams message */
+.no-streams-message {
+    text-align: center;
+    color: var(--twitch-text-alt);
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+/* Keyframes for spinner animation (if not already defined globally) */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
