@@ -206,10 +206,27 @@ const TopGames = () => {
 
         console.log(`Selecting category: ID=${categoryId}, Name=${categoryName}`);
 
+        // --- REMOVE Explicitly Clear Embed Container ---
+        // const embedContainer = document.getElementById('twitch-embed-stream');
+        // if (embedContainer) {
+        //     console.log('[handleCategorySelect] Clearing embed container manually.');
+        //     while (embedContainer.firstChild) {
+        //         try {
+        //             embedContainer.removeChild(embedContainer.firstChild);
+        //         } catch (e) {
+        //             console.error('[handleCategorySelect] Error removing child node during manual clear:', e);
+        //             break; // Avoid infinite loop if removal fails
+        //         }
+        //     }
+        // } else {
+        //     console.warn('[handleCategorySelect] Embed container #twitch-embed-stream not found for manual clearing.');
+        // }
+        // --- End REMOVE Explicit Clear ---
+
         // Set states immediately for UI update
         setSelectedCategoryId(categoryId);
         setCurrentGameName(categoryName || 'Selected Category'); // Set the name
-        setSelectedStream(null); // Close any open stream embed
+        setSelectedStream(null); // Close any open stream embed (this triggers StreamEmbed's own cleanup)
         setStreams([]); // Clear displayed streams immediately
         setFilteredStreams([]); // Clear filtered streams
         setAllStreamsWithFollowerCounts([]); // Clear raw streams data
@@ -222,7 +239,7 @@ const TopGames = () => {
 
         // Reset ref after a short delay
         setTimeout(() => { isClickingCategory.current = false; }, 300);
-    }, [fetchStreams]); // Add fetchStreams dependency
+    }, [fetchStreams]); // Dependency remains the same
 
     const handlePageChange = (pageNumber) => {
         if (pageNumber < 1 || pageNumber > pages) return;
@@ -415,6 +432,7 @@ const TopGames = () => {
 
                             {/* Stream Embed (if a stream is selected) */}
                             <StreamEmbed
+                                key={selectedStream || 'no-stream-selected'} // Add unique key based on selectedStream
                                 stream={selectedStream}
                                 streams={streams} // Pass the currently displayed page of streams
                                 closeStream={() => setSelectedStream(null)}
