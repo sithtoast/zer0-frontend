@@ -27,6 +27,13 @@ function StreamEmbed({ stream, streams, closeStream }) {
     const embedInstanceRef = useRef(null);
     const checkIntervalRef = useRef(null);
     const lastStreamNameRef = useRef(null); // Ref to track the currently active stream name
+    const totalWatchTimeRef = useRef(totalWatchTimeSeconds); // Ref to store current watch time
+
+    // --- Effect to keep the watch time ref updated ---
+    useEffect(() => {
+        totalWatchTimeRef.current = totalWatchTimeSeconds;
+    }, [totalWatchTimeSeconds]);
+
 
     // --- Fetch Profile Data (keep as is) ---
     const fetchProfileData = async () => {
@@ -121,28 +128,45 @@ function StreamEmbed({ stream, streams, closeStream }) {
 
             const twitchEmbedElement = document.getElementById(embedContainerId);
             if (twitchEmbedElement) {
-                twitchEmbedElement.innerHTML = ''; // Clear embed content
-                console.log(`[Embed Cleanup] Content cleared.`);
+                // --- More Robust Node Removal ---
+                console.log(`[Embed Cleanup] Attempting to clear children of #${embedContainerId}`);
+                while (twitchEmbedElement.firstChild) {
+                    try {
+                        // Remove children one by one
+                        twitchEmbedElement.removeChild(twitchEmbedElement.firstChild);
+                    } catch (e) {
+                        // Log if a specific child removal fails, but attempt to continue
+                        console.error('[Embed Cleanup] Error removing child node:', e, twitchEmbedElement.firstChild);
+                        // Break if removal consistently fails to prevent potential infinite loops
+                        break;
+                    }
+                }
+                console.log(`[Embed Cleanup] Child nodes cleared.`);
+                // --- End Robust Node Removal ---
+            } else {
+                 console.warn(`[Embed Cleanup] Element #${embedContainerId} not found during cleanup.`);
             }
 
-            embedInstanceRef.current = null;
-            initializedStreamRef.current = null;
+
+            embedInstanceRef.current = null; // Clear the ref to the embed instance
+            initializedStreamRef.current = null; // Clear the ref indicating initialization
 
             // --- Send FINAL watch time on cleanup ---
-            // This sends time accumulated since the last 'visibilitychange' hidden event,
-            // or the total time if visibility never changed or component unmounts.
-            if (currentStreamName && totalWatchTimeSeconds > 0) {
-                console.log(`[Embed Cleanup] Sending final ${totalWatchTimeSeconds}s for ${currentStreamName}`);
-                sendWatchTimeUpdate(currentStreamName, totalWatchTimeSeconds);
+            const finalTimeToSend = totalWatchTimeRef.current; // Use ref for final time
+            if (currentStreamName && finalTimeToSend > 0) {
+                console.log(`[Embed Cleanup] Sending final ${finalTimeToSend}s for ${currentStreamName}`);
+                sendWatchTimeUpdate(currentStreamName, finalTimeToSend);
                 // Reset time *after* sending attempt in cleanup
-                // Note: State updates might not complete before unmount, but it's good practice
                 setTotalWatchTimeSeconds(0);
+                totalWatchTimeRef.current = 0; // Reset ref
             }
             // --- End send watch time ---
 
-            lastStreamNameRef.current = null; // Clear ref on final cleanup
+            // Don't clear lastStreamNameRef here, clear only on final unmount or when stream becomes null explicitly
+            // lastStreamNameRef.current = null;
             console.log("[Embed Cleanup] Complete.");
         };
+
 
         const initializeEmbed = () => {
             // --- Initialize Embed Logic (remains largely the same) ---
@@ -154,12 +178,20 @@ function StreamEmbed({ stream, streams, closeStream }) {
             }
             console.log(`[initializeEmbed] Attempting to initialize for stream: ${currentStreamName}`);
             const element = document.getElementById(embedContainerId);
-            if (!element) { /* ... error handling ... */ return; }
-            if (!window.Twitch || typeof window.Twitch.Embed !== 'function') { /* ... error handling ... */ return; }
+            if (!element) {
+                console.error(`[initializeEmbed] Embed container #${embedContainerId} not found.`);
+                if (isMounted) { setError('Embed container not found.'); setEmbedLoading(false); }
+                return;
+            }
+            if (!window.Twitch || typeof window.Twitch.Embed !== 'function') {
+                console.error('[initializeEmbed] Twitch Embed script not loaded.');
+                if (isMounted) { setError('Twitch script failed to load.'); setEmbedLoading(false); }
+                return;
+            }
 
-            clearInterval(checkIntervalRef.current);
+            clearInterval(checkIntervalRef.current); // Clear interval once init starts
             checkIntervalRef.current = null;
-            embedInstanceRef.current = null;
+            embedInstanceRef.current = null; // Clear previous instance ref
 
             try {
                 const embedOptions = { width: "100%", height: 480, channel: currentStreamName, layout: "video-with-chat", parent: ["zer0.tv", "localhost"] };
@@ -171,7 +203,10 @@ function StreamEmbed({ stream, streams, closeStream }) {
                 });
                 newEmbed.addEventListener(window.Twitch.Embed.VIDEO_PLAY, () => { console.log(`[Embed Event] VIDEO_PLAY for ${currentStreamName}`); });
                 console.log("[initializeEmbed] Twitch Embed instance created.");
-            } catch (initError) { /* ... error handling ... */ }
+            } catch (initError) {
+                console.error(`[initializeEmbed] Error creating Twitch Embed for ${currentStreamName}:`, initError);
+                if (isMounted) { setError(`Failed to initialize embed: ${initError.message}`); setEmbedLoading(false); }
+            }
             // --- End Initialize Embed Logic ---
         };
 
@@ -181,6 +216,7 @@ function StreamEmbed({ stream, streams, closeStream }) {
             if (lastStreamNameRef.current !== currentStreamName && initializedStreamRef.current !== currentStreamName) {
                  console.log(`[Embed Effect Logic] New stream detected (${currentStreamName}), resetting watch time.`);
                  setTotalWatchTimeSeconds(0);
+                 totalWatchTimeRef.current = 0; // Reset ref too
             }
             if (error && !error.includes('session')) setError('');
             setEmbedLoading(true);
@@ -200,69 +236,75 @@ function StreamEmbed({ stream, streams, closeStream }) {
             console.log("[Embed Effect Logic] No stream selected. Running cleanup.");
             cleanup(); // Trigger cleanup (and potential final send) if stream becomes null
             if (isMounted) setEmbedLoading(false);
+            lastStreamNameRef.current = null; // Clear ref when no stream is active
         }
 
         // Return the cleanup function to be called on unmount or when `stream` changes
         return cleanup;
 
-    }, [stream, error, sendWatchTimeUpdate]); // Add sendWatchTimeUpdate dependency
+    }, [stream, error, sendWatchTimeUpdate]); // Dependencies remain the same
 
-    // --- Effect for Visibility Change ---
+
+    // --- Effect for Visibility Change (MODIFIED) ---
     useEffect(() => {
         const handleVisibilityChange = () => {
-            const streamNameToUpdate = lastStreamNameRef.current; // Get current stream from ref
+            const streamNameToUpdate = lastStreamNameRef.current;
+            const timeToSend = totalWatchTimeRef.current; // Read time from ref
 
             if (document.hidden) {
-                // Page is hidden - send current time and reset
-                if (streamNameToUpdate && totalWatchTimeSeconds > 0) {
-                    console.log(`[Visibility] Page hidden. Sending ${totalWatchTimeSeconds}s for ${streamNameToUpdate}`);
-                    // Send the update
-                    sendWatchTimeUpdate(streamNameToUpdate, totalWatchTimeSeconds);
-                    // Reset time *after* attempting send
+                console.log(`[Visibility] Page hidden. Stream: ${streamNameToUpdate}, Time (from ref): ${timeToSend}s`);
+
+                if (streamNameToUpdate && timeToSend > 0) {
+                    console.log(`[Visibility] Conditions met. Calling sendWatchTimeUpdate for ${streamNameToUpdate} with ${timeToSend}s.`);
+                    sendWatchTimeUpdate(streamNameToUpdate, timeToSend)
+                        .then(() => {
+                            console.log(`[Visibility] sendWatchTimeUpdate promise resolved for ${streamNameToUpdate}.`);
+                        })
+                        .catch(err => {
+                            console.error(`[Visibility] sendWatchTimeUpdate promise rejected for ${streamNameToUpdate}:`, err);
+                        });
+                    // Reset time state *and* ref after initiating the send attempt
                     setTotalWatchTimeSeconds(0);
+                    totalWatchTimeRef.current = 0; // Reset ref immediately
+                    console.log(`[Visibility] totalWatchTimeSeconds state and ref reset to 0.`);
                 } else {
-                     console.log(`[Visibility] Page hidden. No active stream or time to send.`);
+                     console.log(`[Visibility] Conditions NOT met (Stream: ${streamNameToUpdate}, Time: ${timeToSend}s). Skipping send.`);
                 }
             } else {
-                // Page is visible - No action needed here, TimeTracking component handles resuming
-                console.log(`[Visibility] Page visible.`);
-                // Optional: Could reset time here too if desired, but TimeTracking should handle pauses
-                // setTotalWatchTimeSeconds(0);
+                console.log(`[Visibility] Page visible. Stream: ${streamNameToUpdate}`);
             }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
         console.log("[Visibility] Listener added.");
 
-        // Cleanup listener on component unmount or when dependencies change
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             console.log("[Visibility] Listener removed.");
-            // Note: The main embed effect's cleanup handles sending final time on unmount.
         };
-        // Dependencies: time, the send function, and streams (needed by send function)
-    }, [totalWatchTimeSeconds, sendWatchTimeUpdate, streams]);
+        // MODIFIED Dependencies: Remove totalWatchTimeSeconds
+    }, [sendWatchTimeUpdate, streams]); // Only depends on the send function and streams list now
 
-    // --- Handle Closing the Stream (Explicit Button Click) ---
+    // --- Handle Closing the Stream (MODIFIED) ---
     const handleCloseStream = async () => {
-        const streamNameToClose = stream; // Capture current stream name from prop
-        const timeToSend = totalWatchTimeSeconds; // Capture current time
+        const streamNameToClose = stream;
+        const timeToSend = totalWatchTimeRef.current; // Use ref for current time
 
-        // Reset time immediately to prevent potential double sends (e.g., visibility change fires right after)
+        // Reset time state and ref immediately
         setTotalWatchTimeSeconds(0);
+        totalWatchTimeRef.current = 0;
 
-        // Send time via POST using the reusable function
         if (streamNameToClose && timeToSend > 0) {
              console.log(`[CloseStream Button] Sending ${timeToSend}s for ${streamNameToClose}`);
-             await sendWatchTimeUpdate(streamNameToClose, timeToSend); // Use await if subsequent actions depend on it
+             await sendWatchTimeUpdate(streamNameToClose, timeToSend);
         } else {
              console.log(`[CloseStream Button] Skipping update: No stream or zero time.`);
         }
 
-        // Call the original closeStream prop (passed from parent to hide/remove embed)
         console.log("[CloseStream Button] Calling closeStream prop.");
         closeStream();
     };
+
 
     // --- Render Logic ---
     const currentStreamInfoForRender = findStreamDetails(stream, streams);
@@ -324,7 +366,7 @@ function StreamEmbed({ stream, streams, closeStream }) {
                                 stream={stream} // Pass current stream name
                                 streams={streams} // Pass streams list
                                 setTotalWatchTimeSeconds={setTotalWatchTimeSeconds} // Pass setter
-                                totalWatchTimeSeconds={totalWatchTimeSeconds} // Pass current time
+                                totalWatchTimeSeconds={totalWatchTimeSeconds} // Pass current time (for display)
                             />
                         </div>
                     </div>
